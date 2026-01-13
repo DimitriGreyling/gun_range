@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../presentation/home/home_screen.dart';
-import '../../presentation/auth/login_screen.dart';
+import '../../presentation/auth/login_register_screen.dart';
 import '../../presentation/ranges/range_list_screen.dart';
 import '../../presentation/events/event_list_screen.dart';
 import '../../presentation/bookings/booking_list_screen.dart';
@@ -17,7 +17,7 @@ final appRouter = GoRouter(
     ),
     GoRoute(
       path: '/login',
-      builder: (context, state) => const LoginScreen(),
+      builder: (context, state) => const LoginRegisterScreen(),
     ),
     GoRoute(
       path: '/ranges',
