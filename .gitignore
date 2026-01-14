@@ -103,3 +103,6 @@ linux/build/
 # Others
 *.iml
 .idea/
+
+# Supabase configuration file
+*.env

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/presentation/auth/login_screen.dart';
 import '../../presentation/home/home_screen.dart';
 import '../../presentation/auth/login_register_screen.dart';
 import '../../presentation/ranges/range_list_screen.dart';
@@ -13,7 +14,7 @@ final appRouter = GoRouter(
   routes: [
     GoRoute(
       path: '/home',
-      builder: (context, state) => const HomeScreen(),
+      builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
       path: '/login',

@@ -1,15 +1,38 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/theme_provider.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-void main() {
+  // Load environment variables with error handling
+  try {
+    await dotenv.load(
+      fileName: ".env",
+    );
+  } catch (e) {
+    throw Exception('Failed to load .env file: $e');
+  }
+
+  final supabaseUrl = dotenv.env['SUPABASE_URL'];
+  if (supabaseUrl == null) {
+    throw Exception('SUPABASE_URL not found in .env');
+  }
+  final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
+  if (supabaseAnonKey == null) {
+    throw Exception('SUPABASE_ANON_KEY not found in .env');
+  }
+
+  await Supabase.initialize(
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
+  );
+
   runApp(const ProviderScope(child: MainApp()));
 }
-
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});

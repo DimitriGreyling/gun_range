@@ -13,6 +13,17 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
   bool isLogin = true;
   bool showPassword = false;
 
+  // Add focus nodes for proper keyboard management
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -108,12 +119,15 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                   label: 'Email',
                   hint: 'Enter your email address',
                   obscure: false,
+                  focusNode: _emailFocusNode,
+                  onSubmitted: (_) => _passwordFocusNode.requestFocus(),
                 ),
                 const SizedBox(height: 16),
                 _buildTextField(
                   label: 'Password',
                   hint: 'Enter your password',
                   obscure: !showPassword,
+                  focusNode: _passwordFocusNode,
                   suffix: IconButton(
                     icon: Icon(showPassword ? Icons.visibility : Icons.visibility_off, color: theme.colorScheme.onBackground.withOpacity(0.4)),
                     onPressed: () => setState(() => showPassword = !showPassword),
@@ -181,6 +195,8 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
     required String hint,
     bool obscure = false,
     Widget? suffix,
+    FocusNode? focusNode,
+    Function(String)? onSubmitted,
   }) {
     final theme = Theme.of(context);
     return Column(
@@ -189,7 +205,9 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
         Text(label, style: TextStyle(color: theme.colorScheme.onBackground, fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
         TextField(
+          focusNode: focusNode,
           obscureText: obscure,
+          onSubmitted: onSubmitted,
           decoration: InputDecoration(
             hintText: hint,
             suffixIcon: suffix,
