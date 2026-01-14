@@ -43,6 +43,7 @@ class MainApp extends StatelessWidget {
       builder: (context, ref, _) {
         final themeMode = ref.watch(themeModeProvider);
         return MaterialApp.router(
+          debugShowCheckedModeBanner: false,
           routerConfig: appRouter,
           title: 'Gun Range App',
           theme: AppTheme.lightTheme,
