@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -43,6 +45,15 @@ class MainApp extends StatelessWidget {
       builder: (context, ref, _) {
         final themeMode = ref.watch(themeModeProvider);
         return MaterialApp.router(
+          scrollBehavior: const MaterialScrollBehavior().copyWith(
+            dragDevices: {
+              PointerDeviceKind.mouse,
+              PointerDeviceKind.touch,
+              PointerDeviceKind.trackpad,
+              PointerDeviceKind.stylus,
+              PointerDeviceKind.unknown,
+            },
+          ),
           debugShowCheckedModeBanner: false,
           routerConfig: appRouter,
           title: 'Gun Range App',

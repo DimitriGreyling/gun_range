@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/presentation/widgets/event_card_widget.dart';
-import '../../core/theme/theme_provider.dart';
 
 class HomeScreenMobile extends ConsumerWidget {
   HomeScreenMobile({Key? key}) : super(key: key);
