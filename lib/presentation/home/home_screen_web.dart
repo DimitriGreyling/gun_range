@@ -90,8 +90,15 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                 padding: const EdgeInsets.only(bottom: 16.0),
                                 child: Row(
                                   mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                      rangeState.isLoadingRanges ||
+                                              rangeState.ranges.isNotEmpty
+                                          ? MainAxisAlignment.spaceEvenly
+                                          : MainAxisAlignment.center,
+                                  crossAxisAlignment:
+                                      rangeState.isLoadingRanges ||
+                                              rangeState.ranges.isNotEmpty
+                                          ? CrossAxisAlignment.start
+                                          : CrossAxisAlignment.center,
                                   children: rangeState.isLoadingRanges
                                       ? [
                                           const LoadingCardWidget(lineCount: 3),
@@ -105,11 +112,21 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                                 _buildCard(),
                                             ]
                                           : [
-                                              Text(
-                                                'No Ranges Available',
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyLarge,
+                                              SizedBox(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    4,
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height /
+                                                    3,
+                                                child: Text(
+                                                  'No Ranges Available',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyLarge,
+                                                ),
                                               ),
                                             ],
                                 ),
@@ -136,8 +153,15 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                 padding: const EdgeInsets.only(bottom: 16.0),
                                 child: Row(
                                   mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                      rangeState.isLoadingEvents ||
+                                              rangeState.events.isNotEmpty
+                                          ? MainAxisAlignment.spaceEvenly
+                                          : MainAxisAlignment.center,
+                                  crossAxisAlignment:
+                                      rangeState.isLoadingEvents ||
+                                              rangeState.events.isNotEmpty
+                                          ? CrossAxisAlignment.start
+                                          : CrossAxisAlignment.center,
                                   children: rangeState.isLoadingEvents
                                       ? [
                                           const LoadingCardWidget(lineCount: 3),
@@ -151,11 +175,21 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                                 _buildCard(),
                                             ]
                                           : [
-                                              Text(
-                                                'No Events Available',
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodyLarge,
+                                              SizedBox(
+                                                width: MediaQuery.of(context)
+                                                        .size
+                                                        .width /
+                                                    4,
+                                                height: MediaQuery.of(context)
+                                                        .size
+                                                        .height /
+                                                    3,
+                                                child: Text(
+                                                  'No Events Available',
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodyLarge,
+                                                ),
                                               ),
                                             ],
                                 ),
@@ -349,5 +383,4 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
       minLeadingWidth: 0,
     );
   }
-
 }
