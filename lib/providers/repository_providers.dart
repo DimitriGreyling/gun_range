@@ -11,8 +11,8 @@ final rangeRepositoryProvider = Provider<RangeRepository>((ref) {
 });
 
 final eventRepositoryProvider = Provider<EventRepository>((ref) {
-  final supabase = ref.watch(supabaseProvider);
-  return EventRepository(supabase);
+  // final supabase = ref.watch(supabaseProvider);
+  return EventRepository();
 });
 
 final bookingRepositoryProvider = Provider<BookingRepository>((ref) {

@@ -12,7 +12,8 @@ final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((r
 
 final rangeViewModelProvider = StateNotifierProvider<RangeViewModel, RangeState>((ref) {
   final rangeRepository = ref.watch(rangeRepositoryProvider);
-  return RangeViewModel(rangeRepository);
+  final eventRepository = ref.watch(eventRepositoryProvider);
+  return RangeViewModel(rangeRepository, eventRepository);
 });
 
 final eventViewModelProvider = StateNotifierProvider<EventViewModel, EventState>((ref) {

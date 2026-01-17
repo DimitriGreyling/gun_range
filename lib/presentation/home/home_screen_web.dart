@@ -26,6 +26,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scaffoldKey.currentState?.openDrawer();
       ref.read(rangeViewModelProvider.notifier).fetchRanges();
+      ref.read(rangeViewModelProvider.notifier).fetchEvents();
     });
   }
 

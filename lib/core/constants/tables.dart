@@ -3,4 +3,5 @@ class Tables {
   static const String ranges = 'ranges';
   static const String bookings = 'bookings';
   static const String profiles = 'profiles';
+  static const String events = 'events';
 }
