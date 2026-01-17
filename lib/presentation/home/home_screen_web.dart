@@ -294,15 +294,14 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
         borderRadius: BorderRadius.only(
           topRight: Radius.circular(16),
           bottomRight: Radius.circular(16),
+          bottomLeft: Radius.circular(16),
+          topLeft: Radius.circular(16),
         ),
       ),
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-              decoration: BoxDecoration(
-                  // color: Theme.of(context).colorScheme.secondaryContainer,
-                  ),
               child: Row(
                 children: [
                   Column(
