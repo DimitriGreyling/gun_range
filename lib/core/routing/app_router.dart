@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
-import '../../presentation/home/home_screen.dart';
+import 'package:gun_range_app/presentation/home/home_app_shell.dart';
+import '../../presentation/home/home_screen_mobile.dart';
 import '../../presentation/auth/login_register_screen.dart';
 import '../../presentation/ranges/range_list_screen.dart';
 import '../../presentation/events/event_list_screen.dart';
@@ -12,7 +13,7 @@ final appRouter = GoRouter(
   routes: [
     GoRoute(
       path: '/home',
-      builder: (context, state) => HomeScreen(),
+      builder: (context, state) => const HomeAppShell(),
     ),
     GoRoute(
       path: '/login',
