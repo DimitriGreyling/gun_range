@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/presentation/widgets/controllers/expanded_collapsed_menu_controller.dart';
+import 'package:gun_range_app/presentation/widgets/loading_card_widget.dart';
 import 'package:gun_range_app/providers/supabase_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -88,19 +89,30 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                               child: Padding(
                                 padding: const EdgeInsets.only(bottom: 16.0),
                                 child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: // rangeState.isLoading
-                                        //?
-                                        [
-                                      _buildLoadingCard(),
-                                      _buildLoadingCard(),
-                                      _buildLoadingCard(),
-                                    ]
-                                    // : [],
-                                    ),
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: rangeState.isLoadingRanges
+                                      ? [
+                                          const LoadingCardWidget(lineCount: 3),
+                                          const LoadingCardWidget(lineCount: 3),
+                                          const LoadingCardWidget(lineCount: 3),
+                                        ]
+                                      : rangeState.ranges.isNotEmpty
+                                          ? [
+                                              for (var range
+                                                  in rangeState.ranges)
+                                                _buildCard(),
+                                            ]
+                                          : [
+                                              Text(
+                                                'No Ranges Available',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyLarge,
+                                              ),
+                                            ],
+                                ),
                               ),
                             ),
                           ),
@@ -126,17 +138,26 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _buildCard(),
-                                    _buildCard(),
-                                    _buildCard(),
-                                    _buildCard(),
-                                    _buildCard(),
-                                    _buildCard(),
-                                    _buildCard(),
-                                    _buildCard(),
-                                    _buildCard(),
-                                  ],
+                                  children: rangeState.isLoadingEvents
+                                      ? [
+                                          const LoadingCardWidget(lineCount: 3),
+                                          const LoadingCardWidget(lineCount: 3),
+                                          const LoadingCardWidget(lineCount: 3),
+                                        ]
+                                      : rangeState.events.isNotEmpty
+                                          ? [
+                                              for (var event
+                                                  in rangeState.events)
+                                                _buildCard(),
+                                            ]
+                                          : [
+                                              Text(
+                                                'No Events Available',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyLarge,
+                                              ),
+                                            ],
                                 ),
                               ),
                             ),
@@ -184,14 +205,47 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
 
   Widget _buildCard() {
     return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: SizedBox(
         width: MediaQuery.of(context).size.width / 4,
         height: MediaQuery.of(context).size.height / 3,
-        child: Center(
-          child: Text(
-            'Card',
-            style: Theme.of(context).textTheme.headlineMedium,
-          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            Widget line(double factor) => Skeleton.shade(
+                  child: Container(
+                    width: constraints.maxWidth * factor,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                );
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Skeleton.shade(
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(18),
+                      topRight: Radius.circular(18),
+                    ),
+                    child: Container(
+                      width: double.infinity,
+                      height: MediaQuery.of(context).size.height / 6,
+                      color: Colors.grey[300],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                for (int i = 0; i < 3; i++) ...[
+                  line(factors[i % factors.length]),
+                  const SizedBox(height: 8),
+                ],
+              ],
+            );
+          },
         ),
       ),
     );
@@ -296,94 +350,4 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     );
   }
 
-  // Widget _buildLoadingCard() {
-  //   return Skeletonizer(
-  //     enabled: true,
-  //     child: Card(
-  //       shape: RoundedRectangleBorder(
-  //         borderRadius: BorderRadius.circular(18),
-  //       ),
-  //       child: SizedBox(
-  //           width: MediaQuery.of(context).size.width / 4,
-  //           height: MediaQuery.of(context).size.height / 3,
-  //           child: Column(
-  //             mainAxisAlignment: MainAxisAlignment.start,
-  //             crossAxisAlignment: CrossAxisAlignment.start,
-  //             children: [
-  //               Skeleton.shade(
-  //                 child: ClipRRect(
-  //                   borderRadius: const BorderRadius.only(
-  //                     topLeft: Radius.circular(18),
-  //                     topRight: Radius.circular(18),
-  //                   ),
-  //                   child: Container(
-  //                     width: double.infinity,
-  //                     height: MediaQuery.of(context).size.height / 6,
-  //                     color: Colors.grey[300],
-  //                   ),
-  //                 ),
-  //               ),
-  //               Text('Loading...',
-  //                   style: Theme.of(context).textTheme.headlineSmall),
-  //               Text('Loading...',
-  //                   style: Theme.of(context).textTheme.headlineSmall),
-  //               Text('Loading...',
-  //                   style: Theme.of(context).textTheme.headlineSmall),
-  //             ],
-  //           )),
-  //     ),
-  //   );
-  // }
-
-  Widget _buildLoadingCard() {
-    return Skeletonizer(
-      enabled: true,
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width / 4,
-          height: MediaQuery.of(context).size.height / 3,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              Widget line(double factor) => Skeleton.shade(
-                    child: Container(
-                      width: constraints.maxWidth * factor,
-                      height: 14,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[300],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  );
-
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Skeleton.shade(
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(18),
-                        topRight: Radius.circular(18),
-                      ),
-                      child: Container(
-                        width: double.infinity,
-                        height: MediaQuery.of(context).size.height / 6,
-                        color: Colors.grey[300],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  line(0.85), // long
-                  const SizedBox(height: 8),
-                  line(0.55), // short
-                  const SizedBox(height: 8),
-                  line(0.70), // medium
-                ],
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
 }
