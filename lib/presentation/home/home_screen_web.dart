@@ -301,53 +301,57 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
         children: [
           DrawerHeader(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.secondaryContainer,
-              ),
+                  // color: Theme.of(context).colorScheme.secondaryContainer,
+                  ),
               child: Row(
                 children: [
-                  if (expanded)
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 180),
-                      switchInCurve: Curves.easeOut,
-                      switchOutCurve: Curves.easeIn,
-                      transitionBuilder: (child, anim) => FadeTransition(
-                        opacity: anim,
-                        child: SizeTransition(
-                          sizeFactor: anim,
-                          axis: Axis.horizontal,
-                          child: child,
+                  Column(
+                    children: [
+                      if (!expanded)
+                        IconButton(
+                            onPressed: () {
+                              ref.read(menuExpandedProvider.notifier).toggle();
+                            },
+                            icon: const Icon(
+                              Icons.menu,
+                            )),
+                      if (expanded)
+                        IconButton(
+                            onPressed: () {
+                              ref.read(menuExpandedProvider.notifier).toggle();
+                            },
+                            icon: const Icon(Icons.arrow_back)),
+                      if (expanded)
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 180),
+                          switchInCurve: Curves.easeOut,
+                          switchOutCurve: Curves.easeIn,
+                          transitionBuilder: (child, anim) => FadeTransition(
+                            opacity: anim,
+                            child: SizeTransition(
+                              sizeFactor: anim,
+                              axis: Axis.horizontal,
+                              child: child,
+                            ),
+                          ),
+                          child: expanded
+                              ? Align(
+                                  key: const ValueKey('MenuLabel'),
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    'Menu',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.fade,
+                                    softWrap: false,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineMedium,
+                                  ),
+                                )
+                              : const SizedBox(key: ValueKey('collapsed')),
                         ),
-                      ),
-                      child: expanded
-                          ? Align(
-                              key: const ValueKey('MenuLabel'),
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                'Menu',
-                                maxLines: 1,
-                                overflow: TextOverflow.fade,
-                                softWrap: false,
-                                style:
-                                    Theme.of(context).textTheme.headlineMedium,
-                              ),
-                            )
-                          : const SizedBox(key: ValueKey('collapsed')),
-                    ),
-                  if (expanded) const Spacer(),
-                  if (!expanded)
-                    IconButton(
-                        onPressed: () {
-                          ref.read(menuExpandedProvider.notifier).toggle();
-                        },
-                        icon: const Icon(
-                          Icons.menu,
-                        )),
-                  if (expanded)
-                    IconButton(
-                        onPressed: () {
-                          ref.read(menuExpandedProvider.notifier).toggle();
-                        },
-                        icon: const Icon(Icons.arrow_back)),
+                    ],
+                  ),
                 ],
               )),
           tile(Icons.home, 'Home', expanded),

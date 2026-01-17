@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/core/constants/tables.dart';
 import 'package:gun_range_app/data/models/event.dart';
 
