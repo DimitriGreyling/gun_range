@@ -6,8 +6,8 @@ import '../data/repositories/auth_repository.dart';
 import 'supabase_provider.dart';
 
 final rangeRepositoryProvider = Provider<RangeRepository>((ref) {
-  final supabase = ref.watch(supabaseProvider);
-  return RangeRepository(supabase);
+  // final supabase = ref.watch(supabaseProvider);
+  return RangeRepository();
 });
 
 final eventRepositoryProvider = Provider<EventRepository>((ref) {

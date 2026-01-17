@@ -2,6 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/presentation/widgets/controllers/expanded_collapsed_menu_controller.dart';
+import 'package:gun_range_app/providers/supabase_provider.dart';
+import 'package:gun_range_app/providers/viewmodel_providers.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class HomeScreenWeb extends ConsumerStatefulWidget {
   const HomeScreenWeb({super.key});
@@ -21,6 +24,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scaffoldKey.currentState?.openDrawer();
+      ref.read(rangeViewModelProvider.notifier).fetchRanges();
     });
   }
 
@@ -37,6 +41,9 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     //MENU
     final menuExpanded = ref.watch(menuExpandedProvider);
     final menuWidth = menuExpanded ? 280.0 : 72.0;
+
+    //Ranges and Events would be fetched from ViewModels
+    final rangeState = ref.watch(rangeViewModelProvider);
 
     return Scaffold(
       body: Column(
@@ -81,21 +88,19 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                               child: Padding(
                                 padding: const EdgeInsets.only(bottom: 16.0),
                                 child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _buildCard(),
-                                    _buildCard(),
-                                    _buildCard(),
-                                    _buildCard(),
-                                    _buildCard(),
-                                    _buildCard(),
-                                    _buildCard(),
-                                    _buildCard(),
-                                    _buildCard(),
-                                  ],
-                                ),
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: // rangeState.isLoading
+                                        //?
+                                        [
+                                      _buildLoadingCard(),
+                                      _buildLoadingCard(),
+                                      _buildLoadingCard(),
+                                    ]
+                                    // : [],
+                                    ),
                               ),
                             ),
                           ),
@@ -288,6 +293,97 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
             : const SizedBox(key: ValueKey('collapsed')),
       ),
       minLeadingWidth: 0,
+    );
+  }
+
+  // Widget _buildLoadingCard() {
+  //   return Skeletonizer(
+  //     enabled: true,
+  //     child: Card(
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(18),
+  //       ),
+  //       child: SizedBox(
+  //           width: MediaQuery.of(context).size.width / 4,
+  //           height: MediaQuery.of(context).size.height / 3,
+  //           child: Column(
+  //             mainAxisAlignment: MainAxisAlignment.start,
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Skeleton.shade(
+  //                 child: ClipRRect(
+  //                   borderRadius: const BorderRadius.only(
+  //                     topLeft: Radius.circular(18),
+  //                     topRight: Radius.circular(18),
+  //                   ),
+  //                   child: Container(
+  //                     width: double.infinity,
+  //                     height: MediaQuery.of(context).size.height / 6,
+  //                     color: Colors.grey[300],
+  //                   ),
+  //                 ),
+  //               ),
+  //               Text('Loading...',
+  //                   style: Theme.of(context).textTheme.headlineSmall),
+  //               Text('Loading...',
+  //                   style: Theme.of(context).textTheme.headlineSmall),
+  //               Text('Loading...',
+  //                   style: Theme.of(context).textTheme.headlineSmall),
+  //             ],
+  //           )),
+  //     ),
+  //   );
+  // }
+
+  Widget _buildLoadingCard() {
+    return Skeletonizer(
+      enabled: true,
+      child: Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        child: SizedBox(
+          width: MediaQuery.of(context).size.width / 4,
+          height: MediaQuery.of(context).size.height / 3,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              Widget line(double factor) => Skeleton.shade(
+                    child: Container(
+                      width: constraints.maxWidth * factor,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  );
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Skeleton.shade(
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(18),
+                        topRight: Radius.circular(18),
+                      ),
+                      child: Container(
+                        width: double.infinity,
+                        height: MediaQuery.of(context).size.height / 6,
+                        color: Colors.grey[300],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  line(0.85), // long
+                  const SizedBox(height: 8),
+                  line(0.55), // short
+                  const SizedBox(height: 8),
+                  line(0.70), // medium
+                ],
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
 }
