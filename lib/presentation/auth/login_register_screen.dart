@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/constants/app_details.dart';
+import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import '../../core/theme/theme_provider.dart';
+import '../../data/models/popup_position.dart';
 
 class LoginRegisterScreen extends ConsumerStatefulWidget {
   const LoginRegisterScreen({Key? key}) : super(key: key);
@@ -19,11 +22,26 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
   // Add focus nodes for proper keyboard management
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
+  final FocusNode _lastNameFocusNode = FocusNode();
+  final FocusNode _firstNameFocusNode = FocusNode();
+  final FocusNode _confirmPasswordFocusNode = FocusNode();
+
+  // Controllers for login
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  // Controllers for registration
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
 
   @override
   void dispose() {
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -93,7 +111,11 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                         children: [
                           Expanded(
                             child: GestureDetector(
-                              onTap: () => setState(() => isLogin = true),
+                              onTap: () {
+                                _emailController.clear();
+                                _passwordController.clear();
+                                setState(() => isLogin = true);
+                              },
                               child: Container(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 12),
@@ -129,7 +151,11 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                           ),
                           Expanded(
                             child: GestureDetector(
-                              onTap: () => setState(() => isLogin = false),
+                              onTap: () {
+                                _emailController.clear();
+                                _passwordController.clear();
+                                setState(() => isLogin = false);
+                              },
                               child: Container(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 12),
@@ -167,30 +193,8 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    _buildTextField(
-                      label: 'Email',
-                      hint: 'Enter your email address',
-                      obscure: false,
-                      focusNode: _emailFocusNode,
-                      onSubmitted: (_) => _passwordFocusNode.requestFocus(),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      label: 'Password',
-                      hint: 'Enter your password',
-                      obscure: !showPassword,
-                      focusNode: _passwordFocusNode,
-                      suffix: IconButton(
-                        icon: Icon(
-                            showPassword
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: theme.colorScheme.onBackground
-                                .withOpacity(0.4)),
-                        onPressed: () =>
-                            setState(() => showPassword = !showPassword),
-                      ),
-                    ),
+                    if (isLogin) _buildLoginFields(),
+                    if (!isLogin) _buildRegisterFields(),
                     const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerRight,
@@ -214,13 +218,63 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                           textStyle: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18),
                         ),
-                        onPressed: authViewModel.isLoading ? null : () async {
-                          if(isLogin) {
-                            await authViewModelState.signIn('', '');
-                          } else {
-                            // Implement registration logic
-                          }
-                        },
+                        onPressed: authViewModel.isLoading
+                            ? null
+                            : () async {
+                                if (isLogin) {
+                                  await authViewModelState.signIn(
+                                      _emailController.text,
+                                      _passwordController.text);
+
+                                  if (authViewModel.userId != null) {
+                                    GlobalPopupService.showSuccess(
+                                      title: 'Login Successful',
+                                      message:
+                                          'You have been logged in successfully.',
+                                      position: PopupPosition.bottomRight,
+                                    );
+                                    GoRouter.of(context).go('/login');
+
+                                    return;
+                                  }
+                                } else {
+                                  if (_passwordController.text !=
+                                      _confirmPasswordController.text) {
+                                    GlobalPopupService.showWarning(
+                                      title: 'Password Mismatch',
+                                      message:
+                                          'Passwords do not match. Please make sure to enter the same password in both fields.',
+                                      position: PopupPosition.center,
+                                    );
+                                    _confirmPasswordController.clear();
+                                    _passwordController.clear();
+                                    return;
+                                  }
+
+                                  await authViewModelState.register(
+                                      _emailController.text,
+                                      _passwordController.text, {
+                                    'first_name': _firstNameController.text,
+                                    'last_name': _lastNameController.text,
+                                  });
+
+                                  if (authViewModel.error != null) {
+                                    GlobalPopupService.showSuccess(
+                                      title: 'Registration Successful',
+                                      message:
+                                          'Your account has been created successfully. You can now log in with your credentials.',
+                                      position: PopupPosition.center,
+                                    );
+                                    setState(() {
+                                      isLogin = true;
+                                    });
+                                    _firstNameController.clear();
+                                    _lastNameController.clear();
+                                    _confirmPasswordController.clear();
+                                    _passwordController.clear();
+                                  }
+                                }
+                              },
                         child: Text(isLogin ? 'Login' : 'Register'),
                       ),
                     ),
@@ -244,7 +298,9 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                         width: 24,
                         height: 24,
                       ),
-                      text: 'Sign in with Google',
+                      text: isLogin
+                          ? 'Sign in with Google'
+                          : 'Register with Google',
                       background: Theme.of(context).colorScheme.surface,
                       textColor: Theme.of(context).colorScheme.onSurface,
                       onPressed: () {},
@@ -259,6 +315,108 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
     );
   }
 
+  Widget _buildLoginFields() {
+    return Column(
+      children: [
+        _buildTextField(
+          label: 'Email',
+          hint: 'Enter your email',
+          controller: _emailController,
+          focusNode: _emailFocusNode,
+          onSubmitted: (_) =>
+              FocusScope.of(context).requestFocus(_passwordFocusNode),
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          label: 'Password',
+          hint: 'Enter your password',
+          obscure: !showPassword,
+          controller: _passwordController,
+          focusNode: _passwordFocusNode,
+          suffix: IconButton(
+            icon: Icon(
+              showPassword ? Icons.visibility : Icons.visibility_off,
+            ),
+            onPressed: () {
+              setState(() {
+                showPassword = !showPassword;
+              });
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRegisterFields() {
+    return Column(
+      children: [
+        _buildTextField(
+          label: 'Name',
+          hint: 'Enter your name',
+          controller: _firstNameController,
+          focusNode: _firstNameFocusNode,
+          onSubmitted: (_) =>
+              FocusScope.of(context).requestFocus(_passwordFocusNode),
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          label: 'Surname',
+          hint: 'Enter your surname',
+          controller: _lastNameController,
+          focusNode: _lastNameFocusNode,
+          onSubmitted: (_) =>
+              FocusScope.of(context).requestFocus(_passwordFocusNode),
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          label: 'Email',
+          hint: 'Enter your email',
+          controller: _emailController,
+          focusNode: _emailFocusNode,
+          onSubmitted: (_) =>
+              FocusScope.of(context).requestFocus(_passwordFocusNode),
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          label: 'Password',
+          hint: 'Create a password',
+          obscure: !showPassword,
+          controller: _passwordController,
+          focusNode: _passwordFocusNode,
+          suffix: IconButton(
+            icon: Icon(
+              showPassword ? Icons.visibility : Icons.visibility_off,
+            ),
+            onPressed: () {
+              setState(() {
+                showPassword = !showPassword;
+              });
+            },
+          ),
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          label: 'Confirm Password',
+          hint: 'Confirm your password',
+          obscure: !showPassword,
+          controller: _confirmPasswordController,
+          focusNode: _confirmPasswordFocusNode,
+          suffix: IconButton(
+            icon: Icon(
+              showPassword ? Icons.visibility : Icons.visibility_off,
+            ),
+            onPressed: () {
+              setState(() {
+                showPassword = !showPassword;
+              });
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildTextField({
     required String label,
     required String hint,
@@ -266,6 +424,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
     Widget? suffix,
     FocusNode? focusNode,
     Function(String)? onSubmitted,
+    TextEditingController? controller,
   }) {
     final theme = Theme.of(context);
     return Column(
@@ -290,6 +449,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                 borderSide: BorderSide.none),
           ),
           style: TextStyle(color: theme.colorScheme.onBackground),
+          controller: controller,
         ),
       ],
     );

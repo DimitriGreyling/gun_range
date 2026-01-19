@@ -29,6 +29,7 @@ class ErrorsExceptionService {
         GlobalPopupService.showError(
           title: 'Error',
           message: e.toString(),
+          position: PopupPosition.center,
         );
     }
   }

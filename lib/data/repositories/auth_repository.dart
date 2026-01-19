@@ -11,9 +11,9 @@ class AuthRepository {
     return response.user!.id;
   }
 
-  Future<String> register(String email, String password) async {
+  Future<String> register(String email, String password,Map<String, dynamic> data) async {
     final response =
-        await supabase.auth.signUp(email: email, password: password);
+        await supabase.auth.signUp(email: email, password: password,data: data);
     if (response.user == null) throw Exception('Registration failed');
     return response.user!.id;
   }

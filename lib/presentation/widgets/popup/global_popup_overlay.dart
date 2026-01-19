@@ -41,7 +41,7 @@ class GlobalPopupOverlay extends ConsumerWidget {
                     ),
                   ),
                   ...activePopups.map((popup) {
-                    return _buildPositionedPopup(popup, popupNotifier);
+                    return _buildPositionedPopup(popup, popupNotifier, context);
                   }).toList(),
                 ],
               ),
@@ -52,94 +52,243 @@ class GlobalPopupOverlay extends ConsumerWidget {
   }
 
   Widget _buildPositionedPopup(
-      PopupMessage popup, GlobalPopupNotifier notifier) {
+      PopupMessage popup, GlobalPopupNotifier notifier, BuildContext context) {
+    final maxH = MediaQuery.of(context).size.height * 0.70;
+
     switch (popup.position) {
       case PopupPosition.top:
-        return Positioned(
-          top: 50,
-          left: 0,
-          right: 0,
-          child: PopupMessageWidget(
-            popup: popup,
-            onDismiss: () => notifier.dismissPopup(popup.id),
+        // return Positioned(
+        //   top: 50,
+        //   left: 0,
+        //   right: 0,
+        //   child: PopupMessageWidget(
+        //     popup: popup,
+        //     onDismiss: () => notifier.dismissPopup(popup.id),
+        //   ),
+        // );
+        return Positioned.fill(
+          child: SafeArea(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: FractionallySizedBox(
+                widthFactor: 0.60, // <- make this smaller (0.6–0.9)
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxWidth: 420, maxHeight: maxH), // <- cap on web
+                  child: PopupMessageWidget(
+                    popup: popup,
+                    onDismiss: () => notifier.dismissPopup(popup.id),
+                  ),
+                ),
+              ),
+            ),
           ),
         );
 
       case PopupPosition.center:
+        // return Positioned.fill(
+        //   child: Center(
+        //     child: ConstrainedBox(
+        //       constraints: const BoxConstraints(
+        //         maxWidth: double.infinity * 0.8,
+        //         minWidth: double.infinity * 0.4,
+        //       ),
+        //       child: PopupMessageWidget(
+        //         popup: popup,
+        //         onDismiss: () => notifier.dismissPopup(popup.id),
+        //       ),
+        //     ),
+        //   ),
+        // );
+
         return Positioned.fill(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: double.infinity * 0.8,
-                minWidth: double.infinity * 0.4,
-              ),
-              child: PopupMessageWidget(
-                popup: popup,
-                onDismiss: () => notifier.dismissPopup(popup.id),
+          child: SafeArea(
+            child: Align(
+              alignment: Alignment.center,
+              child: FractionallySizedBox(
+                widthFactor: 0.60, // <- make this smaller (0.6–0.9)
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxWidth: 420, maxHeight: maxH), // <- cap on web
+                  child: PopupMessageWidget(
+                    popup: popup,
+                    onDismiss: () => notifier.dismissPopup(popup.id),
+                  ),
+                ),
               ),
             ),
           ),
         );
 
       case PopupPosition.bottom:
-        return Positioned(
-          bottom: 50,
-          left: 0,
-          right: 0,
-          child: PopupMessageWidget(
-            popup: popup,
-            onDismiss: () => notifier.dismissPopup(popup.id),
+        // return Positioned(
+        //   bottom: 50,
+        //   left: 0,
+        //   right: 0,
+        //   child: PopupMessageWidget(
+        //     popup: popup,
+        //     onDismiss: () => notifier.dismissPopup(popup.id),
+        //   ),
+        // );
+        return Positioned.fill(
+          child: SafeArea(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: FractionallySizedBox(
+                widthFactor: 0.60, // <- make this smaller (0.6–0.9)
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxWidth: 420, maxHeight: maxH), // <- cap on web
+                  child: PopupMessageWidget(
+                    popup: popup,
+                    onDismiss: () => notifier.dismissPopup(popup.id),
+                  ),
+                ),
+              ),
+            ),
           ),
         );
 
       case PopupPosition.topLeft:
-        return Positioned(
-          top: 50,
-          left: 16,
-          child: PopupMessageWidget(
-            popup: popup,
-            onDismiss: () => notifier.dismissPopup(popup.id),
+        // return Positioned(
+        //   top: 50,
+        //   left: 16,
+        //   child: PopupMessageWidget(
+        //     popup: popup,
+        //     onDismiss: () => notifier.dismissPopup(popup.id),
+        //   ),
+        // );
+        return Positioned.fill(
+          child: SafeArea(
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: FractionallySizedBox(
+                widthFactor: 0.60, // <- make this smaller (0.6–0.9)
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxWidth: 420, maxHeight: maxH), // <- cap on web
+                  child: PopupMessageWidget(
+                    popup: popup,
+                    onDismiss: () => notifier.dismissPopup(popup.id),
+                  ),
+                ),
+              ),
+            ),
           ),
         );
 
       case PopupPosition.topRight:
-        return Positioned(
-          top: 50,
-          right: 16,
-          child: PopupMessageWidget(
-            popup: popup,
-            onDismiss: () => notifier.dismissPopup(popup.id),
+        // return Positioned(
+        //   top: 50,
+        //   right: 16,
+        //   child: PopupMessageWidget(
+        //     popup: popup,
+        //     onDismiss: () => notifier.dismissPopup(popup.id),
+        //   ),
+        // );
+        return Positioned.fill(
+          child: SafeArea(
+            child: Align(
+              alignment: Alignment.topRight,
+              child: FractionallySizedBox(
+                widthFactor: 0.60, // <- make this smaller (0.6–0.9)
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxWidth: 420, maxHeight: maxH), // <- cap on web
+                  child: PopupMessageWidget(
+                    popup: popup,
+                    onDismiss: () => notifier.dismissPopup(popup.id),
+                  ),
+                ),
+              ),
+            ),
           ),
         );
 
       case PopupPosition.bottomLeft:
-        return Positioned(
-          bottom: 50,
-          left: 16,
-          child: PopupMessageWidget(
-            popup: popup,
-            onDismiss: () => notifier.dismissPopup(popup.id),
+        // return Positioned(
+        //   bottom: 50,
+        //   left: 16,
+        //   child: PopupMessageWidget(
+        //     popup: popup,
+        //     onDismiss: () => notifier.dismissPopup(popup.id),
+        //   ),
+        // );
+
+        return Positioned.fill(
+          child: SafeArea(
+            child: Align(
+              alignment: Alignment.bottomLeft,
+              child: FractionallySizedBox(
+                widthFactor: 0.60, // <- make this smaller (0.6–0.9)
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxWidth: 420, maxHeight: maxH), // <- cap on web
+                  child: PopupMessageWidget(
+                    popup: popup,
+                    onDismiss: () => notifier.dismissPopup(popup.id),
+                  ),
+                ),
+              ),
+            ),
           ),
         );
 
       case PopupPosition.bottomRight:
-        return Positioned(
-          bottom: 50,
-          right: 16,
-          child: PopupMessageWidget(
-            popup: popup,
-            onDismiss: () => notifier.dismissPopup(popup.id),
+        // return Positioned(
+        //   bottom: 50,
+        //   right: 16,
+        //   child: PopupMessageWidget(
+        //     popup: popup,
+        //     onDismiss: () => notifier.dismissPopup(popup.id),
+        //   ),
+        // );
+
+        return Positioned.fill(
+          child: SafeArea(
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: FractionallySizedBox(
+                widthFactor: 0.60, // <- make this smaller (0.6–0.9)
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxWidth: 420, maxHeight: maxH), // <- cap on web
+                  child: PopupMessageWidget(
+                    popup: popup,
+                    onDismiss: () => notifier.dismissPopup(popup.id),
+                  ),
+                ),
+              ),
+            ),
           ),
         );
 
       default:
-        return Positioned(
-          top: 50,
-          left: 0,
-          right: 0,
-          child: PopupMessageWidget(
-            popup: popup,
-            onDismiss: () => notifier.dismissPopup(popup.id),
+        // return Positioned(
+        //   top: 50,
+        //   left: 0,
+        //   right: 0,
+        //   child: PopupMessageWidget(
+        //     popup: popup,
+        //     onDismiss: () => notifier.dismissPopup(popup.id),
+        //   ),
+        // );
+        return Positioned.fill(
+          child: SafeArea(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: FractionallySizedBox(
+                widthFactor: 0.60, // <- make this smaller (0.6–0.9)
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxWidth: 420, maxHeight: maxH), // <- cap on web
+                  child: PopupMessageWidget(
+                    popup: popup,
+                    onDismiss: () => notifier.dismissPopup(popup.id),
+                  ),
+                ),
+              ),
+            ),
           ),
         );
     }
