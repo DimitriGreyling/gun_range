@@ -258,9 +258,9 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                     if (!isAuthed)
                       ElevatedButton(
                           onPressed: () {
-                            context.pushNamed('login');
+                            GoRouter.of(context).go('/login');
                           },
-                          child: Text('Login',
+                          child: Text('Login/Register',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge

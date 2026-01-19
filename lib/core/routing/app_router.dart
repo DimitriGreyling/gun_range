@@ -11,6 +11,7 @@ import '../../presentation/profile/profile_screen.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/home',
+  restorationScopeId: 'appRouter',
   routes: [
     GoRoute(
       name: 'home',

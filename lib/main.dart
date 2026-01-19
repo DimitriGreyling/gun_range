@@ -50,6 +50,7 @@ class MainApp extends StatelessWidget {
       builder: (context, ref, _) {
         final themeMode = ref.watch(themeModeProvider);
         return MaterialApp.router(
+          restorationScopeId: 'app',
           scrollBehavior: const MaterialScrollBehavior().copyWith(
             dragDevices: {
               PointerDeviceKind.mouse,
