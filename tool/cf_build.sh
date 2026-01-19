@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+set -x
 
 FLUTTER_VERSION="${FLUTTER_VERSION:-3.24.5}"
 FLUTTER_CHANNEL="${FLUTTER_CHANNEL:-stable}"
@@ -7,40 +8,43 @@ FLUTTER_CHANNEL="${FLUTTER_CHANNEL:-stable}"
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FLUTTER_DIR="${ROOT_DIR}/.flutter"
 
-echo "Using Flutter ${FLUTTER_VERSION} (${FLUTTER_CHANNEL})"
 cd "${ROOT_DIR}"
+echo "Using Flutter ${FLUTTER_VERSION} (${FLUTTER_CHANNEL})"
+pwd
+ls -la
 
-if [ ! -x "${FLUTTER_DIR}/bin/flutter" ]; then
+if [ ! -d "${FLUTTER_DIR}" ]; then
   echo "Downloading Flutter SDK..."
-
-  rm -rf "${FLUTTER_DIR}" "${ROOT_DIR}/flutter"
+  rm -rf "${ROOT_DIR}/flutter"
 
   ARCHIVE="flutter_linux_${FLUTTER_VERSION}-${FLUTTER_CHANNEL}.tar.xz"
   URL="https://storage.googleapis.com/flutter_infra_release/releases/${FLUTTER_CHANNEL}/linux/${ARCHIVE}"
 
   curl -fsSL "${URL}" -o "${ARCHIVE}"
-
-  # This extracts a top-level ./flutter directory
   tar xf "${ARCHIVE}" -C "${ROOT_DIR}"
   rm -f "${ARCHIVE}"
 
-  # Move extracted SDK into .flutter
   mv "${ROOT_DIR}/flutter" "${FLUTTER_DIR}"
 fi
 
-echo "Flutter bin is at: ${FLUTTER_DIR}/bin/flutter"
-ls -la "${FLUTTER_DIR}/bin/flutter"
+# Find flutter binary robustly (handles nested layouts)
+FLUTTER_BIN=""
+if [ -x "${FLUTTER_DIR}/bin/flutter" ]; then
+  FLUTTER_BIN="${FLUTTER_DIR}/bin/flutter"
+elif [ -x "${FLUTTER_DIR}/flutter/bin/flutter" ]; then
+  FLUTTER_BIN="${FLUTTER_DIR}/flutter/bin/flutter"
+fi
 
-export PATH="${FLUTTER_DIR}/bin:${PATH}"
+if [ -z "${FLUTTER_BIN}" ]; then
+  echo "ERROR: Flutter binary not found under ${FLUTTER_DIR}"
+  find "${FLUTTER_DIR}" -maxdepth 4 -type f -name flutter -print || true
+  exit 1
+fi
 
-# Call flutter via absolute path once, to prove it exists
-"${FLUTTER_DIR}/bin/flutter" --version
+"${FLUTTER_BIN}" --version
+"${FLUTTER_BIN}" config --enable-web
 
-echo "Fetching dependencies..."
-flutter pub get
+"${FLUTTER_BIN}" pub get
+"${FLUTTER_BIN}" build web --release --web-renderer canvaskit
 
-echo "Building web..."
-flutter build web --release --web-renderer canvaskit
-
-echo "Build complete: ${ROOT_DIR}/build/web"
 ls -la "${ROOT_DIR}/build/web" | head -n 50
