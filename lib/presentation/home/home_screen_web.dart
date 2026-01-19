@@ -3,9 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/presentation/widgets/controllers/expanded_collapsed_menu_controller.dart';
 import 'package:gun_range_app/presentation/widgets/loading_card_widget.dart';
+import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/supabase_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+
+import '../../domain/services/global_popup_service.dart';
 
 class HomeScreenWeb extends ConsumerStatefulWidget {
   const HomeScreenWeb({super.key});
@@ -42,10 +45,13 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
   Widget build(BuildContext context) {
     //MENU
     final menuExpanded = ref.watch(menuExpandedProvider);
-    final menuWidth = menuExpanded ? 280.0 : 72.0;
+    final menuWidth = menuExpanded ? 280.0 : 80.0;
 
     //Ranges and Events would be fetched from ViewModels
     final rangeState = ref.watch(rangeViewModelProvider);
+
+    //Get user authentication state
+    final isAuthed = ref.watch(isAuthenticatedProvider);
 
     return Scaffold(
       body: Padding(
@@ -54,7 +60,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             const SizedBox(height: 16.0),
-            _buildHeader(),
+            _buildHeader(isAuthed),
             const SizedBox(height: 16.0),
             Expanded(
               child: Row(
@@ -80,8 +86,9 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                               children: [
                                 Text(
                                   'Ranges',
-                                  style:
-                                      Theme.of(context).textTheme.headlineMedium,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium,
                                 ),
                               ],
                             ),
@@ -106,9 +113,12 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                             : CrossAxisAlignment.center,
                                     children: rangeState.isLoadingRanges
                                         ? [
-                                            const LoadingCardWidget(lineCount: 3),
-                                            const LoadingCardWidget(lineCount: 3),
-                                            const LoadingCardWidget(lineCount: 3),
+                                            const LoadingCardWidget(
+                                                lineCount: 3),
+                                            const LoadingCardWidget(
+                                                lineCount: 3),
+                                            const LoadingCardWidget(
+                                                lineCount: 3),
                                           ]
                                         : rangeState.ranges.isNotEmpty
                                             ? [
@@ -143,8 +153,9 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                               children: [
                                 Text(
                                   'Events',
-                                  style:
-                                      Theme.of(context).textTheme.headlineMedium,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium,
                                 ),
                               ],
                             ),
@@ -169,9 +180,12 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                             : CrossAxisAlignment.center,
                                     children: rangeState.isLoadingEvents
                                         ? [
-                                            const LoadingCardWidget(lineCount: 3),
-                                            const LoadingCardWidget(lineCount: 3),
-                                            const LoadingCardWidget(lineCount: 3),
+                                            const LoadingCardWidget(
+                                                lineCount: 3),
+                                            const LoadingCardWidget(
+                                                lineCount: 3),
+                                            const LoadingCardWidget(
+                                                lineCount: 3),
                                           ]
                                         : rangeState.events.isNotEmpty
                                             ? [
@@ -216,7 +230,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isAuthed) {
     return Row(
       children: [
         Expanded(
@@ -230,13 +244,41 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                     Text('RangeConnect',
                         style: Theme.of(context).textTheme.headlineMedium),
                     const Spacer(),
-                    IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
-                    CircleAvatar(
-                      child: Text(
-                        kIsWeb ? 'WS' : 'MS',
-                        style: Theme.of(context).textTheme.bodyLarge,
+                    if (isAuthed)
+                      IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
+                    if (isAuthed)
+                      CircleAvatar(
+                        child: Text(
+                          kIsWeb ? 'WS' : 'MS',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
                       ),
-                    )
+                    if (!isAuthed)
+                      ElevatedButton(
+                          onPressed: () {},
+                          child: Text('Login',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary))),
+                    const SizedBox(width: 8.0),
+                    if (!isAuthed)
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.secondary),
+                          onPressed: () {},
+                          child: Text('Register',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary))),
                   ],
                 )),
           ),
@@ -309,28 +351,53 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          DrawerHeader(
-              child: Row(
+          _buildMenuHeader(expanded),
+          _buildTitle(Icons.home, 'Home', expanded),
+          _buildTitle(Icons.settings, 'Settings', expanded),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuHeader(bool expanded) {
+    if (!expanded) {
+      return ListTile(
+        contentPadding: EdgeInsets.zero,
+        title: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                IconButton(
+                  onPressed: () =>
+                      ref.read(menuExpandedProvider.notifier).toggle(),
+                  icon: const Icon(Icons.menu),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            const Divider()
+          ],
+        ),
+      );
+    }
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Column(
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  if (!expanded)
-                    IconButton(
-                        onPressed: () {
-                          ref.read(menuExpandedProvider.notifier).toggle();
-                        },
-                        icon: const Icon(
-                          Icons.menu,
-                        )),
-                  if (expanded)
-                    IconButton(
-                        onPressed: () {
-                          ref.read(menuExpandedProvider.notifier).toggle();
-                        },
-                        icon: const Icon(Icons.arrow_back)),
-                  if (expanded)
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 180),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
                       switchInCurve: Curves.easeOut,
                       switchOutCurve: Curves.easeIn,
                       transitionBuilder: (child, anim) => FadeTransition(
@@ -348,50 +415,83 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                               child: Text(
                                 'Menu',
                                 maxLines: 1,
-                                overflow: TextOverflow.fade,
-                                softWrap: false,
+                                overflow: TextOverflow.ellipsis,
                                 style:
                                     Theme.of(context).textTheme.headlineMedium,
                               ),
                             )
                           : const SizedBox(key: ValueKey('collapsed')),
                     ),
+                  ),
                 ],
               ),
+              const SizedBox(height: 20),
+              const Divider()
             ],
-          )),
-          tile(Icons.home, 'Home', expanded),
-          tile(Icons.settings, 'Settings', expanded),
+          ),
+          Positioned(
+            top: 0,
+            right: -10,
+            child: IconButton.filledTonal(
+              onPressed: () => ref.read(menuExpandedProvider.notifier).toggle(),
+              icon: const Icon(Icons.arrow_back),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget tile(IconData icon, String label, bool expanded) {
-    return ListTile(
-      leading: Icon(icon),
-      title: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 180),
-        switchInCurve: Curves.easeOut,
-        switchOutCurve: Curves.easeIn,
-        transitionBuilder: (child, anim) => FadeTransition(
-          opacity: anim,
-          child: SizeTransition(
-            sizeFactor: anim,
-            axis: Axis.horizontal,
-            child: child,
+  Widget _buildTitle(IconData icon, String label, bool expanded) {
+    if (expanded) {
+      return ListTile(
+        leading: Icon(icon),
+        title: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 180),
+          switchInCurve: Curves.easeOut,
+          switchOutCurve: Curves.easeIn,
+          transitionBuilder: (child, anim) => FadeTransition(
+            opacity: anim,
+            child: SizeTransition(
+              sizeFactor: anim,
+              axis: Axis.horizontal,
+              child: child,
+            ),
           ),
+          child: expanded
+              ? Align(
+                  key: ValueKey(label),
+                  alignment: Alignment.centerLeft,
+                  child: Text(label,
+                      maxLines: 1,
+                      overflow: TextOverflow.fade,
+                      softWrap: false),
+                )
+              : const SizedBox(key: ValueKey('collapsed')),
         ),
-        child: expanded
-            ? Align(
-                key: ValueKey(label),
-                alignment: Alignment.centerLeft,
-                child: Text(label,
-                    maxLines: 1, overflow: TextOverflow.fade, softWrap: false),
-              )
-            : const SizedBox(key: ValueKey('collapsed')),
+        minLeadingWidth: 0,
+      );
+    }
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          Icon(icon),
+          if (expanded) const SizedBox(width: 12),
+          if (expanded)
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+              ),
+            ),
+        ],
       ),
-      minLeadingWidth: 0,
     );
   }
 }

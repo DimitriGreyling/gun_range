@@ -6,15 +6,17 @@ import '../models/range.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class RangeRepository {
-  // final SupabaseClient supabase;
-  RangeRepository();
-
-  final _client = Supabase.instance.client;
+  final SupabaseClient _supabase;
+  RangeRepository(SupabaseClient supabase) : _supabase = supabase;
   final tablename = Tables.ranges;
 
   Future<List<Range>> getRanges() async {
+    final user = _supabase.auth.currentUser;
+    if (user == null) {
+      throw Exception('Login required');
+    }
     final response =
-        await _client.from(tablename).select().eq('is_active', true);
+        await _supabase.from(tablename).select().eq('is_active', true);
     return (response as List).map((e) => Range.fromJson(e)).toList();
   }
 }

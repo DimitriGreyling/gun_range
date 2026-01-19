@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/data/repositories/profile_repository.dart';
 import '../data/repositories/range_repository.dart';
 import '../data/repositories/event_repository.dart';
 import '../data/repositories/booking_repository.dart';
@@ -6,13 +7,13 @@ import '../data/repositories/auth_repository.dart';
 import 'supabase_provider.dart';
 
 final rangeRepositoryProvider = Provider<RangeRepository>((ref) {
-  // final supabase = ref.watch(supabaseProvider);
-  return RangeRepository();
+  final supabase = ref.watch(supabaseProvider);
+  return RangeRepository(supabase);
 });
 
 final eventRepositoryProvider = Provider<EventRepository>((ref) {
-  // final supabase = ref.watch(supabaseProvider);
-  return EventRepository();
+  final supabase = ref.watch(supabaseProvider);
+  return EventRepository(supabase);
 });
 
 final bookingRepositoryProvider = Provider<BookingRepository>((ref) {
@@ -23,4 +24,9 @@ final bookingRepositoryProvider = Provider<BookingRepository>((ref) {
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final supabase = ref.watch(supabaseProvider);
   return AuthRepository(supabase);
+});
+
+final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
+  final supabase = ref.read(supabaseProvider);
+  return SupabaseProfileRepository(supabase);
 });

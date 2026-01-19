@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/domain/services/global_popup_service.dart';
+import 'package:gun_range_app/presentation/widgets/popup/global_popup_overlay.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/routing/app_router.dart';
 import 'core/theme/theme_provider.dart';
@@ -33,7 +35,10 @@ Future<void> main() async {
     anonKey: supabaseAnonKey,
   );
 
-  runApp(const ProviderScope(child: MainApp()));
+  final container = ProviderContainer();
+  GlobalPopupService.initialize(container);
+
+  runApp(UncontrolledProviderScope(container: container, child: const MainApp()));
 }
 
 class MainApp extends StatelessWidget {
@@ -61,7 +66,7 @@ class MainApp extends StatelessWidget {
           darkTheme: AppTheme.darkTheme,
           themeMode: themeMode,
           builder: (context, child) {
-            return child!;
+            return GlobalPopupOverlay(child: child!);
           },
         );
       },
