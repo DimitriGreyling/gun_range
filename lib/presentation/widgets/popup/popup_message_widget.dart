@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gun_range_app/data/models/popup_position.dart';
 
-
 class PopupMessageWidget extends StatefulWidget {
   final PopupMessage popup;
   final VoidCallback onDismiss;
@@ -118,77 +117,80 @@ class _PopupMessageWidgetState extends State<PopupMessageWidget>
 
     return GestureDetector(
       onTap: widget.popup.isDismissible ? _handleDismiss : null,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: widget.popup.backgroundColor ?? _getBackgroundColor(),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.15),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+      child: SingleChildScrollView(
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: widget.popup.backgroundColor ?? _getBackgroundColor(),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            border: Border.all(
+              color: _getBorderColor().withOpacity(0.3),
+              width: 1,
             ),
-          ],
-          border: Border.all(
-            color: _getBorderColor().withOpacity(0.3),
-            width: 1,
           ),
-        ),
-        child: Row(
-          children: [
-            // Icon
-            _buildIcon(),
-            const SizedBox(width: 12),
+          child: Row(
+            children: [
+              // Icon
+              _buildIcon(),
+              const SizedBox(width: 12),
 
-            // Content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    widget.popup.title,
-                    style: TextStyle(
-                      color: widget.popup.textColor ?? _getTextColor(),
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+              // Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      widget.popup.title,
+                      style: TextStyle(
+                        color: widget.popup.textColor ?? _getTextColor(),
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    widget.popup.message,
-                    style: TextStyle(
-                      color: (widget.popup.textColor ?? _getTextColor())
-                          .withOpacity(0.8),
-                      fontSize: 14,
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.popup.message,
+                      style: TextStyle(
+                        color: (widget.popup.textColor ?? _getTextColor())
+                            .withOpacity(0.8),
+                        fontSize: 14,
+                      ),
                     ),
-                  ),
-                  // Updated button layout - check for both action buttons
-                  if (widget.popup.actionText != null ||
-                      widget.popup.secondaryActionText != null) ...[
-                    const SizedBox(height: 12),
-                    _buildButtonRow(),
+                    // Updated button layout - check for both action buttons
+                    if (widget.popup.actionText != null ||
+                        widget.popup.secondaryActionText != null) ...[
+                      const SizedBox(height: 12),
+                      _buildButtonRow(),
+                    ],
                   ],
-                ],
-              ),
-            ),
-
-            // Close button
-            if (widget.popup.showCloseButton)
-              IconButton(
-                onPressed: _handleDismiss,
-                icon: Icon(
-                  Icons.close,
-                  color: (widget.popup.textColor ?? _getTextColor())
-                      .withOpacity(0.6),
-                  size: 18,
                 ),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
               ),
-          ],
+
+              // Close button
+              if (widget.popup.showCloseButton)
+                IconButton(
+                  onPressed: _handleDismiss,
+                  icon: Icon(
+                    Icons.close,
+                    color: (widget.popup.textColor ?? _getTextColor())
+                        .withOpacity(0.6),
+                    size: 18,
+                  ),
+                  padding: EdgeInsets.zero,
+                  constraints:
+                      const BoxConstraints(minWidth: 24, minHeight: 24),
+                ),
+            ],
+          ),
         ),
       ),
     );

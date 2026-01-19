@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/constants/app_details.dart';
+import 'package:gun_range_app/domain/services/global_popup_service.dart';
+import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import '../../core/theme/theme_provider.dart';
+import '../../data/models/popup_position.dart';
 
 class LoginRegisterScreen extends ConsumerStatefulWidget {
   const LoginRegisterScreen({Key? key}) : super(key: key);
@@ -18,17 +22,42 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
   // Add focus nodes for proper keyboard management
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
+  final FocusNode _lastNameFocusNode = FocusNode();
+  final FocusNode _firstNameFocusNode = FocusNode();
+  final FocusNode _confirmPasswordFocusNode = FocusNode();
+
+  // Controllers for login
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  // Controllers for registration
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+
+  //Forms
+  final _loginFormKey = GlobalKey<FormState>();
+  final _registerFormKey = GlobalKey<FormState>();
 
   @override
   void dispose() {
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    //theme provider
     final theme = Theme.of(context);
+
+    //auth view model
+    final authViewModelState = ref.watch(authViewModelProvider.notifier);
+    final authViewModel = ref.watch(authViewModelProvider);
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
@@ -86,7 +115,13 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                         children: [
                           Expanded(
                             child: GestureDetector(
-                              onTap: () => setState(() => isLogin = true),
+                              onTap: authViewModel.isLoading
+                                  ? null
+                                  : () {
+                                      _emailController.clear();
+                                      _passwordController.clear();
+                                      setState(() => isLogin = true);
+                                    },
                               child: Container(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 12),
@@ -122,7 +157,13 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                           ),
                           Expanded(
                             child: GestureDetector(
-                              onTap: () => setState(() => isLogin = false),
+                              onTap: authViewModel.isLoading
+                                  ? null
+                                  : () {
+                                      _emailController.clear();
+                                      _passwordController.clear();
+                                      setState(() => isLogin = false);
+                                    },
                               child: Container(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 12),
@@ -160,35 +201,19 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    _buildTextField(
-                      label: 'Email',
-                      hint: 'Enter your email address',
-                      obscure: false,
-                      focusNode: _emailFocusNode,
-                      onSubmitted: (_) => _passwordFocusNode.requestFocus(),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildTextField(
-                      label: 'Password',
-                      hint: 'Enter your password',
-                      obscure: !showPassword,
-                      focusNode: _passwordFocusNode,
-                      suffix: IconButton(
-                        icon: Icon(
-                            showPassword
-                                ? Icons.visibility
-                                : Icons.visibility_off,
-                            color: theme.colorScheme.onBackground
-                                .withOpacity(0.4)),
-                        onPressed: () =>
-                            setState(() => showPassword = !showPassword),
-                      ),
-                    ),
+                    if (isLogin)
+                      Form(
+                          key: _loginFormKey,
+                          child: _buildLoginFields(authViewModel.isLoading)),
+                    if (!isLogin)
+                      Form(
+                          key: _registerFormKey,
+                          child: _buildRegisterFields(authViewModel.isLoading)),
                     const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: authViewModel.isLoading ? null : () {},
                         child: Text('Forgot Password?',
                             style: TextStyle(color: theme.primaryColor)),
                       ),
@@ -207,7 +232,72 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                           textStyle: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18),
                         ),
-                        onPressed: () {},
+                        onPressed: authViewModel.isLoading
+                            ? null
+                            : () async {
+                                if (isLogin) {
+                                  if (_loginFormKey.currentState?.validate() !=
+                                      true) {
+                                    return;
+                                  }
+
+                                  await authViewModelState.signIn(
+                                      _emailController.text,
+                                      _passwordController.text);
+
+                                  if (authViewModel.userId != null) {
+                                    if (authViewModel.userFullName != null) {
+                                      GlobalPopupService.showSuccess(
+                                        title: 'Login Successful',
+                                        message:
+                                            'Hi there, ${authViewModel.userFullName}! You have been logged in successfully.',
+                                        position: PopupPosition.bottomRight,
+                                      );
+                                    } else {
+                                      GlobalPopupService.showSuccess(
+                                        title: 'Login Successful',
+                                        message:
+                                            'You have been logged in successfully.',
+                                        position: PopupPosition.bottomRight,
+                                      );
+                                    }
+
+                                    GoRouter.of(context).go('/login');
+                                    return;
+                                  }
+                                } else {
+                                  if (_registerFormKey.currentState
+                                          ?.validate() !=
+                                      true) {
+                                    return;
+                                  }
+
+                                  await authViewModelState.register(
+                                      _emailController.text,
+                                      _passwordController.text, {
+                                    'first_name': _firstNameController.text,
+                                    'last_name': _lastNameController.text,
+                                    'full_name':
+                                        '${_firstNameController.text} ${_lastNameController.text}',
+                                  });
+
+                                  if (authViewModel.error != null) {
+                                    GlobalPopupService.showSuccess(
+                                      title: 'Registration Successful',
+                                      message:
+                                          'Your account has been created successfully. You can now log in with your credentials.',
+                                      position: PopupPosition.center,
+                                    );
+                                    setState(() {
+                                      isLogin = true;
+                                    });
+                                    _firstNameController.clear();
+                                    _lastNameController.clear();
+                                    _confirmPasswordController.clear();
+                                    _passwordController.clear();
+                                  }
+                                }
+                              },
                         child: Text(isLogin ? 'Login' : 'Register'),
                       ),
                     ),
@@ -231,10 +321,12 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                         width: 24,
                         height: 24,
                       ),
-                      text: 'Sign in with Google',
+                      text: isLogin
+                          ? 'Sign in with Google'
+                          : 'Register with Google',
                       background: Theme.of(context).colorScheme.surface,
                       textColor: Theme.of(context).colorScheme.onSurface,
-                      onPressed: () {},
+                      onPressed: authViewModel.isLoading ? null : () {},
                     ),
                   ],
                 ),
@@ -246,6 +338,152 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
     );
   }
 
+  Widget _buildLoginFields(bool isLoading) {
+    return Column(
+      children: [
+        _buildTextField(
+          isLoading: isLoading,
+          label: 'Email*',
+          hint: 'Enter your email',
+          controller: _emailController,
+          focusNode: _emailFocusNode,
+          onSubmitted: (_) =>
+              FocusScope.of(context).requestFocus(_passwordFocusNode),
+          validator: (v) {
+            final value = (v ?? '').trim();
+            if (value.isEmpty) return 'Email is required';
+            final ok = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value);
+            if (!ok) return 'Enter a valid email address';
+            return null;
+          },
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          isLoading: isLoading,
+          label: 'Password*',
+          hint: 'Enter your password',
+          obscure: !showPassword,
+          controller: _passwordController,
+          focusNode: _passwordFocusNode,
+          suffix: _buildSufficBuilder(),
+          validator: (v) {
+            final value = v ?? '';
+            if (value.isEmpty) return 'Password is required';
+            if (value.length < 8)
+              return 'Password must be at least 8 characters';
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Builder _buildSufficBuilder() {
+    return Builder(
+      builder: (context) {
+        final iconColor =
+            Theme.of(context).colorScheme.onSurface.withOpacity(0.6);
+
+        return IconButton(
+          onPressed: () => setState(() => showPassword = !showPassword),
+          icon: Icon(showPassword ? Icons.visibility : Icons.visibility_off),
+          style: ButtonStyle(
+            foregroundColor: WidgetStatePropertyAll(iconColor),
+            overlayColor: WidgetStatePropertyAll(iconColor.withOpacity(0.10)),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRegisterFields(bool isLoading) {
+    return Column(
+      children: [
+        _buildTextField(
+          isLoading: isLoading,
+          label: 'Name',
+          hint: 'Enter your name',
+          controller: _firstNameController,
+          focusNode: _firstNameFocusNode,
+          onSubmitted: (_) =>
+              FocusScope.of(context).requestFocus(_passwordFocusNode),
+          validator: (v) {
+            final value = v ?? '';
+            if (value.isEmpty) return 'Name is required';
+            if (value.length < 2) return 'Name must be at least 3 characters';
+            return null;
+          },
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          isLoading: isLoading,
+          label: 'Surname',
+          hint: 'Enter your surname',
+          controller: _lastNameController,
+          focusNode: _lastNameFocusNode,
+          onSubmitted: (_) =>
+              FocusScope.of(context).requestFocus(_passwordFocusNode),
+          validator: (v) {
+            final value = v ?? '';
+            if (value.isEmpty) return 'Surname is required';
+            if (value.length < 2)
+              return 'Surname must be at least 3 characters';
+            return null;
+          },
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          isLoading: isLoading,
+          label: 'Email',
+          hint: 'Enter your email',
+          controller: _emailController,
+          focusNode: _emailFocusNode,
+          onSubmitted: (_) =>
+              FocusScope.of(context).requestFocus(_passwordFocusNode),
+          validator: (v) {
+            final value = (v ?? '').trim();
+            if (value.isEmpty) return 'Email is required';
+            final ok = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value);
+            if (!ok) return 'Enter a valid email address';
+            return null;
+          },
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          isLoading: isLoading,
+          label: 'Password',
+          hint: 'Create a password',
+          obscure: !showPassword,
+          controller: _passwordController,
+          focusNode: _passwordFocusNode,
+          suffix: _buildSufficBuilder(),
+          validator: (v) {
+            final value = v ?? '';
+            if (value.isEmpty) return 'Password is required';
+            if (value.length < 8)
+              return 'Password must be at least 8 characters';
+            return null;
+          },
+        ),
+        const SizedBox(height: 16),
+        _buildTextField(
+          isLoading: isLoading,
+          label: 'Confirm Password',
+          hint: 'Confirm your password',
+          obscure: !showPassword,
+          controller: _confirmPasswordController,
+          focusNode: _confirmPasswordFocusNode,
+          suffix: _buildSufficBuilder(),
+          validator: (v) {
+            if ((v ?? '').isEmpty) return 'Please confirm your password';
+            if (v != _passwordController.text) return 'Passwords do not match';
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
   Widget _buildTextField({
     required String label,
     required String hint,
@@ -253,6 +491,9 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
     Widget? suffix,
     FocusNode? focusNode,
     Function(String)? onSubmitted,
+    TextEditingController? controller,
+    String? Function(String?)? validator,
+    required bool isLoading,
   }) {
     final theme = Theme.of(context);
     return Column(
@@ -263,10 +504,12 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                 color: theme.colorScheme.onBackground,
                 fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
-        TextField(
+        TextFormField(
+          enabled: !isLoading,
+          validator: validator,
           focusNode: focusNode,
           obscureText: obscure,
-          onSubmitted: onSubmitted,
+          onFieldSubmitted: onSubmitted,
           decoration: InputDecoration(
             hintText: hint,
             suffixIcon: suffix,
@@ -275,8 +518,12 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
             border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none),
+            fillColor: isLoading
+                ? theme.disabledColor.withOpacity(0.1)
+                : theme.cardColor,
           ),
-          style: TextStyle(color: theme.colorScheme.onBackground),
+          style: TextStyle(color: theme.colorScheme.onSurface),
+          controller: controller,
         ),
       ],
     );
@@ -287,7 +534,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
     required String text,
     required Color background,
     required Color textColor,
-    required VoidCallback onPressed,
+    VoidCallback? onPressed,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),

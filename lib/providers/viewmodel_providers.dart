@@ -7,7 +7,8 @@ import 'repository_providers.dart';
 
 final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);
-  return AuthViewModel(authRepository);
+  final profileRepository = ref.watch(profileRepositoryProvider);
+  return AuthViewModel(authRepository, profileRepository);
 });
 
 final rangeViewModelProvider = StateNotifierProvider<RangeViewModel, RangeState>((ref) {
