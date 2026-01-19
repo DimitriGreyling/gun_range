@@ -239,12 +239,22 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                                       _passwordController.text);
 
                                   if (authViewModel.userId != null) {
-                                    GlobalPopupService.showSuccess(
-                                      title: 'Login Successful',
-                                      message:
-                                          'You have been logged in successfully.',
-                                      position: PopupPosition.bottomRight,
-                                    );
+                                    if (authViewModel.userFullName != null) {
+                                      GlobalPopupService.showSuccess(
+                                        title: 'Login Successful',
+                                        message:
+                                            'Hi there, ${authViewModel.userFullName}! You have been logged in successfully.',
+                                        position: PopupPosition.bottomRight,
+                                      );
+                                    } else {
+                                      GlobalPopupService.showSuccess(
+                                        title: 'Login Successful',
+                                        message:
+                                            'You have been logged in successfully.',
+                                        position: PopupPosition.bottomRight,
+                                      );
+                                    }
+
                                     GoRouter.of(context).go('/login');
                                     return;
                                   }
@@ -258,27 +268,27 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                                   await authViewModelState.register(
                                       _emailController.text,
                                       _passwordController.text, {
-                                    // 'first_name': _firstNameController.text,
-                                    // 'last_name': _lastNameController.text,
-                                    // 'full_name':
-                                    //     '${_firstNameController.text} ${_lastNameController.text}',
+                                    'first_name': _firstNameController.text,
+                                    'last_name': _lastNameController.text,
+                                    'full_name':
+                                        '${_firstNameController.text} ${_lastNameController.text}',
                                   });
 
-                                  if (authViewModel.error != null) {
-                                    GlobalPopupService.showSuccess(
-                                      title: 'Registration Successful',
-                                      message:
-                                          'Your account has been created successfully. You can now log in with your credentials.',
-                                      position: PopupPosition.center,
-                                    );
-                                    setState(() {
-                                      isLogin = true;
-                                    });
-                                    _firstNameController.clear();
-                                    _lastNameController.clear();
-                                    _confirmPasswordController.clear();
-                                    _passwordController.clear();
-                                  }
+                                  // if (authViewModel.error != null) {
+                                  //   GlobalPopupService.showSuccess(
+                                  //     title: 'Registration Successful',
+                                  //     message:
+                                  //         'Your account has been created successfully. You can now log in with your credentials.',
+                                  //     position: PopupPosition.center,
+                                  //   );
+                                  //   setState(() {
+                                  //     isLogin = true;
+                                  //   });
+                                  //   _firstNameController.clear();
+                                  //   _lastNameController.clear();
+                                  //   _confirmPasswordController.clear();
+                                  //   _passwordController.clear();
+                                  // }
                                 }
                               },
                         child: Text(isLogin ? 'Login' : 'Register'),
