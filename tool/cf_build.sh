@@ -44,6 +44,9 @@ fi
 "${FLUTTER_BIN}" --version
 "${FLUTTER_BIN}" config --enable-web
 
+echo "SUPABASE_URL present? $([ -n "${SUPABASE_URL-}" ] && echo yes || echo no)"
+echo "SUPABASE_ANON_KEY length: ${#SUPABASE_ANON_KEY-0}"
+
 # Create .env (required because pubspec.yaml bundles it as an asset)
 : "${SUPABASE_URL:?Set SUPABASE_URL in Cloudflare Pages environment variables}"
 : "${SUPABASE_ANON_KEY:?Set SUPABASE_ANON_KEY in Cloudflare Pages environment variables}"
