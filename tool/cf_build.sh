@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Pin Flutter so builds are reproducible.
-# Make sure this Flutter version contains Dart >= 3.5.3 (your pubspec SDK constraint).
 FLUTTER_VERSION="${FLUTTER_VERSION:-3.24.5}"
 FLUTTER_CHANNEL="${FLUTTER_CHANNEL:-stable}"
 
@@ -12,18 +10,20 @@ FLUTTER_DIR="${ROOT_DIR}/.flutter"
 echo "Using Flutter ${FLUTTER_VERSION} (${FLUTTER_CHANNEL})"
 cd "${ROOT_DIR}"
 
-if [ ! -d "${FLUTTER_DIR}" ]; then
+if [ ! -x "${FLUTTER_DIR}/bin/flutter" ]; then
   echo "Downloading Flutter SDK..."
+
+  rm -rf "${FLUTTER_DIR}"
+  mkdir -p "${FLUTTER_DIR}"
+
   ARCHIVE="flutter_linux_${FLUTTER_VERSION}-${FLUTTER_CHANNEL}.tar.xz"
   URL="https://storage.googleapis.com/flutter_infra_release/releases/${FLUTTER_CHANNEL}/linux/${ARCHIVE}"
 
   curl -fsSL "${URL}" -o "${ARCHIVE}"
-  mkdir -p "${FLUTTER_DIR}"
-  tar xf "${ARCHIVE}"
-  rm -f "${ARCHIVE}"
 
-  # The archive extracts into ./flutter
-  mv "${ROOT_DIR}/flutter" "${FLUTTER_DIR}"
+  # Archive contains top-level "flutter/..." folder; strip it so bin/flutter lands in ${FLUTTER_DIR}/bin/flutter
+  tar xf "${ARCHIVE}" -C "${FLUTTER_DIR}" --strip-components=1
+  rm -f "${ARCHIVE}"
 fi
 
 export PATH="${FLUTTER_DIR}/bin:${PATH}"
@@ -38,3 +38,4 @@ echo "Building web..."
 flutter build web --release --web-renderer canvaskit
 
 echo "Build complete: ${ROOT_DIR}/build/web"
+ls -la "${ROOT_DIR}/build/web" | head -n 50
