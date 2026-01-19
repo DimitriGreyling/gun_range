@@ -115,11 +115,13 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                         children: [
                           Expanded(
                             child: GestureDetector(
-                              onTap: () {
-                                _emailController.clear();
-                                _passwordController.clear();
-                                setState(() => isLogin = true);
-                              },
+                              onTap: authViewModel.isLoading
+                                  ? null
+                                  : () {
+                                      _emailController.clear();
+                                      _passwordController.clear();
+                                      setState(() => isLogin = true);
+                                    },
                               child: Container(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 12),
@@ -155,11 +157,13 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                           ),
                           Expanded(
                             child: GestureDetector(
-                              onTap: () {
-                                _emailController.clear();
-                                _passwordController.clear();
-                                setState(() => isLogin = false);
-                              },
+                              onTap: authViewModel.isLoading
+                                  ? null
+                                  : () {
+                                      _emailController.clear();
+                                      _passwordController.clear();
+                                      setState(() => isLogin = false);
+                                    },
                               child: Container(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 12),
@@ -198,15 +202,18 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                     ),
                     const SizedBox(height: 24),
                     if (isLogin)
-                      Form(key: _loginFormKey, child: _buildLoginFields()),
+                      Form(
+                          key: _loginFormKey,
+                          child: _buildLoginFields(authViewModel.isLoading)),
                     if (!isLogin)
                       Form(
-                          key: _registerFormKey, child: _buildRegisterFields()),
+                          key: _registerFormKey,
+                          child: _buildRegisterFields(authViewModel.isLoading)),
                     const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () {},
+                        onPressed: authViewModel.isLoading ? null : () {},
                         child: Text('Forgot Password?',
                             style: TextStyle(color: theme.primaryColor)),
                       ),
@@ -319,7 +326,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                           : 'Register with Google',
                       background: Theme.of(context).colorScheme.surface,
                       textColor: Theme.of(context).colorScheme.onSurface,
-                      onPressed: () {},
+                      onPressed: authViewModel.isLoading ? null : () {},
                     ),
                   ],
                 ),
@@ -331,10 +338,11 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
     );
   }
 
-  Widget _buildLoginFields() {
+  Widget _buildLoginFields(bool isLoading) {
     return Column(
       children: [
         _buildTextField(
+          isLoading: isLoading,
           label: 'Email*',
           hint: 'Enter your email',
           controller: _emailController,
@@ -351,6 +359,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
         ),
         const SizedBox(height: 16),
         _buildTextField(
+          isLoading: isLoading,
           label: 'Password*',
           hint: 'Enter your password',
           obscure: !showPassword,
@@ -387,10 +396,11 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
     );
   }
 
-  Widget _buildRegisterFields() {
+  Widget _buildRegisterFields(bool isLoading) {
     return Column(
       children: [
         _buildTextField(
+          isLoading: isLoading,
           label: 'Name',
           hint: 'Enter your name',
           controller: _firstNameController,
@@ -406,6 +416,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
         ),
         const SizedBox(height: 16),
         _buildTextField(
+          isLoading: isLoading,
           label: 'Surname',
           hint: 'Enter your surname',
           controller: _lastNameController,
@@ -422,6 +433,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
         ),
         const SizedBox(height: 16),
         _buildTextField(
+          isLoading: isLoading,
           label: 'Email',
           hint: 'Enter your email',
           controller: _emailController,
@@ -438,6 +450,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
         ),
         const SizedBox(height: 16),
         _buildTextField(
+          isLoading: isLoading,
           label: 'Password',
           hint: 'Create a password',
           obscure: !showPassword,
@@ -454,6 +467,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
         ),
         const SizedBox(height: 16),
         _buildTextField(
+          isLoading: isLoading,
           label: 'Confirm Password',
           hint: 'Confirm your password',
           obscure: !showPassword,
@@ -479,6 +493,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
     Function(String)? onSubmitted,
     TextEditingController? controller,
     String? Function(String?)? validator,
+    required bool isLoading,
   }) {
     final theme = Theme.of(context);
     return Column(
@@ -490,6 +505,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                 fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
         TextFormField(
+          enabled: !isLoading,
           validator: validator,
           focusNode: focusNode,
           obscureText: obscure,
@@ -502,6 +518,9 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
             border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none),
+            fillColor: isLoading
+                ? theme.disabledColor.withOpacity(0.1)
+                : theme.cardColor,
           ),
           style: TextStyle(color: theme.colorScheme.onSurface),
           controller: controller,
@@ -515,7 +534,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
     required String text,
     required Color background,
     required Color textColor,
-    required VoidCallback onPressed,
+    VoidCallback? onPressed,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),

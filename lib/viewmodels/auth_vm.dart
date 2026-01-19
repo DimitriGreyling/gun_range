@@ -14,9 +14,14 @@ class AuthState {
   final String? userId;
   final String? userFullName;
 
-  const AuthState({this.isLoading = false, this.error, this.userId, this.userFullName});
+  const AuthState(
+      {this.isLoading = false, this.error, this.userId, this.userFullName});
 
-  AuthState copyWith({bool? isLoading, String? error, String? userId, String? userFullName}) =>
+  AuthState copyWith(
+          {bool? isLoading,
+          String? error,
+          String? userId,
+          String? userFullName}) =>
       AuthState(
         isLoading: isLoading ?? this.isLoading,
         error: error,
@@ -32,25 +37,26 @@ class AuthViewModel extends StateNotifier<AuthState> {
       : super(const AuthState());
 
   Future<void> signIn(String email, String password) async {
-    state = state.copyWith(isLoading: true, error: null);
-    await signOut();
     try {
+      state = state.copyWith(isLoading: true, error: null);
+      await Future.delayed(const Duration(seconds: 10));
       final userId = await _authRepository.signIn(email, password);
-      
+
       String? fullName;
 
       if (userId != null && !isJsonDecodable(userId)) {
         final profileInformation = await _profileRepository.getMyProfile();
         if (profileInformation != null) {
           fullName = profileInformation.fullName;
-        }  
+        }
         log('User profile loaded: ${profileInformation.toString()}');
-      }else{
+      } else {
         log('Signed in user ID is not valid: $userId');
         throw Exception(userId);
       }
 
-      state = state.copyWith(isLoading: false, userId: userId, userFullName: fullName);
+      state = state.copyWith(
+          isLoading: false, userId: userId, userFullName: fullName);
     } catch (e) {
       log('Sign in error: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
