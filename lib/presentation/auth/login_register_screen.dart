@@ -274,21 +274,21 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                                         '${_firstNameController.text} ${_lastNameController.text}',
                                   });
 
-                                  // if (authViewModel.error != null) {
-                                  //   GlobalPopupService.showSuccess(
-                                  //     title: 'Registration Successful',
-                                  //     message:
-                                  //         'Your account has been created successfully. You can now log in with your credentials.',
-                                  //     position: PopupPosition.center,
-                                  //   );
-                                  //   setState(() {
-                                  //     isLogin = true;
-                                  //   });
-                                  //   _firstNameController.clear();
-                                  //   _lastNameController.clear();
-                                  //   _confirmPasswordController.clear();
-                                  //   _passwordController.clear();
-                                  // }
+                                  if (authViewModel.error != null) {
+                                    GlobalPopupService.showSuccess(
+                                      title: 'Registration Successful',
+                                      message:
+                                          'Your account has been created successfully. You can now log in with your credentials.',
+                                      position: PopupPosition.center,
+                                    );
+                                    setState(() {
+                                      isLogin = true;
+                                    });
+                                    _firstNameController.clear();
+                                    _lastNameController.clear();
+                                    _confirmPasswordController.clear();
+                                    _passwordController.clear();
+                                  }
                                 }
                               },
                         child: Text(isLogin ? 'Login' : 'Register'),
