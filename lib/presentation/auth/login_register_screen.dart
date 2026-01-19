@@ -34,9 +34,9 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
       body: Stack(
         children: [
           Image.asset(
-          Theme.of(context).brightness == Brightness.dark
-              ? 'assets/indoor_range.png'
-              : 'assets/outdoor_range.png',
+            Theme.of(context).brightness == Brightness.dark
+                ? 'assets/indoor_range.png'
+                : 'assets/outdoor_range.png',
             fit: BoxFit.cover,
             width: double.infinity,
             height: double.infinity,
@@ -212,23 +212,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        Expanded(
-                            child:
-                                Divider(color: Colors.white.withOpacity(0.1))),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Text('OR',
-                              style: TextStyle(
-                                  color: Colors.white.withOpacity(0.4))),
-                        ),
-                        Expanded(
-                            child:
-                                Divider(color: Colors.white.withOpacity(0.1))),
-                      ],
-                    ),
-                    Row(
+                    const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         Expanded(child: Divider()),
