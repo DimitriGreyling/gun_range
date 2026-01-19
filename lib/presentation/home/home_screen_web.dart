@@ -8,6 +8,8 @@ import 'package:gun_range_app/providers/supabase_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
+import '../../domain/services/global_popup_service.dart';
+
 class HomeScreenWeb extends ConsumerStatefulWidget {
   const HomeScreenWeb({super.key});
 
@@ -49,203 +51,186 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     final rangeState = ref.watch(rangeViewModelProvider);
 
     //Get user authentication state
-    final isAuth = ref.watch(isAuthenticatedProvider);
+    final isAuthed = ref.watch(isAuthenticatedProvider);
 
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: isAuth
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.start,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const SizedBox(height: 16.0),
+            _buildHeader(isAuthed),
+            const SizedBox(height: 16.0),
+            Expanded(
+              child: Row(
                 children: [
-                  const SizedBox(height: 16.0),
-                  _buildHeader(),
-                  const SizedBox(height: 16.0),
-                  Expanded(
-                    child: Row(
-                      children: [
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOutCubic,
-                          width: menuWidth,
-                          child: SizedBox(
-                            width: menuWidth,
-                            child: _buildMenu(menuExpanded),
-                          ),
-                        ),
-                        Expanded(
-                          child: SingleChildScrollView(
-                            controller: _scrollController,
-                            child: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Ranges',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineMedium,
-                                      ),
-                                    ],
-                                  ),
-                                  Scrollbar(
-                                    controller: _horizontalRangeController,
-                                    thumbVisibility: true,
-                                    child: SingleChildScrollView(
-                                      controller: _horizontalRangeController,
-                                      scrollDirection: Axis.horizontal,
-                                      child: Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 16.0),
-                                        child: Row(
-                                          mainAxisAlignment: rangeState
-                                                      .isLoadingRanges ||
-                                                  rangeState.ranges.isNotEmpty
-                                              ? MainAxisAlignment.spaceEvenly
-                                              : MainAxisAlignment.center,
-                                          crossAxisAlignment: rangeState
-                                                      .isLoadingRanges ||
-                                                  rangeState.ranges.isNotEmpty
-                                              ? CrossAxisAlignment.start
-                                              : CrossAxisAlignment.center,
-                                          children: rangeState.isLoadingRanges
-                                              ? [
-                                                  const LoadingCardWidget(
-                                                      lineCount: 3),
-                                                  const LoadingCardWidget(
-                                                      lineCount: 3),
-                                                  const LoadingCardWidget(
-                                                      lineCount: 3),
-                                                ]
-                                              : rangeState.ranges.isNotEmpty
-                                                  ? [
-                                                      for (var range
-                                                          in rangeState.ranges)
-                                                        _buildCard(),
-                                                    ]
-                                                  : [
-                                                      SizedBox(
-                                                        width: MediaQuery.of(
-                                                                    context)
-                                                                .size
-                                                                .width /
-                                                            4,
-                                                        height: MediaQuery.of(
-                                                                    context)
-                                                                .size
-                                                                .height /
-                                                            3,
-                                                        child: Text(
-                                                          'No Ranges Available',
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodyLarge,
-                                                        ),
-                                                      ),
-                                                    ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Events',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .headlineMedium,
-                                      ),
-                                    ],
-                                  ),
-                                  Scrollbar(
-                                    thumbVisibility: true,
-                                    controller:
-                                        _horizontalCompetitionController,
-                                    child: SingleChildScrollView(
-                                      controller:
-                                          _horizontalCompetitionController,
-                                      scrollDirection: Axis.horizontal,
-                                      child: Padding(
-                                        padding:
-                                            const EdgeInsets.only(bottom: 16.0),
-                                        child: Row(
-                                          mainAxisAlignment: rangeState
-                                                      .isLoadingEvents ||
-                                                  rangeState.events.isNotEmpty
-                                              ? MainAxisAlignment.spaceEvenly
-                                              : MainAxisAlignment.center,
-                                          crossAxisAlignment: rangeState
-                                                      .isLoadingEvents ||
-                                                  rangeState.events.isNotEmpty
-                                              ? CrossAxisAlignment.start
-                                              : CrossAxisAlignment.center,
-                                          children: rangeState.isLoadingEvents
-                                              ? [
-                                                  const LoadingCardWidget(
-                                                      lineCount: 3),
-                                                  const LoadingCardWidget(
-                                                      lineCount: 3),
-                                                  const LoadingCardWidget(
-                                                      lineCount: 3),
-                                                ]
-                                              : rangeState.events.isNotEmpty
-                                                  ? [
-                                                      for (var event
-                                                          in rangeState.events)
-                                                        _buildCard(),
-                                                    ]
-                                                  : [
-                                                      SizedBox(
-                                                        width: MediaQuery.of(
-                                                                    context)
-                                                                .size
-                                                                .width /
-                                                            4,
-                                                        height: MediaQuery.of(
-                                                                    context)
-                                                                .size
-                                                                .height /
-                                                            3,
-                                                        child: Text(
-                                                          'No Events Available',
-                                                          style:
-                                                              Theme.of(context)
-                                                                  .textTheme
-                                                                  .bodyLarge,
-                                                        ),
-                                                      ),
-                                                    ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOutCubic,
+                    width: menuWidth,
+                    child: SizedBox(
+                      width: menuWidth,
+                      child: _buildMenu(menuExpanded),
                     ),
                   ),
-                  const SizedBox(height: 16.0),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Ranges',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium,
+                                ),
+                              ],
+                            ),
+                            Scrollbar(
+                              controller: _horizontalRangeController,
+                              thumbVisibility: true,
+                              child: SingleChildScrollView(
+                                controller: _horizontalRangeController,
+                                scrollDirection: Axis.horizontal,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 16.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        rangeState.isLoadingRanges ||
+                                                rangeState.ranges.isNotEmpty
+                                            ? MainAxisAlignment.spaceEvenly
+                                            : MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        rangeState.isLoadingRanges ||
+                                                rangeState.ranges.isNotEmpty
+                                            ? CrossAxisAlignment.start
+                                            : CrossAxisAlignment.center,
+                                    children: rangeState.isLoadingRanges
+                                        ? [
+                                            const LoadingCardWidget(
+                                                lineCount: 3),
+                                            const LoadingCardWidget(
+                                                lineCount: 3),
+                                            const LoadingCardWidget(
+                                                lineCount: 3),
+                                          ]
+                                        : rangeState.ranges.isNotEmpty
+                                            ? [
+                                                for (var range
+                                                    in rangeState.ranges)
+                                                  _buildCard(),
+                                              ]
+                                            : [
+                                                SizedBox(
+                                                  width: MediaQuery.of(context)
+                                                          .size
+                                                          .width /
+                                                      4,
+                                                  height: MediaQuery.of(context)
+                                                          .size
+                                                          .height /
+                                                      3,
+                                                  child: Text(
+                                                    'No Ranges Available',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyLarge,
+                                                  ),
+                                                ),
+                                              ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Events',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium,
+                                ),
+                              ],
+                            ),
+                            Scrollbar(
+                              thumbVisibility: true,
+                              controller: _horizontalCompetitionController,
+                              child: SingleChildScrollView(
+                                controller: _horizontalCompetitionController,
+                                scrollDirection: Axis.horizontal,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 16.0),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        rangeState.isLoadingEvents ||
+                                                rangeState.events.isNotEmpty
+                                            ? MainAxisAlignment.spaceEvenly
+                                            : MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        rangeState.isLoadingEvents ||
+                                                rangeState.events.isNotEmpty
+                                            ? CrossAxisAlignment.start
+                                            : CrossAxisAlignment.center,
+                                    children: rangeState.isLoadingEvents
+                                        ? [
+                                            const LoadingCardWidget(
+                                                lineCount: 3),
+                                            const LoadingCardWidget(
+                                                lineCount: 3),
+                                            const LoadingCardWidget(
+                                                lineCount: 3),
+                                          ]
+                                        : rangeState.events.isNotEmpty
+                                            ? [
+                                                for (var event
+                                                    in rangeState.events)
+                                                  _buildCard(),
+                                              ]
+                                            : [
+                                                SizedBox(
+                                                  width: MediaQuery.of(context)
+                                                          .size
+                                                          .width /
+                                                      4,
+                                                  height: MediaQuery.of(context)
+                                                          .size
+                                                          .height /
+                                                      3,
+                                                  child: Text(
+                                                    'No Events Available',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodyLarge,
+                                                  ),
+                                                ),
+                                              ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
-              )
-            : Center(
-                child: Text(
-                  'Please log in to access the Home Screen.',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
               ),
+            ),
+            const SizedBox(height: 16.0),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(bool isAuthed) {
     return Row(
       children: [
         Expanded(
@@ -259,13 +244,41 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                     Text('RangeConnect',
                         style: Theme.of(context).textTheme.headlineMedium),
                     const Spacer(),
-                    IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
-                    CircleAvatar(
-                      child: Text(
-                        kIsWeb ? 'WS' : 'MS',
-                        style: Theme.of(context).textTheme.bodyLarge,
+                    if (isAuthed)
+                      IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
+                    if (isAuthed)
+                      CircleAvatar(
+                        child: Text(
+                          kIsWeb ? 'WS' : 'MS',
+                          style: Theme.of(context).textTheme.bodyLarge,
+                        ),
                       ),
-                    )
+                    if (!isAuthed)
+                      ElevatedButton(
+                          onPressed: () {},
+                          child: Text('Login',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary))),
+                    const SizedBox(width: 8.0),
+                    if (!isAuthed)
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              backgroundColor:
+                                  Theme.of(context).colorScheme.secondary),
+                          onPressed: () {},
+                          child: Text('Register',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge
+                                  ?.copyWith(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onPrimary))),
                   ],
                 )),
           ),

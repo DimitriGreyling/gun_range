@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/event.dart';
 import 'package:gun_range_app/data/repositories/event_repository.dart';
+import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import '../data/models/range.dart';
 import '../data/repositories/range_repository.dart';
 
