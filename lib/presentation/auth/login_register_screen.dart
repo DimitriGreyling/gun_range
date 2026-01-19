@@ -36,6 +36,10 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
 
+  //Forms
+  final _loginFormKey = GlobalKey<FormState>();
+  final _registerFormKey = GlobalKey<FormState>();
+
   @override
   void dispose() {
     _emailFocusNode.dispose();
@@ -193,8 +197,11 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    if (isLogin) _buildLoginFields(),
-                    if (!isLogin) _buildRegisterFields(),
+                    if (isLogin)
+                      Form(key: _loginFormKey, child: _buildLoginFields()),
+                    if (!isLogin)
+                      Form(
+                          key: _registerFormKey, child: _buildRegisterFields()),
                     const SizedBox(height: 8),
                     Align(
                       alignment: Alignment.centerRight,
@@ -222,6 +229,11 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                             ? null
                             : () async {
                                 if (isLogin) {
+                                  if (_loginFormKey.currentState?.validate() !=
+                                      true) {
+                                    return;
+                                  }
+
                                   await authViewModelState.signIn(
                                       _emailController.text,
                                       _passwordController.text);
@@ -234,28 +246,22 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                                       position: PopupPosition.bottomRight,
                                     );
                                     GoRouter.of(context).go('/login');
-
                                     return;
                                   }
                                 } else {
-                                  if (_passwordController.text !=
-                                      _confirmPasswordController.text) {
-                                    GlobalPopupService.showWarning(
-                                      title: 'Password Mismatch',
-                                      message:
-                                          'Passwords do not match. Please make sure to enter the same password in both fields.',
-                                      position: PopupPosition.center,
-                                    );
-                                    _confirmPasswordController.clear();
-                                    _passwordController.clear();
+                                  if (_registerFormKey.currentState
+                                          ?.validate() !=
+                                      true) {
                                     return;
                                   }
 
                                   await authViewModelState.register(
                                       _emailController.text,
                                       _passwordController.text, {
-                                    'first_name': _firstNameController.text,
-                                    'last_name': _lastNameController.text,
+                                    // 'first_name': _firstNameController.text,
+                                    // 'last_name': _lastNameController.text,
+                                    // 'full_name':
+                                    //     '${_firstNameController.text} ${_lastNameController.text}',
                                   });
 
                                   if (authViewModel.error != null) {
@@ -319,32 +325,55 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
     return Column(
       children: [
         _buildTextField(
-          label: 'Email',
+          label: 'Email*',
           hint: 'Enter your email',
           controller: _emailController,
           focusNode: _emailFocusNode,
           onSubmitted: (_) =>
               FocusScope.of(context).requestFocus(_passwordFocusNode),
+          validator: (v) {
+            final value = (v ?? '').trim();
+            if (value.isEmpty) return 'Email is required';
+            final ok = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value);
+            if (!ok) return 'Enter a valid email address';
+            return null;
+          },
         ),
         const SizedBox(height: 16),
         _buildTextField(
-          label: 'Password',
+          label: 'Password*',
           hint: 'Enter your password',
           obscure: !showPassword,
           controller: _passwordController,
           focusNode: _passwordFocusNode,
-          suffix: IconButton(
-            icon: Icon(
-              showPassword ? Icons.visibility : Icons.visibility_off,
-            ),
-            onPressed: () {
-              setState(() {
-                showPassword = !showPassword;
-              });
-            },
-          ),
+          suffix: _buildSufficBuilder(),
+          validator: (v) {
+            final value = v ?? '';
+            if (value.isEmpty) return 'Password is required';
+            if (value.length < 8)
+              return 'Password must be at least 8 characters';
+            return null;
+          },
         ),
       ],
+    );
+  }
+
+  Builder _buildSufficBuilder() {
+    return Builder(
+      builder: (context) {
+        final iconColor =
+            Theme.of(context).colorScheme.onSurface.withOpacity(0.6);
+
+        return IconButton(
+          onPressed: () => setState(() => showPassword = !showPassword),
+          icon: Icon(showPassword ? Icons.visibility : Icons.visibility_off),
+          style: ButtonStyle(
+            foregroundColor: WidgetStatePropertyAll(iconColor),
+            overlayColor: WidgetStatePropertyAll(iconColor.withOpacity(0.10)),
+          ),
+        );
+      },
     );
   }
 
@@ -358,6 +387,12 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
           focusNode: _firstNameFocusNode,
           onSubmitted: (_) =>
               FocusScope.of(context).requestFocus(_passwordFocusNode),
+          validator: (v) {
+            final value = v ?? '';
+            if (value.isEmpty) return 'Name is required';
+            if (value.length < 2) return 'Name must be at least 3 characters';
+            return null;
+          },
         ),
         const SizedBox(height: 16),
         _buildTextField(
@@ -367,6 +402,13 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
           focusNode: _lastNameFocusNode,
           onSubmitted: (_) =>
               FocusScope.of(context).requestFocus(_passwordFocusNode),
+          validator: (v) {
+            final value = v ?? '';
+            if (value.isEmpty) return 'Surname is required';
+            if (value.length < 2)
+              return 'Surname must be at least 3 characters';
+            return null;
+          },
         ),
         const SizedBox(height: 16),
         _buildTextField(
@@ -376,6 +418,13 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
           focusNode: _emailFocusNode,
           onSubmitted: (_) =>
               FocusScope.of(context).requestFocus(_passwordFocusNode),
+          validator: (v) {
+            final value = (v ?? '').trim();
+            if (value.isEmpty) return 'Email is required';
+            final ok = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(value);
+            if (!ok) return 'Enter a valid email address';
+            return null;
+          },
         ),
         const SizedBox(height: 16),
         _buildTextField(
@@ -384,16 +433,14 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
           obscure: !showPassword,
           controller: _passwordController,
           focusNode: _passwordFocusNode,
-          suffix: IconButton(
-            icon: Icon(
-              showPassword ? Icons.visibility : Icons.visibility_off,
-            ),
-            onPressed: () {
-              setState(() {
-                showPassword = !showPassword;
-              });
-            },
-          ),
+          suffix: _buildSufficBuilder(),
+          validator: (v) {
+            final value = v ?? '';
+            if (value.isEmpty) return 'Password is required';
+            if (value.length < 8)
+              return 'Password must be at least 8 characters';
+            return null;
+          },
         ),
         const SizedBox(height: 16),
         _buildTextField(
@@ -402,16 +449,12 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
           obscure: !showPassword,
           controller: _confirmPasswordController,
           focusNode: _confirmPasswordFocusNode,
-          suffix: IconButton(
-            icon: Icon(
-              showPassword ? Icons.visibility : Icons.visibility_off,
-            ),
-            onPressed: () {
-              setState(() {
-                showPassword = !showPassword;
-              });
-            },
-          ),
+          suffix: _buildSufficBuilder(),
+          validator: (v) {
+            if ((v ?? '').isEmpty) return 'Please confirm your password';
+            if (v != _passwordController.text) return 'Passwords do not match';
+            return null;
+          },
         ),
       ],
     );
@@ -425,6 +468,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
     FocusNode? focusNode,
     Function(String)? onSubmitted,
     TextEditingController? controller,
+    String? Function(String?)? validator,
   }) {
     final theme = Theme.of(context);
     return Column(
@@ -435,10 +479,11 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                 color: theme.colorScheme.onBackground,
                 fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
-        TextField(
+        TextFormField(
+          validator: validator,
           focusNode: focusNode,
           obscureText: obscure,
-          onSubmitted: onSubmitted,
+          onFieldSubmitted: onSubmitted,
           decoration: InputDecoration(
             hintText: hint,
             suffixIcon: suffix,
@@ -448,7 +493,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none),
           ),
-          style: TextStyle(color: theme.colorScheme.onBackground),
+          style: TextStyle(color: theme.colorScheme.onSurface),
           controller: controller,
         ),
       ],

@@ -38,7 +38,8 @@ Future<void> main() async {
   final container = ProviderContainer();
   GlobalPopupService.initialize(container);
 
-  runApp(UncontrolledProviderScope(container: container, child: const MainApp()));
+  runApp(
+      UncontrolledProviderScope(container: container, child: const MainApp()));
 }
 
 class MainApp extends StatelessWidget {

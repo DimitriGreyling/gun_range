@@ -19,10 +19,17 @@ class ErrorsExceptionService {
           message: _camelCaseString(postgrestException.message),
           position: PopupPosition.center,
         );
-        case Exception:
+      case Exception:
         GlobalPopupService.showError(
           title: 'Error',
           message: _camelCaseString(e.toString()),
+          position: PopupPosition.center,
+        );
+      case AuthRetryableFetchException:
+        final retryableException = e as AuthRetryableFetchException;
+        GlobalPopupService.showError(
+          title: 'Network Error',
+          message: _camelCaseString(retryableException.message),
           position: PopupPosition.center,
         );
       default:
@@ -34,13 +41,13 @@ class ErrorsExceptionService {
     }
   }
 
-  static String _camelCaseString (String input) {
-    try{
-    return input.split(' ').map((word) {
-      if (word.isEmpty) return word;
-      return word[0].toUpperCase() + word.substring(1).toLowerCase();
-    }).join(' ');
-    }catch(e){
+  static String _camelCaseString(String input) {
+    try {
+      return input.split(' ').map((word) {
+        if (word.isEmpty) return word;
+        return word[0].toUpperCase() + word.substring(1).toLowerCase();
+      }).join(' ');
+    } catch (e) {
       return input;
     }
   }
