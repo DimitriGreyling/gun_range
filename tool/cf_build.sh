@@ -44,6 +44,15 @@ fi
 "${FLUTTER_BIN}" --version
 "${FLUTTER_BIN}" config --enable-web
 
+# Create .env (required because pubspec.yaml bundles it as an asset)
+: "${SUPABASE_URL:?Set SUPABASE_URL in Cloudflare Pages environment variables}"
+: "${SUPABASE_ANON_KEY:?Set SUPABASE_ANON_KEY in Cloudflare Pages environment variables}"
+
+cat > "${ROOT_DIR}/.env" <<EOF
+SUPABASE_URL=${SUPABASE_URL}
+SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+EOF
+
 "${FLUTTER_BIN}" pub get
 "${FLUTTER_BIN}" build web --release --web-renderer canvaskit
 
