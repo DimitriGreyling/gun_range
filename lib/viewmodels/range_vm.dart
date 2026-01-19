@@ -46,7 +46,6 @@ class RangeViewModel extends StateNotifier<RangeState> {
 
   Future<void> fetchRanges() async {
     state = state.copyWith(isLoadingRanges: true, error: null);
-    await Future.delayed(Duration(seconds: 10));
     try {
       final ranges = await _rangeRepository.getRanges();
       state = state.copyWith(isLoadingRanges: false, ranges: ranges);
@@ -57,7 +56,6 @@ class RangeViewModel extends StateNotifier<RangeState> {
 
   Future<void> fetchEvents() async {
     state = state.copyWith(isLoadingEvents: true, error: null);
-    await Future.delayed(Duration(seconds: 10));
     try {
       final events = await _eventRepository.getEvents();
       state = state.copyWith(isLoadingEvents: false, events: events);
