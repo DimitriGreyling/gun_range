@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
-set -x
+
+# Enable verbose logs in Cloudflare by setting DEBUG=1 in Pages env vars
+if [ "${DEBUG:-}" = "1" ]; then
+  set -x
+fi
 
 FLUTTER_VERSION="${FLUTTER_VERSION:-3.24.5}"
 FLUTTER_CHANNEL="${FLUTTER_CHANNEL:-stable}"
@@ -9,13 +13,16 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FLUTTER_DIR="${ROOT_DIR}/.flutter"
 
 cd "${ROOT_DIR}"
+
 echo "Using Flutter ${FLUTTER_VERSION} (${FLUTTER_CHANNEL})"
-pwd
+echo "Repo: ${ROOT_DIR}"
 ls -la
 
-if [ ! -d "${FLUTTER_DIR}" ]; then
+# Download Flutter SDK (Linux) into .flutter/
+if [ ! -x "${FLUTTER_DIR}/bin/flutter" ]; then
   echo "Downloading Flutter SDK..."
-  rm -rf "${ROOT_DIR}/flutter"
+
+  rm -rf "${FLUTTER_DIR}" "${ROOT_DIR}/flutter"
 
   ARCHIVE="flutter_linux_${FLUTTER_VERSION}-${FLUTTER_CHANNEL}.tar.xz"
   URL="https://storage.googleapis.com/flutter_infra_release/releases/${FLUTTER_CHANNEL}/linux/${ARCHIVE}"
@@ -27,36 +34,45 @@ if [ ! -d "${FLUTTER_DIR}" ]; then
   mv "${ROOT_DIR}/flutter" "${FLUTTER_DIR}"
 fi
 
-# Find flutter binary robustly (handles nested layouts)
-FLUTTER_BIN=""
-if [ -x "${FLUTTER_DIR}/bin/flutter" ]; then
-  FLUTTER_BIN="${FLUTTER_DIR}/bin/flutter"
-elif [ -x "${FLUTTER_DIR}/flutter/bin/flutter" ]; then
-  FLUTTER_BIN="${FLUTTER_DIR}/flutter/bin/flutter"
-fi
+FLUTTER_BIN="${FLUTTER_DIR}/bin/flutter"
 
-if [ -z "${FLUTTER_BIN}" ]; then
-  echo "ERROR: Flutter binary not found under ${FLUTTER_DIR}"
-  find "${FLUTTER_DIR}" -maxdepth 4 -type f -name flutter -print || true
-  exit 1
-fi
-
+echo "Flutter at: ${FLUTTER_BIN}"
 "${FLUTTER_BIN}" --version
-"${FLUTTER_BIN}" config --enable-web
 
-echo "SUPABASE_URL present? $([ -n "${SUPABASE_URL-}" ] && echo yes || echo no)"
-echo "SUPABASE_ANON_KEY length: ${#SUPABASE_ANON_KEY-0}"
+# Reduce noise in Cloudflare logs
+"${FLUTTER_BIN}" config --no-analytics --no-cli-animations > /dev/null || true
+"${FLUTTER_BIN}" config --enable-web > /dev/null || true
 
-# Create .env (required because pubspec.yaml bundles it as an asset)
-: "${SUPABASE_URL:?Set SUPABASE_URL in Cloudflare Pages environment variables}"
-: "${SUPABASE_ANON_KEY:?Set SUPABASE_ANON_KEY in Cloudflare Pages environment variables}"
+# ---- .env handling ----
+# Cloudflare Pages MUST provide these env vars, unless you commit .env to the repo.
+supabase_url="${SUPABASE_URL-}"
+supabase_anon="${SUPABASE_ANON_KEY-}"
 
-cat > "${ROOT_DIR}/.env" <<EOF
-SUPABASE_URL=${SUPABASE_URL}
-SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+echo "SUPABASE_URL present? $([ -n "${supabase_url}" ] && echo yes || echo no)"
+echo "SUPABASE_ANON_KEY present? $([ -n "${supabase_anon}" ] && echo yes || echo no)"
+echo "SUPABASE_ANON_KEY length: ${#supabase_anon}"
+
+if [ -n "${supabase_url}" ] && [ -n "${supabase_anon}" ]; then
+  echo "Generating .env from Cloudflare environment variables..."
+  cat > "${ROOT_DIR}/.env" <<EOF
+SUPABASE_URL=${supabase_url}
+SUPABASE_ANON_KEY=${supabase_anon}
 EOF
+else
+  # If you choose to commit .env (public values for web), this will allow builds to proceed.
+  if [ -f "${ROOT_DIR}/.env" ]; then
+    echo "Using existing .env from repo."
+  else
+    echo "ERROR: Missing SUPABASE_URL / SUPABASE_ANON_KEY in Cloudflare Pages build environment."
+    echo "Fix: Cloudflare Pages Project -> Settings -> Environment variables"
+    echo "Add BOTH variables in the correct environment (Production/Preview) and redeploy."
+    exit 1
+  fi
+fi
 
+# Build
 "${FLUTTER_BIN}" pub get
 "${FLUTTER_BIN}" build web --release --web-renderer canvaskit
 
-ls -la "${ROOT_DIR}/build/web" | head -n 50
+echo "Build complete. Output:"
+ls -la "${ROOT_DIR}/build/web" | head -n 60
