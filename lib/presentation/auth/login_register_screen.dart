@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/core/constants/app_details.dart';
+import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import '../../core/theme/theme_provider.dart';
 
 class LoginRegisterScreen extends ConsumerStatefulWidget {
@@ -28,7 +29,13 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    //theme provider
     final theme = Theme.of(context);
+
+    //auth view model
+    final authViewModelState = ref.watch(authViewModelProvider.notifier);
+    final authViewModel = ref.watch(authViewModelProvider);
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: Stack(
@@ -207,7 +214,13 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                           textStyle: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 18),
                         ),
-                        onPressed: () {},
+                        onPressed: authViewModel.isLoading ? null : () async {
+                          if(isLogin) {
+                            await authViewModelState.signIn('', '');
+                          } else {
+                            // Implement registration logic
+                          }
+                        },
                         child: Text(isLogin ? 'Login' : 'Register'),
                       ),
                     ),

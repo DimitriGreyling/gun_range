@@ -1,4 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/domain/services/errors_exception_service.dart';
+import 'package:gun_range_app/domain/services/global_popup_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/repositories/auth_repository.dart';
 
 class AuthState {
@@ -7,7 +10,8 @@ class AuthState {
   final String? userId;
   const AuthState({this.isLoading = false, this.error, this.userId});
 
-  AuthState copyWith({bool? isLoading, String? error, String? userId}) => AuthState(
+  AuthState copyWith({bool? isLoading, String? error, String? userId}) =>
+      AuthState(
         isLoading: isLoading ?? this.isLoading,
         error: error,
         userId: userId ?? this.userId,
@@ -25,6 +29,18 @@ class AuthViewModel extends StateNotifier<AuthState> {
       state = state.copyWith(isLoading: false, userId: userId);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
+      ErrorsExceptionService.handleException(e);
+    }
+  }
+
+  Future<void> register(String email, String password) async {
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final userId = await _authRepository.register(email, password);
+      state = state.copyWith(isLoading: false, userId: userId);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+      ErrorsExceptionService.handleException(e);
     }
   }
 

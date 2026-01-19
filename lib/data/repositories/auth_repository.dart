@@ -5,8 +5,16 @@ class AuthRepository {
   AuthRepository(this.supabase);
 
   Future<String> signIn(String email, String password) async {
-    final response = await supabase.auth.signInWithPassword(email: email, password: password);
+    final response = await supabase.auth
+        .signInWithPassword(email: email, password: password);
     if (response.user == null) throw Exception('Sign in failed');
+    return response.user!.id;
+  }
+
+  Future<String> register(String email, String password) async {
+    final response =
+        await supabase.auth.signUp(email: email, password: password);
+    if (response.user == null) throw Exception('Registration failed');
     return response.user!.id;
   }
 

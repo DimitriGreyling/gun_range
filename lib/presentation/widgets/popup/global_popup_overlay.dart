@@ -30,6 +30,7 @@ class GlobalPopupOverlay extends ConsumerWidget {
             child: Material(
               color: Colors.transparent,
               child: Stack(
+                alignment: Alignment.center,
                 children: [
                   // Glassy blurred background
                   BackdropFilter(
