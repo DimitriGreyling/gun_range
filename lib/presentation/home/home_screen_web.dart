@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/core/routing/app_router.dart';
 import 'package:gun_range_app/presentation/widgets/controllers/expanded_collapsed_menu_controller.dart';
 import 'package:gun_range_app/presentation/widgets/loading_card_widget.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
@@ -255,23 +257,10 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                       ),
                     if (!isAuthed)
                       ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            context.pushNamed('login');
+                          },
                           child: Text('Login',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge
-                                  ?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onPrimary))),
-                    const SizedBox(width: 8.0),
-                    if (!isAuthed)
-                      ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.secondary),
-                          onPressed: () {},
-                          child: Text('Register',
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge
