@@ -39,22 +39,17 @@ class AuthViewModel extends StateNotifier<AuthState> {
   Future<void> signIn(String email, String password) async {
     try {
       state = state.copyWith(isLoading: true, error: null);
-      await Future.delayed(const Duration(seconds: 10));
       final userId = await _authRepository.signIn(email, password);
 
       String? fullName;
 
-      if (userId != null && !isJsonDecodable(userId)) {
-        final profileInformation = await _profileRepository.getMyProfile();
-        if (profileInformation != null) {
-          fullName = profileInformation.fullName;
-        }
-        log('User profile loaded: ${profileInformation.toString()}');
-      } else {
-        log('Signed in user ID is not valid: $userId');
-        throw Exception(userId);
+      final profileInformation = await _profileRepository.getMyProfile();
+      if (profileInformation != null) {
+        fullName = profileInformation.fullName;
       }
 
+      log('User profile loaded: ${profileInformation.toString()}');
+    
       state = state.copyWith(
           isLoading: false, userId: userId, userFullName: fullName);
     } catch (e) {
@@ -66,14 +61,9 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
   Future<void> register(
       String email, String password, Map<String, dynamic> data) async {
-    state = state.copyWith(isLoading: true, error: null);
     try {
+      state = state.copyWith(isLoading: true, error: null);
       final userId = await _authRepository.register(email, password, data);
-
-      if (isJsonDecodable(userId)) {
-        log('Registered user ID is not valid: $userId');
-        throw Exception(userId);
-      }
 
       state = state.copyWith(isLoading: false, userId: userId);
     } catch (e) {

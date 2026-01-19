@@ -44,6 +44,14 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
   void dispose() {
     _emailFocusNode.dispose();
     _passwordFocusNode.dispose();
+    _lastNameFocusNode.dispose();
+    _firstNameFocusNode.dispose();
+    _confirmPasswordFocusNode.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -281,7 +289,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                                         '${_firstNameController.text} ${_lastNameController.text}',
                                   });
 
-                                  if (authViewModel.error != null) {
+                                  if (authViewModel.error == null) {
                                     GlobalPopupService.showSuccess(
                                       title: 'Registration Successful',
                                       message:
