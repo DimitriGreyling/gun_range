@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/colors.dart';
 
-final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.dark);//TODO: change to system by defaukt 
+final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);//TODO: change to system by defaukt 
 
 class AppTheme {
   static ThemeData lightTheme = ThemeData(

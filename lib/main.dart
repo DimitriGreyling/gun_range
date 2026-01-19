@@ -60,6 +60,9 @@ class MainApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeMode,
+          builder: (context, child) {
+            return child!;
+          },
         );
       },
     );
