@@ -1,7 +1,10 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/data/models/popup_position.dart';
 import 'package:gun_range_app/data/repositories/profile_repository.dart';
 import 'package:gun_range_app/domain/services/errors_exception_service.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
@@ -36,24 +39,40 @@ class AuthViewModel extends StateNotifier<AuthState> {
   AuthViewModel(this._authRepository, this._profileRepository)
       : super(const AuthState());
 
-  Future<void> signIn(String email, String password) async {
+  Future<void> signIn(
+      BuildContext context, String email, String password) async {
     try {
       state = state.copyWith(isLoading: true, error: null);
-      await Future.delayed(const Duration(seconds: 10));
+      if (_authRepository.supabase.auth.currentUser != null) {
+        await signOut();
+      }
       final userId = await _authRepository.signIn(email, password);
 
       String? fullName;
 
-      if (userId != null && !isJsonDecodable(userId)) {
-        final profileInformation = await _profileRepository.getMyProfile();
-        if (profileInformation != null) {
-          fullName = profileInformation.fullName;
-        }
-        log('User profile loaded: ${profileInformation.toString()}');
-      } else {
-        log('Signed in user ID is not valid: $userId');
-        throw Exception(userId);
+      final profileInformation = await _profileRepository.getMyProfile();
+      if (profileInformation != null) {
+        fullName = profileInformation.fullName;
       }
+
+      log('User profile loaded: $profileInformation');
+
+      if (fullName != null) {
+        GlobalPopupService.showSuccess(
+          title: 'Login Successful',
+          message:
+              'Hi there, $fullName! Welcome back.',
+          position: PopupPosition.bottomRight,
+        );
+      } else {
+        GlobalPopupService.showSuccess(
+          title: 'Login Successful',
+          message: 'You have been logged in successfully.',
+          position: PopupPosition.bottomRight,
+        );
+      }
+
+      GoRouter.of(context).go('/home');
 
       state = state.copyWith(
           isLoading: false, userId: userId, userFullName: fullName);
@@ -66,14 +85,9 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
   Future<void> register(
       String email, String password, Map<String, dynamic> data) async {
-    state = state.copyWith(isLoading: true, error: null);
     try {
+      state = state.copyWith(isLoading: true, error: null);
       final userId = await _authRepository.register(email, password, data);
-
-      if (isJsonDecodable(userId)) {
-        log('Registered user ID is not valid: $userId');
-        throw Exception(userId);
-      }
 
       state = state.copyWith(isLoading: false, userId: userId);
     } catch (e) {

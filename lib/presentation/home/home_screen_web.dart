@@ -2,15 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gun_range_app/core/routing/app_router.dart';
+import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/presentation/widgets/controllers/expanded_collapsed_menu_controller.dart';
 import 'package:gun_range_app/presentation/widgets/loading_card_widget.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/supabase_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-
-import '../../domain/services/global_popup_service.dart';
 
 class HomeScreenWeb extends ConsumerStatefulWidget {
   const HomeScreenWeb({super.key});
@@ -24,6 +22,41 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
   final ScrollController _horizontalRangeController = ScrollController();
   final ScrollController _horizontalCompetitionController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  static String _initialFromFullName(String? fullName) {
+    final splitList = fullName?.split(' ');
+    if (splitList == null || splitList.isEmpty) return '?';
+    String initials = '';
+
+    for (var part in splitList) {
+      if (part.isNotEmpty) {
+        initials += part.characters.first.toUpperCase();
+      }
+    }
+
+    return initials;
+  }
+
+  Future<void> _handleAccountMenuSelection(String value) async {
+    switch (value) {
+      case 'profile':
+        if (!mounted) return;
+        GoRouter.of(context).go('/profile');
+        return;
+      case 'logout':
+        {
+          GlobalPopupService.showAction(
+              title: 'Logout',
+              message: 'Are you sure you want to logout?',
+              actionText: 'Logout',
+              onAction: () async {
+                await ref.read(authViewModelProvider.notifier).signOut();
+              });
+
+          return;
+        }
+    }
+  }
 
   @override
   void initState() {
@@ -233,6 +266,8 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
   }
 
   Widget _buildHeader(bool isAuthed) {
+    final user = ref.watch(supabaseProvider).auth.currentUser;
+
     return Row(
       children: [
         Expanded(
@@ -242,18 +277,65 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('RangeConnect',
                         style: Theme.of(context).textTheme.headlineMedium),
                     const Spacer(),
                     if (isAuthed)
-                      IconButton(onPressed: () {}, icon: Icon(Icons.settings)),
-                    if (isAuthed)
-                      CircleAvatar(
-                        child: Text(
-                          kIsWeb ? 'WS' : 'MS',
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
+                      Row(
+                        children: [
+                          PopupMenuButton<String>(
+                            tooltip: 'Account',
+                            position: PopupMenuPosition.under,
+                            offset: const Offset(0, 8),
+                            onSelected: _handleAccountMenuSelection,
+                            itemBuilder: (context) => const [
+                              PopupMenuItem<String>(
+                                value: 'profile',
+                                child: Text('Profile'),
+                              ),
+                              PopupMenuDivider(),
+                              PopupMenuItem<String>(
+                                value: 'logout',
+                                child: Text('Logout'),
+                              ),
+                            ],
+                            child: MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: CircleAvatar(
+                                radius: 18,
+                                backgroundColor:
+                                    Theme.of(context).colorScheme.primary,
+                                foregroundColor:
+                                    Theme.of(context).colorScheme.onPrimary,
+                                child: Text(
+                                  _initialFromFullName(user
+                                      ?.userMetadata?['full_name'] as String?),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelLarge
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onPrimary,
+                                      ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          // const SizedBox(width: 12),
+                          // Text(
+                          //   user?.email ?? 'Account',
+                          //   style: Theme.of(context)
+                          //       .textTheme
+                          //       .bodyLarge
+                          //       ?.copyWith(
+                          //         color:
+                          //             Theme.of(context).colorScheme.onPrimary,
+                          //       ),
+                          // ),
+                        ],
                       ),
                     if (!isAuthed)
                       ElevatedButton(
@@ -361,7 +443,8 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                 IconButton(
                   onPressed: () =>
                       ref.read(menuExpandedProvider.notifier).toggle(),
-                  icon: const Icon(Icons.menu),
+                  icon: Icon(Icons.menu,
+                      color: Theme.of(context).colorScheme.onTertiary),
                 ),
               ],
             ),
