@@ -2,15 +2,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gun_range_app/core/routing/app_router.dart';
 import 'package:gun_range_app/presentation/widgets/controllers/expanded_collapsed_menu_controller.dart';
 import 'package:gun_range_app/presentation/widgets/loading_card_widget.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/supabase_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-
-import '../../domain/services/global_popup_service.dart';
 
 class HomeScreenWeb extends ConsumerStatefulWidget {
   const HomeScreenWeb({super.key});
