@@ -25,10 +25,18 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
   final ScrollController _horizontalCompetitionController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  static String _initialFromEmail(String? email) {
-    final trimmed = email?.trim();
-    if (trimmed == null || trimmed.isEmpty) return '?';
-    return trimmed.characters.first.toUpperCase();
+  static String _initialFromFullName(String? fullName) {
+    final splitList = fullName?.split(' ');
+    if (splitList == null || splitList.isEmpty) return '?';
+    String initials = '';
+
+    for (var part in splitList) {
+      if (part.isNotEmpty) {
+        initials += part.characters.first.toUpperCase();
+      }
+    }
+
+    return initials;
   }
 
   Future<void> _handleAccountMenuSelection(String value) async {
@@ -294,7 +302,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                 foregroundColor:
                                     Theme.of(context).colorScheme.onPrimary,
                                 child: Text(
-                                  _initialFromEmail(user?.email),
+                                  _initialFromFullName(user?.userMetadata?['full_name'] as String?),
                                   style: Theme.of(context)
                                       .textTheme
                                       .labelLarge
@@ -426,7 +434,8 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                 IconButton(
                   onPressed: () =>
                       ref.read(menuExpandedProvider.notifier).toggle(),
-                  icon: const Icon(Icons.menu),
+                  icon: Icon(Icons.menu,
+                      color: Theme.of(context).colorScheme.onTertiary),
                 ),
               ],
             ),
