@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/presentation/widgets/controllers/expanded_collapsed_menu_controller.dart';
 import 'package:gun_range_app/presentation/widgets/loading_card_widget.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
@@ -43,8 +44,17 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
         GoRouter.of(context).go('/profile');
         return;
       case 'logout':
-        await ref.read(authViewModelProvider.notifier).signOut();
-        return;
+        {
+          GlobalPopupService.showAction(
+              title: 'Logout',
+              message: 'Are you sure you want to logout?',
+              actionText: 'Logout',
+              onAction: () async {
+                await ref.read(authViewModelProvider.notifier).signOut();
+              });
+
+          return;
+        }
     }
   }
 
@@ -300,7 +310,8 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                 foregroundColor:
                                     Theme.of(context).colorScheme.onPrimary,
                                 child: Text(
-                                  _initialFromFullName(user?.userMetadata?['full_name'] as String?),
+                                  _initialFromFullName(user
+                                      ?.userMetadata?['full_name'] as String?),
                                   style: Theme.of(context)
                                       .textTheme
                                       .labelLarge

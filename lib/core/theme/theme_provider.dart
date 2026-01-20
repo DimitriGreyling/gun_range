@@ -18,8 +18,6 @@ class AppTheme {
       onPrimary: AppColors.primaryForeground,
       secondary: AppColors.accent,
       onSecondary: AppColors.accentForeground,
-      background: AppColors.backgroundLight,
-      onBackground: AppColors.foregroundLight,
       surface: AppColors.cardLight,
       onSurface: AppColors.foregroundLight,
       error: Colors.red,
@@ -43,8 +41,8 @@ class AppTheme {
         borderRadius: BorderRadius.circular(AppColors.borderRadiusLg),
         borderSide: const BorderSide(color: AppColors.primary),
       ),
-      hintStyle: TextStyle(color: AppColors.mutedForegroundLight),
-      labelStyle: TextStyle(color: AppColors.mutedForegroundLight),
+      hintStyle: const TextStyle(color: AppColors.mutedForegroundLight),
+      labelStyle: const TextStyle(color: AppColors.mutedForegroundLight),
     ),
     textTheme: GoogleFonts.spaceGroteskTextTheme(
       const TextTheme(
@@ -89,7 +87,7 @@ class AppTheme {
       backgroundColor: AppColors.backgroundLight,
       foregroundColor: AppColors.foregroundLight,
       elevation: 0,
-      iconTheme: IconThemeData(color: AppColors.foregroundLight),
+      iconTheme: const IconThemeData(color: AppColors.foregroundLight),
       titleTextStyle: GoogleFonts.spaceGrotesk(
           color: AppColors.foregroundLight,
           fontWeight: FontWeight.w600,
@@ -108,8 +106,6 @@ class AppTheme {
       onPrimary: AppColors.primaryForeground,
       secondary: AppColors.accent,
       onSecondary: AppColors.accentForeground,
-      background: AppColors.backgroundDark,
-      onBackground: AppColors.foregroundDark,
       surface: AppColors.cardDark,
       onSurface: AppColors.foregroundDark,
       error: Colors.red,
@@ -133,8 +129,6 @@ class AppTheme {
         borderRadius: BorderRadius.circular(AppColors.borderRadiusLg),
         borderSide: const BorderSide(color: AppColors.primary),
       ),
-      hintStyle: TextStyle(color: AppColors.mutedForegroundDark),
-      labelStyle: TextStyle(color: AppColors.mutedForegroundDark),
     ),
     textTheme: GoogleFonts.spaceGroteskTextTheme(
       const TextTheme(
@@ -179,7 +173,7 @@ class AppTheme {
       backgroundColor: AppColors.backgroundDark,
       foregroundColor: AppColors.foregroundDark,
       elevation: 0,
-      iconTheme: IconThemeData(color: AppColors.foregroundDark),
+      iconTheme: const IconThemeData(color: AppColors.foregroundDark),
       titleTextStyle: GoogleFonts.spaceGrotesk(
           color: AppColors.foregroundDark,
           fontWeight: FontWeight.w600,
