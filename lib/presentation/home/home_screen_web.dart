@@ -270,6 +270,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(16.0),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('RangeConnect',
                         style: Theme.of(context).textTheme.headlineMedium),
@@ -315,17 +316,17 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Text(
-                            user?.email ?? 'Account',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyLarge
-                                ?.copyWith(
-                                  color:
-                                      Theme.of(context).colorScheme.onPrimary,
-                                ),
-                          ),
+                          // const SizedBox(width: 12),
+                          // Text(
+                          //   user?.email ?? 'Account',
+                          //   style: Theme.of(context)
+                          //       .textTheme
+                          //       .bodyLarge
+                          //       ?.copyWith(
+                          //         color:
+                          //             Theme.of(context).colorScheme.onPrimary,
+                          //       ),
+                          // ),
                         ],
                       ),
                     if (!isAuthed)
