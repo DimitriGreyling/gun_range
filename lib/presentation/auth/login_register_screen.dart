@@ -73,7 +73,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
           Center(
             child: SingleChildScrollView(
               child: Container(
-                constraints: const BoxConstraints(maxWidth: 480),
+                constraints: const BoxConstraints(maxWidth: 600),
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: Theme.of(context)
@@ -399,38 +399,45 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
   Widget _buildRegisterFields(bool isLoading) {
     return Column(
       children: [
-        _buildTextField(
-          isLoading: isLoading,
-          label: 'Name',
-          hint: 'Enter your name',
-          controller: _firstNameController,
-          focusNode: _firstNameFocusNode,
-          onSubmitted: (_) =>
-              FocusScope.of(context).requestFocus(_passwordFocusNode),
-          validator: (v) {
-            final value = v ?? '';
-            if (value.isEmpty) return 'Name is required';
-            if (value.length < 2) return 'Name must be at least 3 characters';
-            return null;
-          },
-        ),
-        const SizedBox(height: 16),
-        _buildTextField(
-          isLoading: isLoading,
-          label: 'Surname',
-          hint: 'Enter your surname',
-          controller: _lastNameController,
-          focusNode: _lastNameFocusNode,
-          onSubmitted: (_) =>
-              FocusScope.of(context).requestFocus(_passwordFocusNode),
-          validator: (v) {
-            final value = v ?? '';
-            if (value.isEmpty) return 'Surname is required';
-            if (value.length < 2)
-              return 'Surname must be at least 3 characters';
-            return null;
-          },
-        ),
+        Row(children: [
+          Expanded(
+            child: _buildTextField(
+              isLoading: isLoading,
+              label: 'Name',
+              hint: 'Enter your name',
+              controller: _firstNameController,
+              focusNode: _firstNameFocusNode,
+              onSubmitted: (_) =>
+                  FocusScope.of(context).requestFocus(_passwordFocusNode),
+              validator: (v) {
+                final value = v ?? '';
+                if (value.isEmpty) return 'Name is required';
+                if (value.length < 2)
+                  return 'Name must be at least 3 characters';
+                return null;
+              },
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: _buildTextField(
+              isLoading: isLoading,
+              label: 'Surname',
+              hint: 'Enter your surname',
+              controller: _lastNameController,
+              focusNode: _lastNameFocusNode,
+              onSubmitted: (_) =>
+                  FocusScope.of(context).requestFocus(_emailFocusNode),
+              validator: (v) {
+                final value = v ?? '';
+                if (value.isEmpty) return 'Surname is required';
+                if (value.length < 2)
+                  return 'Surname must be at least 3 characters';
+                return null;
+              },
+            ),
+          ),
+        ]),
         const SizedBox(height: 16),
         _buildTextField(
           isLoading: isLoading,
@@ -449,37 +456,47 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
           },
         ),
         const SizedBox(height: 16),
-        _buildTextField(
-          isLoading: isLoading,
-          label: 'Password',
-          hint: 'Create a password',
-          obscure: !showPassword,
-          controller: _passwordController,
-          focusNode: _passwordFocusNode,
-          suffix: _buildSufficBuilder(),
-          validator: (v) {
-            final value = v ?? '';
-            if (value.isEmpty) return 'Password is required';
-            if (value.length < 8)
-              return 'Password must be at least 8 characters';
-            return null;
-          },
-        ),
-        const SizedBox(height: 16),
-        _buildTextField(
-          isLoading: isLoading,
-          label: 'Confirm Password',
-          hint: 'Confirm your password',
-          obscure: !showPassword,
-          controller: _confirmPasswordController,
-          focusNode: _confirmPasswordFocusNode,
-          suffix: _buildSufficBuilder(),
-          validator: (v) {
-            if ((v ?? '').isEmpty) return 'Please confirm your password';
-            if (v != _passwordController.text) return 'Passwords do not match';
-            return null;
-          },
-        ),
+        Row(
+          children: [
+            Expanded(
+              child: _buildTextField(
+                isLoading: isLoading,
+                label: 'Password',
+                hint: 'Create a password',
+                obscure: !showPassword,
+                controller: _passwordController,
+                focusNode: _passwordFocusNode,
+                suffix: _buildSufficBuilder(),
+                validator: (v) {
+                  final value = v ?? '';
+                  if (value.isEmpty) return 'Password is required';
+                  if (value.length < 8)
+                    return 'Password must be at least 8 characters';
+                  return null;
+                },
+              ),
+            ),
+            const SizedBox(width: 16),
+           Expanded(
+              child: _buildTextField(
+                isLoading: isLoading,
+                label: 'Confirm Password',
+                hint: 'Re-enter your password',
+                obscure: !showPassword,
+                controller: _confirmPasswordController,
+                focusNode: _confirmPasswordFocusNode,
+                suffix: _buildSufficBuilder(),
+                validator: (v) {
+                  final value = v ?? '';
+                  if (value.isEmpty) return 'Please confirm your password';
+                  if (value != _passwordController.text)
+                    return 'Passwords do not match';
+                  return null;
+                },
+              ),
+            ),
+          ],
+        )
       ],
     );
   }

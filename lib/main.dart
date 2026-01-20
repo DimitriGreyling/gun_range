@@ -63,7 +63,7 @@ class MainApp extends StatelessWidget {
           ),
           debugShowCheckedModeBanner: false,
           routerConfig: appRouter,
-          title: 'Gun Range App',
+          title: 'Range Connect',
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeMode,
