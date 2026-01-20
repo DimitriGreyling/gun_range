@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/core/theme/theme_provider.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/presentation/widgets/controllers/expanded_collapsed_menu_controller.dart';
 import 'package:gun_range_app/presentation/widgets/loading_card_widget.dart';
@@ -53,6 +54,12 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                 await ref.read(authViewModelProvider.notifier).signOut();
               });
 
+          return;
+        }
+      case 'theme_mode':
+        {
+          final themeToggler = ref.read(themeModeTogglerProvider);
+          themeToggler.toggleThemeMode(ref);
           return;
         }
     }
@@ -290,13 +297,29 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                             position: PopupMenuPosition.under,
                             offset: const Offset(0, 8),
                             onSelected: _handleAccountMenuSelection,
-                            itemBuilder: (context) => const [
-                              PopupMenuItem<String>(
+                            itemBuilder: (context) => [
+                              const PopupMenuItem<String>(
                                 value: 'profile',
                                 child: Text('Profile'),
                               ),
-                              PopupMenuDivider(),
+                              const PopupMenuDivider(),
                               PopupMenuItem<String>(
+                                value: 'theme_mode',
+                                child: Row(
+                                  children: [
+                                    const Text('Theme Mode'),
+                                    const Spacer(),
+                                    if (Theme.of(context).brightness ==
+                                        Brightness.dark)
+                                      const Icon(Icons.brightness_2),
+                                    if (Theme.of(context).brightness ==
+                                        Brightness.light)
+                                      const Icon(Icons.brightness_6),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuDivider(),
+                              const PopupMenuItem<String>(
                                 value: 'logout',
                                 child: Text('Logout'),
                               ),
@@ -444,7 +467,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                   onPressed: () =>
                       ref.read(menuExpandedProvider.notifier).toggle(),
                   icon: Icon(Icons.menu,
-                      color: Theme.of(context).colorScheme.onTertiary),
+                      color: Theme.of(context).colorScheme.onSurface),
                 ),
               ],
             ),

@@ -5,24 +5,29 @@ import '../viewmodels/event_vm.dart';
 import '../viewmodels/booking_vm.dart';
 import 'repository_providers.dart';
 
-final authViewModelProvider = StateNotifierProvider<AuthViewModel, AuthState>((ref) {
+final authViewModelProvider =
+    StateNotifierProvider<AuthViewModel, AuthState>((ref) {
   final authRepository = ref.watch(authRepositoryProvider);
   final profileRepository = ref.watch(profileRepositoryProvider);
-  return AuthViewModel(authRepository, profileRepository);
+
+  return AuthViewModel(authRepository, profileRepository, ref);
 });
 
-final rangeViewModelProvider = StateNotifierProvider<RangeViewModel, RangeState>((ref) {
+final rangeViewModelProvider =
+    StateNotifierProvider<RangeViewModel, RangeState>((ref) {
   final rangeRepository = ref.watch(rangeRepositoryProvider);
   final eventRepository = ref.watch(eventRepositoryProvider);
   return RangeViewModel(rangeRepository, eventRepository);
 });
 
-final eventViewModelProvider = StateNotifierProvider<EventViewModel, EventState>((ref) {
+final eventViewModelProvider =
+    StateNotifierProvider<EventViewModel, EventState>((ref) {
   final eventRepository = ref.watch(eventRepositoryProvider);
   return EventViewModel(eventRepository);
 });
 
-final bookingViewModelProvider = StateNotifierProvider<BookingViewModel, BookingState>((ref) {
+final bookingViewModelProvider =
+    StateNotifierProvider<BookingViewModel, BookingState>((ref) {
   final bookingRepository = ref.watch(bookingRepositoryProvider);
   return BookingViewModel(bookingRepository);
 });

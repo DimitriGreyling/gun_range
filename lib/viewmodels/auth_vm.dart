@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/core/theme/theme_provider.dart';
 import 'package:gun_range_app/data/models/popup_position.dart';
 import 'package:gun_range_app/data/repositories/profile_repository.dart';
 import 'package:gun_range_app/domain/services/errors_exception_service.dart';
@@ -36,7 +37,9 @@ class AuthState {
 class AuthViewModel extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
   final ProfileRepository _profileRepository;
-  AuthViewModel(this._authRepository, this._profileRepository)
+  final Ref _ref;
+
+  AuthViewModel(this._authRepository, this._profileRepository, this._ref)
       : super(const AuthState());
 
   Future<void> signIn(
@@ -51,8 +54,11 @@ class AuthViewModel extends StateNotifier<AuthState> {
       String? fullName;
 
       final profileInformation = await _profileRepository.getMyProfile();
+
       if (profileInformation != null) {
         fullName = profileInformation.fullName;
+        _ref.read(themeModeProvider.notifier).state =
+            themeModeFromDb(profileInformation.themeMode);
       }
 
       log('User profile loaded: $profileInformation');
@@ -60,8 +66,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
       if (fullName != null) {
         GlobalPopupService.showSuccess(
           title: 'Login Successful',
-          message:
-              'Hi there, $fullName! Welcome back.',
+          message: 'Hi there, $fullName! Welcome back.',
           position: PopupPosition.bottomRight,
         );
       } else {

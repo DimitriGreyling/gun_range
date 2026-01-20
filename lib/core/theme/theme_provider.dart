@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:gun_range_app/providers/repository_providers.dart';
 import '../constants/colors.dart';
 
-final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);//TODO: change to system by defaukt 
+final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);
+
+final themeModeTogglerProvider = Provider<AppTheme>((ref) => AppTheme());
 
 class AppTheme {
   static ThemeData lightTheme = ThemeData(
@@ -62,7 +65,8 @@ class AppTheme {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppColors.borderRadiusLg),
         ),
-        textStyle: const TextStyle(fontWeight: FontWeight.w600,color: Colors.white),
+        textStyle:
+            const TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -180,4 +184,26 @@ class AppTheme {
           fontSize: 20),
     ),
   );
+
+  void toggleThemeMode(WidgetRef ref) async {
+    final current = ref.read(themeModeProvider);
+    final next = current == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+
+    ref.read(themeModeProvider.notifier).state = next;
+
+    final repo = ref.read(profileRepositoryProvider);
+    await repo.updateMyThemeMode(themeModeToDb(next));
+  }
 }
+
+String themeModeToDb(ThemeMode mode) => switch (mode) {
+      ThemeMode.dark => 'dark',
+      ThemeMode.light => 'light',
+      ThemeMode.system => 'system',
+    };
+
+ThemeMode themeModeFromDb(String? v) => switch (v) {
+      'dark' => ThemeMode.dark,
+      'system' => ThemeMode.system,
+      _ => ThemeMode.light,
+    };

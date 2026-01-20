@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gun_range_app/presentation/auth/login_register_screen.dart';
+import 'package:gun_range_app/presentation/auth/login_register_desktop.dart';
+import 'package:gun_range_app/presentation/auth/login_register_web.dart';
 
 class LoginAppShell extends ConsumerStatefulWidget {
   const LoginAppShell({super.key});
@@ -24,7 +25,7 @@ class _LoginAppShellState extends ConsumerState<LoginAppShell> {
     } else if (isWeb) {
       return const LoginRegisterScreen();
     } else {
-      return const LoginRegisterScreen();
+      return const LoginRegisterDesktop();
     }
   }
 }

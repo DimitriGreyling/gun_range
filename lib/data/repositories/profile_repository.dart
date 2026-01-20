@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 abstract class ProfileRepository {
   Future<Profile> getMyProfile();
+  Future<void> updateMyThemeMode(String themeMode);
 }
 
 class SupabaseProfileRepository implements ProfileRepository {
@@ -20,12 +21,19 @@ class SupabaseProfileRepository implements ProfileRepository {
       throw Exception('Not authenticated');
     }
 
-    final response = await client
-        .from(_tableName)
-        .select()
-        .eq('id', user.id)
-        .single();
+    final response =
+        await client.from(_tableName).select().eq('id', user.id).single();
 
     return Profile.fromJson(response);
+  }
+
+  @override
+  Future<void> updateMyThemeMode(String themeMode) async {
+    final user = client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    await client
+        .from(_tableName)
+        .update({'theme_mode': themeMode}).eq('id', user.id);
   }
 }
