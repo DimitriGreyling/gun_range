@@ -250,29 +250,9 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                                   }
 
                                   await authViewModelState.signIn(
+                                      context,
                                       _emailController.text,
                                       _passwordController.text);
-
-                                  if (authViewModel.userId != null) {
-                                    if (authViewModel.userFullName != null) {
-                                      GlobalPopupService.showSuccess(
-                                        title: 'Login Successful',
-                                        message:
-                                            'Hi there, ${authViewModel.userFullName}! You have been logged in successfully.',
-                                        position: PopupPosition.bottomRight,
-                                      );
-                                    } else {
-                                      GlobalPopupService.showSuccess(
-                                        title: 'Login Successful',
-                                        message:
-                                            'You have been logged in successfully.',
-                                        position: PopupPosition.bottomRight,
-                                      );
-                                    }
-
-                                    GoRouter.of(context).go('/login');
-                                    return;
-                                  }
                                 } else {
                                   if (_registerFormKey.currentState
                                           ?.validate() !=
