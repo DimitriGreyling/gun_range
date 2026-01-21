@@ -3,29 +3,24 @@ import 'dart:ui';
 import 'package:cloudflare_turnstile/cloudflare_turnstile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/presentation/widgets/popup/global_popup_overlay.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'core/routing/app_router.dart';
 import 'core/theme/theme_provider.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables with error handling
-  try {
-    await dotenv.load(
-      fileName: ".env",
-    );
-  } catch (e) {
-    throw Exception('Failed to load .env file: $e');
-  }
+  await dotenv.load(fileName: ".env");
 
   final supabaseUrl = dotenv.env['SUPABASE_URL'];
   if (supabaseUrl == null) {
     throw Exception('SUPABASE_URL not found in .env');
   }
+
   final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
   if (supabaseAnonKey == null) {
     throw Exception('SUPABASE_ANON_KEY not found in .env');
@@ -40,7 +35,11 @@ Future<void> main() async {
   GlobalPopupService.initialize(container);
 
   runApp(
-      UncontrolledProviderScope(container: container, child: const MainApp()));
+    UncontrolledProviderScope(
+      container: container,
+      child: const MainApp(),
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {
@@ -48,18 +47,10 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool isVerified = false; // Replace with your verification logic
-    final TurnstileOptions options = TurnstileOptions(
-      size: TurnstileSize.normal,
-      theme: TurnstileTheme.light,
-      language: 'ar',
-      retryAutomatically: false,
-      refreshTimeout: TurnstileRefreshTimeout.manual,
-    );
-
     return Consumer(
       builder: (context, ref, _) {
         final themeMode = ref.watch(themeModeProvider);
+
         return MaterialApp.router(
           restorationScopeId: 'app',
           scrollBehavior: const MaterialScrollBehavior().copyWith(
@@ -78,26 +69,13 @@ class MainApp extends StatelessWidget {
           darkTheme: AppTheme.darkTheme,
           themeMode: themeMode,
           builder: (context, child) {
-            // if (!isVerified) {
-            //   return Scaffold(
-            //     body: Center(
-            //       child: CloudflareTurnstile(
-            //         siteKey:
-            //             '0x4AAAAAACN1eNs8QRNLB3o5', //Change with your site key
-            //         // baseUrl: 'http://localhost:58271/',
-            //         onTokenReceived: (token) {
-            //           print(token);
-            //           setstate
-            //         },
-            //       ),
-            //     ),
-            //   );
-            // }
+            if (child == null) return const SizedBox.shrink();
 
             return GlobalPopupOverlay(
-                child: TurnstileScreen(
-              child: child!,
-            ));
+              child: TurnstileGate(
+                child: child,
+              ),
+            );
           },
         );
       },
@@ -105,53 +83,97 @@ class MainApp extends StatelessWidget {
   }
 }
 
-class TurnstileScreen extends StatefulWidget {
+class TurnstileGate extends StatefulWidget {
   final Widget child;
-  const TurnstileScreen({super.key, required this.child});
+  const TurnstileGate({super.key, required this.child});
 
   @override
-  State<TurnstileScreen> createState() => _TurnstileScreenState();
+  State<TurnstileGate> createState() => _TurnstileGateState();
 }
 
-class _TurnstileScreenState extends State<TurnstileScreen> {
-  final TurnstileController _turnstileController = TurnstileController();
-  bool _isVerified = false; // State to track verification
+class _TurnstileGateState extends State<TurnstileGate> {
+  final TurnstileController _controller = TurnstileController();
+
+  bool _verified = false;
+  String? _lastError;
+
+  final TurnstileOptions _options = TurnstileOptions(
+    size: TurnstileSize.normal,
+    theme: TurnstileTheme.light,
+    language: 'ar',
+    retryAutomatically: false,
+    refreshTimeout: TurnstileRefreshTimeout.manual,
+  );
 
   @override
   Widget build(BuildContext context) {
+    // Once verified, show the app UI and never rebuild Turnstile again.
+    if (_verified) return widget.child;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Turnstile Demo')),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Center(
-        child: _isVerified
-            ? // Show your main UI if verified
-            widget.child
-            : // Show Turnstile if not verified
-            CloudflareTurnstile(
-                siteKey:
-                    '0x4AAAAAACN1eNs8QRNLB3o5', // Replace with your actual key
-                controller: _turnstileController,
-                onTokenReceived: (token) async {
-                  debugPrint("Token received: $token");
-                  // Optional: Check if token is actually valid and not expired immediately
-                  if (token.isNotEmpty &&
-                      !await _turnstileController.isExpired()) {
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Please verify to continue',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                CloudflareTurnstile(
+                  siteKey: '0x4AAAAAACN1eNs8QRNLB3o5',
+                  controller: _controller,
+                  options: _options,
+                  onTokenReceived: (token) {
+                    // IMPORTANT: don’t call refresh/isExpired here.
+                    // Just accept token and move on.
+                    if (token.isNotEmpty) {
+                      setState(() {
+                        _verified = true;
+                        _lastError = null;
+                      });
+                    }
+                  },
+                  onError: (error) {
                     setState(() {
-                      _isVerified = true; // Update state to show next UI
+                      _lastError = error.toString();
                     });
-                  } else {
-                    debugPrint("Token is invalid or expired, refreshing...");
-                    _turnstileController
-                        .refreshToken(); // Refresh the token if needed
-                  }
-                },
-                onTokenExpired: () {
-                  debugPrint("Token expired, re-prompting...");
-                  setState(() {
-                    _isVerified = false; // Reset state if token expires
-                  });
-                },
-                // mode: TurnstileMode.invisible, // Use invisible for seamless integration
-              ),
+                  },
+                  onTokenExpired: () {
+                    setState(() {
+                      _verified = false;
+                    });
+                  },
+                ),
+                if (_lastError != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    _lastError!,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  FilledButton(
+                    onPressed: () {
+                      setState(() => _lastError = null);
+                      _controller.refreshToken();
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
