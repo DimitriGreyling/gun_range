@@ -8,32 +8,29 @@
     The path provided below has to start and end with a slash "/" in order for
     it to work correctly.
 
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
     This is a placeholder for base href that will be replaced by the value of
     the `--base-href` argument provided to `flutter build`.
   -->
-  <base href="$FLUTTER_BASE_HREF">
+  <base href="$FLUTTER_BASE_HREF" />
 
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+  <meta charset="UTF-8" />
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible" />
+  <meta name="description" content="Range Connect" />
 
   <!-- Prevent a white flash during initial load by matching the app background. -->
-  <meta name="theme-color" content="#F2F2F3">
+  <meta name="theme-color" content="#F2F2F3" />
 
   <!-- iOS meta tags & icons -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="Range Connect">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-mobile-web-app-title" content="Range Connect" />
+  <link rel="apple-touch-icon" href="icons/Icon-192.png" />
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="icon" type="image/png" href="favicon.png" />
 
   <title>Range Connect</title>
-  <link rel="manifest" href="manifest.json">
+  <link rel="manifest" href="manifest.json" />
 
   <style>
     :root {
@@ -77,6 +74,11 @@
 
       opacity: 1;
       transition: opacity 220ms ease;
+      z-index: 20;
+    }
+
+    #flutter-loading.hidden {
+      display: none;
     }
 
     #flutter-loading.fade-out {
@@ -216,6 +218,65 @@
       100% { content: ""; }
     }
 
+    /* Turnstile gate overlay */
+    #turnstile-gate {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: var(--app-bg);
+      color: var(--app-fg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      z-index: 30;
+    }
+
+    #turnstile-gate .card {
+      width: min(420px, calc(100vw - 48px));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      padding: 22px 18px 18px;
+      border-radius: 18px;
+      background: var(--loader-card);
+      border: 1px solid var(--loader-card-border);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    #turnstile-gate .title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      text-align: center;
+    }
+
+    #turnstile-gate .hint {
+      font-size: 13px;
+      opacity: 0.80;
+      text-align: center;
+      margin-top: -6px;
+    }
+
+    #turnstile-error {
+      display: none;
+      font-size: 12px;
+      color: #b91c1c;
+      text-align: center;
+      line-height: 1.35;
+    }
+
+    #turnstile-retry {
+      display: none;
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      background: var(--app-primary);
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       #flutter-loading { transition: none; }
       #flutter-loading .ring,
@@ -229,12 +290,35 @@
 </head>
 
 <body>
-  <div id="flutter-loading" aria-label="Loading">
+  <!-- Turnstile gate (only used on non-localhost, unless forced on) -->
+  <div id="turnstile-gate" aria-label="Verification">
+    <div class="card">
+      <div class="title">Verify to continue</div>
+      <div class="hint">This helps protect Range Connect from bots.</div>
+
+      <!-- Replace data-sitekey with your real site key -->
+      <div
+        class="cf-turnstile"
+        data-sitekey="0x4AAAAAACN1eNs8QRNLB3o5"
+        data-theme="auto"
+        data-language="ar"
+        data-callback="onTurnstileSuccess"
+        data-error-callback="onTurnstileError"
+        data-expired-callback="onTurnstileExpired">
+      </div>
+
+      <div id="turnstile-error"></div>
+      <button id="turnstile-retry" type="button">Retry</button>
+    </div>
+  </div>
+
+  <!-- Flutter loader (hidden until we start Flutter) -->
+  <div id="flutter-loading" class="hidden" aria-label="Loading">
     <div class="content">
       <div class="logo-wrap" aria-hidden="true">
         <div class="ring"></div>
         <div class="logo">
-          <img src="icons/Icon-192.png" alt="">
+          <img src="icons/Icon-192.png" alt="" />
         </div>
       </div>
 
@@ -245,29 +329,116 @@
 
   <script>
     (function () {
-      var removed = false;
+      var flutterStarted = false;
 
-      function removeLoader() {
-        if (removed) return;
-        removed = true;
-
+      function showFlutterLoader() {
         var loader = document.getElementById('flutter-loading');
         if (!loader) return;
-
-        loader.classList.add('fade-out');
-        window.setTimeout(function () {
-          if (loader && loader.parentNode) loader.parentNode.removeChild(loader);
-        }, 260);
+        loader.classList.remove('hidden');
       }
 
-      // Flutter web dispatches this when the first frame is rendered.
-      window.addEventListener('flutter-first-frame', removeLoader, { once: true });
+      function startFlutter() {
+        if (flutterStarted) return;
+        flutterStarted = true;
 
-      // Fallback: avoid an infinite loader if the event never fires.
-      window.setTimeout(removeLoader, 15000);
+        showFlutterLoader();
+
+        var s = document.createElement('script');
+        s.id = 'flutter-bootstrap';
+        s.src = 'flutter_bootstrap.js';
+        s.async = true;
+        document.body.appendChild(s);
+      }
+
+      function setTurnstileError(message) {
+        var el = document.getElementById('turnstile-error');
+        var btn = document.getElementById('turnstile-retry');
+        if (!el || !btn) return;
+
+        el.textContent = message || 'Verification failed. Please try again.';
+        el.style.display = 'block';
+        btn.style.display = 'inline-block';
+      }
+
+      function removeGateAndStart() {
+        var gate = document.getElementById('turnstile-gate');
+        if (gate) gate.remove();
+        startFlutter();
+      }
+
+      // Local disable logic:
+      // - default: disable on localhost/127.0.0.1
+      // - override to force ON:  ?turnstile=1
+      // - override to force OFF: ?turnstile=0
+      var params = new URLSearchParams(window.location.search);
+      var force = params.get('turnstile'); // "1" | "0" | null
+
+      var host = window.location.hostname;
+      var isLocalhost = (host === 'localhost' || host === '127.0.0.1');
+
+      var shouldUseTurnstile =
+        force === '1' ? true :
+        force === '0' ? false :
+        !isLocalhost;
+
+      // Turnstile callbacks (called by the CF script)
+      window.onTurnstileSuccess = function (token) {
+        window.__TURNSTILE_TOKEN__ = token; // optional
+        removeGateAndStart();
+      };
+
+      window.onTurnstileError = function () {
+        setTurnstileError('Turnstile error. Check hostname/sitekey settings and try again.');
+      };
+
+      window.onTurnstileExpired = function () {
+        setTurnstileError('Verification expired. Please try again.');
+      };
+
+      // Retry button (best-effort)
+      var retryBtn = document.getElementById('turnstile-retry');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', function () {
+          location.reload();
+        });
+      }
+
+      // Skip Turnstile locally (or if forced off)
+      if (!shouldUseTurnstile) {
+        removeGateAndStart();
+      } else {
+        // Load Turnstile script only when needed
+        var ts = document.createElement('script');
+        ts.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+        ts.async = true;
+        ts.defer = true;
+        ts.onerror = function () {
+          setTurnstileError('Failed to load Turnstile script. Check network/adblock.');
+        };
+        document.head.appendChild(ts);
+      }
+
+      // Remove loader after Flutter paints the first frame
+      (function () {
+        var removed = false;
+
+        function removeLoader() {
+          if (removed) return;
+          removed = true;
+
+          var loader = document.getElementById('flutter-loading');
+          if (!loader) return;
+
+          loader.classList.add('fade-out');
+          window.setTimeout(function () {
+            if (loader && loader.parentNode) loader.parentNode.removeChild(loader);
+          }, 260);
+        }
+
+        window.addEventListener('flutter-first-frame', removeLoader, { once: true });
+        window.setTimeout(removeLoader, 15000);
+      })();
     })();
   </script>
-
-  <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

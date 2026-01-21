@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:cloudflare_turnstile/cloudflare_turnstile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -72,109 +71,11 @@ class MainApp extends StatelessWidget {
             if (child == null) return const SizedBox.shrink();
 
             return GlobalPopupOverlay(
-              child: TurnstileGate(
-                child: child,
-              ),
+              child: child,
             );
           },
         );
       },
-    );
-  }
-}
-
-class TurnstileGate extends StatefulWidget {
-  final Widget child;
-  const TurnstileGate({super.key, required this.child});
-
-  @override
-  State<TurnstileGate> createState() => _TurnstileGateState();
-}
-
-class _TurnstileGateState extends State<TurnstileGate> {
-  final TurnstileController _controller = TurnstileController();
-
-  bool _verified = false;
-  String? _lastError;
-
-  final TurnstileOptions _options = TurnstileOptions(
-    size: TurnstileSize.normal,
-    theme: TurnstileTheme.light,
-    language: 'ar',
-    retryAutomatically: false,
-    refreshTimeout: TurnstileRefreshTimeout.manual,
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    // Once verified, show the app UI and never rebuild Turnstile again.
-    if (_verified) return widget.child;
-
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 420),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Please verify to continue',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 12),
-                CloudflareTurnstile(
-                  siteKey: '0x4AAAAAACN1eNs8QRNLB3o5',
-                  controller: _controller,
-                  options: _options,
-                  onTokenReceived: (token) {
-                    // IMPORTANT: don’t call refresh/isExpired here.
-                    // Just accept token and move on.
-                    if (token.isNotEmpty) {
-                      setState(() {
-                        _verified = true;
-                        _lastError = null;
-                      });
-                    }
-                  },
-                  onError: (error) {
-                    setState(() {
-                      _lastError = error.toString();
-                    });
-                  },
-                  onTokenExpired: () {
-                    setState(() {
-                      _verified = false;
-                    });
-                  },
-                ),
-                if (_lastError != null) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    _lastError!,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: 12,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  FilledButton(
-                    onPressed: () {
-                      setState(() => _lastError = null);
-                      _controller.refreshToken();
-                    },
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
     );
   }
 }
