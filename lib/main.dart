@@ -48,6 +48,7 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isVerified = false; // Replace with your verification logic
     final TurnstileOptions options = TurnstileOptions(
       size: TurnstileSize.normal,
       theme: TurnstileTheme.light,
@@ -77,20 +78,26 @@ class MainApp extends StatelessWidget {
           darkTheme: AppTheme.darkTheme,
           themeMode: themeMode,
           builder: (context, child) {
-            return Scaffold(
-              body: Center(
-                child: CloudflareTurnstile(
-                  siteKey:
-                      '0x4AAAAAACN1eNs8QRNLB3o5', //Change with your site key
-                  // baseUrl: 'http://localhost:58271/',
-                  onTokenReceived: (token) {
-                    print(token);
-                  },
-                ),
-              ),
-            );
+            // if (!isVerified) {
+            //   return Scaffold(
+            //     body: Center(
+            //       child: CloudflareTurnstile(
+            //         siteKey:
+            //             '0x4AAAAAACN1eNs8QRNLB3o5', //Change with your site key
+            //         // baseUrl: 'http://localhost:58271/',
+            //         onTokenReceived: (token) {
+            //           print(token);
+            //           setstate
+            //         },
+            //       ),
+            //     ),
+            //   );
+            // }
 
-            return GlobalPopupOverlay(child: child!);
+            return GlobalPopupOverlay(
+                child: TurnstileScreen(
+              child: child!,
+            ));
           },
         );
       },
@@ -98,26 +105,53 @@ class MainApp extends StatelessWidget {
   }
 }
 
-class MyProtectedForm extends StatelessWidget {
-  const MyProtectedForm({super.key});
+class TurnstileScreen extends StatefulWidget {
+  final Widget child;
+  const TurnstileScreen({super.key, required this.child});
+
+  @override
+  State<TurnstileScreen> createState() => _TurnstileScreenState();
+}
+
+class _TurnstileScreenState extends State<TurnstileScreen> {
+  final TurnstileController _turnstileController = TurnstileController();
+  bool _isVerified = false; // State to track verification
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('Turnstile Demo')),
       body: Center(
-        child: CloudflareTurnstile(
-          siteKey:
-              '0x4AAAAAACN1eNs8QRNLB3o5', // Replace with your actual Site Key
-          // The baseUrl is only required for Android/iOS, but harmless for web
-          baseUrl: 'http://localhost/',
-          // onTokenRecived: (token) {
-          //   print('Turnstile token received: $token');
-          //   // Send this token to your backend for verification
-          // },
-          onError: (error) {
-            print('Turnstile error: $error');
-          },
-        ),
+        child: _isVerified
+            ? // Show your main UI if verified
+            widget.child
+            : // Show Turnstile if not verified
+            CloudflareTurnstile(
+                siteKey:
+                    '0x4AAAAAACN1eNs8QRNLB3o5', // Replace with your actual key
+                controller: _turnstileController,
+                onTokenReceived: (token) async {
+                  debugPrint("Token received: $token");
+                  // Optional: Check if token is actually valid and not expired immediately
+                  if (token.isNotEmpty &&
+                      !await _turnstileController.isExpired()) {
+                    setState(() {
+                      _isVerified = true; // Update state to show next UI
+                    });
+                  } else {
+                    debugPrint("Token is invalid or expired, refreshing...");
+                    _turnstileController
+                        .refreshToken(); // Refresh the token if needed
+                  }
+                },
+                onTokenExpired: () {
+                  debugPrint("Token expired, re-prompting...");
+                  setState(() {
+                    _isVerified = false; // Reset state if token expires
+                  });
+                },
+                // mode: TurnstileMode.invisible, // Use invisible for seamless integration
+              ),
       ),
     );
   }
