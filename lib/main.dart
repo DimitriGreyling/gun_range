@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cloudflare_turnstile/cloudflare_turnstile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
@@ -47,6 +48,14 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final TurnstileOptions options = TurnstileOptions(
+      size: TurnstileSize.normal,
+      theme: TurnstileTheme.light,
+      language: 'ar',
+      retryAutomatically: false,
+      refreshTimeout: TurnstileRefreshTimeout.manual,
+    );
+
     return Consumer(
       builder: (context, ref, _) {
         final themeMode = ref.watch(themeModeProvider);
@@ -68,10 +77,48 @@ class MainApp extends StatelessWidget {
           darkTheme: AppTheme.darkTheme,
           themeMode: themeMode,
           builder: (context, child) {
+            return Scaffold(
+              body: Center(
+                child: CloudflareTurnstile(
+                  siteKey:
+                      '0x4AAAAAACN1eNs8QRNLB3o5', //Change with your site key
+                  // baseUrl: 'http://localhost:58271/',
+                  onTokenReceived: (token) {
+                    print(token);
+                  },
+                ),
+              ),
+            );
+
             return GlobalPopupOverlay(child: child!);
           },
         );
       },
+    );
+  }
+}
+
+class MyProtectedForm extends StatelessWidget {
+  const MyProtectedForm({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: CloudflareTurnstile(
+          siteKey:
+              '0x4AAAAAACN1eNs8QRNLB3o5', // Replace with your actual Site Key
+          // The baseUrl is only required for Android/iOS, but harmless for web
+          baseUrl: 'http://localhost/',
+          // onTokenRecived: (token) {
+          //   print('Turnstile token received: $token');
+          //   // Send this token to your backend for verification
+          // },
+          onError: (error) {
+            print('Turnstile error: $error');
+          },
+        ),
+      ),
     );
   }
 }
