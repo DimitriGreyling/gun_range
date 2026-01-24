@@ -251,57 +251,6 @@ class _HomeScreenDesktopState extends ConsumerState<HomeScreenDesktop> {
     );
   }
 
-  Widget _buildCardEvent(Event? event) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width / 4,
-        height: MediaQuery.of(context).size.height / 3,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            Widget line(double factor) => Skeleton.shade(
-                  child: Container(
-                    width: constraints.maxWidth * factor,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                );
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Skeleton.shade(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(18),
-                      topRight: Radius.circular(18),
-                    ),
-                    child: Container(
-                      width: double.infinity,
-                      height: MediaQuery.of(context).size.height / 6,
-                      color: Colors.grey[300],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(event?.title ?? 'Range Name',
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                Text(event?.description ?? 'Range Location',
-                    style: Theme.of(context).textTheme.bodyMedium),
-                const SizedBox(height: 8),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
   Widget _buildMenu(bool expanded) {
     return Material(
       elevation: 2,
