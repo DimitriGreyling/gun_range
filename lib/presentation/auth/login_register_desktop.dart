@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gun_range_app/data/models/popup_position.dart';
+import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:gun_range_app/presentation/widgets/radar_background.dart';
 import 'package:gun_range_app/viewmodels/auth_vm.dart';
@@ -27,11 +30,16 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
     final authModel = ref.watch(authViewModelProvider.notifier);
     final authState = ref.watch(authViewModelProvider);
 
+    //Form key
+    GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
     return Scaffold(
       body: Row(
         children: [
           _buildImageSection(),
-          _buildLoginForm(authModel, authState),
+          Form(
+              key: _formKey,
+              child: _buildLoginForm(authModel, authState, _formKey)),
         ],
       ),
     );
@@ -99,6 +107,7 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
   Widget _buildLoginForm(
     AuthViewModel authViewModel,
     AuthState authViewModelState,
+    GlobalKey<FormState> _formKey,
   ) {
     return Expanded(
       child: Center(
@@ -128,13 +137,19 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
-                      onPressed: authViewModelState.isLoading ? null : () {
-                        authViewModel.signInForDesktop(
-                          context,
-                          _emailController.text.trim(),
-                          _passwordController.text,
-                        );
-                      },
+                      onPressed: authViewModelState.isLoading
+                          ? null
+                          : () {
+                              if (!_formKey.currentState!.validate()) {
+                                return;
+                              }
+
+                              authViewModel.signInForDesktop(
+                                context,
+                                _emailController.text.trim(),
+                                _passwordController.text,
+                              );
+                            },
                       child: const Text('Login'),
                     ),
                   ),
@@ -164,7 +179,7 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
       children: [
         Text(label,
             style: TextStyle(
-            color: theme.colorScheme.onSurface,
+                color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
         TextFormField(
@@ -227,20 +242,16 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
 
             // Big swoosh layer
             Positioned.fill(
+              top: 500,
+              left: 150,
               child: Opacity(
                 opacity: 0.35,
-                child: ClipPath(
-                  clipper: _SwooshClipper(),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Color(0xFFFFFFFF),
-                          Color(0x00FFFFFF),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                child: Center(
+                  child: FractionallySizedBox(
+                    widthFactor: 2,
+                    heightFactor: 2,
+                    child: SvgPicture.asset(
+                      'assets/maps/za4.svg',
                     ),
                   ),
                 ),
