@@ -115,4 +115,52 @@ class AuthViewModel extends StateNotifier<AuthState> {
       return false;
     }
   }
+
+  Future<void> signInForDesktop(
+      BuildContext context, String email, String password) async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+      if (_authRepository.supabase.auth.currentUser != null) {
+        await signOut();
+      }
+      final userId = await _authRepository.signIn(email, password);
+
+      String? fullName;
+
+      final profileInformation = await _profileRepository.getMyProfile();
+
+      if (profileInformation.role.toLowerCase() != 'admin') {
+        throw Exception('Access denied. Admins only.');
+      }
+
+      fullName = profileInformation.fullName;
+      _ref.read(themeModeProvider.notifier).state =
+          themeModeFromDb(profileInformation.themeMode);
+
+      log('User profile loaded: $profileInformation');
+
+      if (fullName != null) {
+        GlobalPopupService.showSuccess(
+          title: 'Login Successful',
+          message: 'Hi there, $fullName! Welcome back.',
+          position: PopupPosition.bottomRight,
+        );
+      } else {
+        GlobalPopupService.showSuccess(
+          title: 'Login Successful',
+          message: 'You have been logged in successfully.',
+          position: PopupPosition.bottomRight,
+        );
+      }
+
+      GoRouter.of(context).go('/home');
+
+      state = state.copyWith(
+          isLoading: false, userId: userId, userFullName: fullName);
+    } catch (e) {
+      log('Sign in error: $e');
+      state = state.copyWith(isLoading: false, error: e.toString());
+      ErrorsExceptionService.handleException(e);
+    }
+  }
 }

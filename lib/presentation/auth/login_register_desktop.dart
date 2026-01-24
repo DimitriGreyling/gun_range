@@ -1,6 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/providers/viewmodel_providers.dart';
+import 'package:gun_range_app/viewmodels/auth_vm.dart';
 
 class LoginRegisterDesktop extends ConsumerStatefulWidget {
   const LoginRegisterDesktop({super.key});
@@ -21,20 +22,24 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
 
   @override
   Widget build(BuildContext context) {
+    //auth view model
+    final authModel = ref.watch(authViewModelProvider.notifier);
+    final authState = ref.watch(authViewModelProvider);
+
     return Scaffold(
         body: Stack(
       children: [
         _buildImageSection(),
-        _buildLoginForm(),
+        _buildLoginForm(authModel, authState),
       ],
     ));
   }
 
-  Widget _buildLoginFields(bool isLoading) {
+  Widget _buildLoginFields(AuthViewModel authViewModel, AuthState state) {
     return Column(
       children: [
         _buildTextField(
-          isLoading: isLoading,
+          isLoading: state.isLoading,
           label: 'Email*',
           hint: 'Enter your email',
           controller: _emailController,
@@ -51,7 +56,7 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
         ),
         const SizedBox(height: 16),
         _buildTextField(
-          isLoading: isLoading,
+          isLoading: state.isLoading,
           label: 'Password*',
           hint: 'Enter your password',
           obscure: !showPassword,
@@ -88,7 +93,10 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
     );
   }
 
-  Widget _buildLoginForm() {
+  Widget _buildLoginForm(
+    AuthViewModel authViewModel,
+    AuthState authViewModelState,
+  ) {
     return Expanded(
       child: Center(
         child: SizedBox(
@@ -104,12 +112,12 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 16),
-                  _buildLoginFields(false),
+                  _buildLoginFields(authViewModel, authViewModelState),
                   const SizedBox(height: 24),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: authViewModelState.isLoading ? null : () {},
                       child: const Text('Forgot Password?'),
                     ),
                   ),
@@ -117,7 +125,13 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: authViewModelState.isLoading ? null : () {
+                        authViewModel.signInForDesktop(
+                          context,
+                          _emailController.text.trim(),
+                          _passwordController.text,
+                        );
+                      },
                       child: const Text('Login'),
                     ),
                   ),

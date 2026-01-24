@@ -4,32 +4,35 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ErrorsExceptionService {
   static void handleException(dynamic e) {
-    switch (e.runtimeType) {
+    switch (e) {
       case AuthApiException _:
-        final authException = e as AuthApiException;
+        final authException = e;
         GlobalPopupService.showError(
           title: 'Authentication Error',
           message: _camelCaseString(authException.message),
           position: PopupPosition.center,
         );
       case PostgrestException _:
-        final postgrestException = e as PostgrestException;
+        final postgrestException = e;
         GlobalPopupService.showError(
           title: 'Database Error',
           message: _camelCaseString(postgrestException.message),
           position: PopupPosition.center,
         );
-      case Exception:
-        GlobalPopupService.showError(
-          title: 'Error',
-          message: _camelCaseString(e.toString()),
-          position: PopupPosition.center,
-        );
       case AuthRetryableFetchException _:
-        final retryableException = e as AuthRetryableFetchException;
+        final retryableException = e;
         GlobalPopupService.showError(
           title: 'Network Error',
           message: _camelCaseString(retryableException.message),
+          position: PopupPosition.center,
+        );
+
+        
+      // Leave this exception as the last case before the default
+      case Exception _:
+        GlobalPopupService.showError(
+          title: 'Error',
+          message: _camelCaseString(e.toString()),
           position: PopupPosition.center,
         );
       default:
