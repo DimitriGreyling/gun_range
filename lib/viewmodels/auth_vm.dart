@@ -129,9 +129,9 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
       final profileInformation = await _profileRepository.getMyProfile();
 
-      if (profileInformation.role.toLowerCase() != 'admin') {
-        throw Exception('Access denied. Admins only.');
-      }
+      // if (profileInformation.role.toLowerCase() != 'admin') {
+      //   throw Exception('Access denied. Admins only.');
+      // }
 
       fullName = profileInformation.fullName;
       _ref.read(themeModeProvider.notifier).state =
