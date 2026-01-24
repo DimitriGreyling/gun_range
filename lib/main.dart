@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/presentation/widgets/popup/global_popup_overlay.dart';
+import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/routing/app_router.dart';

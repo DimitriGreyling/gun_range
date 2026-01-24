@@ -129,6 +129,7 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
       final profileInformation = await _profileRepository.getMyProfile();
 
+      //TODO: Enable admin check if needed
       // if (profileInformation.role.toLowerCase() != 'admin') {
       //   throw Exception('Access denied. Admins only.');
       // }
@@ -155,8 +156,10 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
       GoRouter.of(context).go('/home');
 
-      state = state.copyWith(
-          isLoading: false, userId: userId, userFullName: fullName);
+      await Future.delayed(const Duration(milliseconds: 500)).then((_) {
+        state = state.copyWith(
+            isLoading: false, userId: userId, userFullName: fullName);
+      });
     } catch (e) {
       log('Sign in error: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
