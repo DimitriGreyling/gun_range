@@ -1,6 +1,11 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:gun_range_app/data/models/popup_position.dart';
+import 'package:gun_range_app/domain/services/global_popup_service.dart';
+import 'package:gun_range_app/providers/viewmodel_providers.dart';
+import 'package:gun_range_app/presentation/widgets/radar_background.dart';
+import 'package:gun_range_app/viewmodels/auth_vm.dart';
 
 class LoginRegisterDesktop extends ConsumerStatefulWidget {
   const LoginRegisterDesktop({super.key});
@@ -21,20 +26,30 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
 
   @override
   Widget build(BuildContext context) {
+    //auth view model
+    final authModel = ref.watch(authViewModelProvider.notifier);
+    final authState = ref.watch(authViewModelProvider);
+
+    //Form key
+    GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
     return Scaffold(
-        body: Stack(
-      children: [
-        _buildImageSection(),
-        _buildLoginForm(),
-      ],
-    ));
+      body: Row(
+        children: [
+          _buildImageSection(),
+          Form(
+              key: _formKey,
+              child: _buildLoginForm(authModel, authState, _formKey)),
+        ],
+      ),
+    );
   }
 
-  Widget _buildLoginFields(bool isLoading) {
+  Widget _buildLoginFields(AuthViewModel authViewModel, AuthState state) {
     return Column(
       children: [
         _buildTextField(
-          isLoading: isLoading,
+          isLoading: state.isLoading,
           label: 'Email*',
           hint: 'Enter your email',
           controller: _emailController,
@@ -51,7 +66,7 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
         ),
         const SizedBox(height: 16),
         _buildTextField(
-          isLoading: isLoading,
+          isLoading: state.isLoading,
           label: 'Password*',
           hint: 'Enter your password',
           obscure: !showPassword,
@@ -61,8 +76,9 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
           validator: (v) {
             final value = v ?? '';
             if (value.isEmpty) return 'Password is required';
-            if (value.length < 8)
+            if (value.length < 8) {
               return 'Password must be at least 8 characters';
+            }
             return null;
           },
         ),
@@ -88,7 +104,11 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
     );
   }
 
-  Widget _buildLoginForm() {
+  Widget _buildLoginForm(
+    AuthViewModel authViewModel,
+    AuthState authViewModelState,
+    GlobalKey<FormState> _formKey,
+  ) {
     return Expanded(
       child: Center(
         child: SizedBox(
@@ -104,12 +124,12 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
                   const SizedBox(height: 16),
-                  _buildLoginFields(false),
+                  _buildLoginFields(authViewModel, authViewModelState),
                   const SizedBox(height: 24),
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: authViewModelState.isLoading ? null : () {},
                       child: const Text('Forgot Password?'),
                     ),
                   ),
@@ -117,7 +137,19 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: authViewModelState.isLoading
+                          ? null
+                          : () {
+                              if (!_formKey.currentState!.validate()) {
+                                return;
+                              }
+
+                              authViewModel.signInForDesktop(
+                                context,
+                                _emailController.text.trim(),
+                                _passwordController.text,
+                              );
+                            },
                       child: const Text('Login'),
                     ),
                   ),
@@ -147,7 +179,7 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
       children: [
         Text(label,
             style: TextStyle(
-                color: theme.colorScheme.onBackground,
+                color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
         TextFormField(
@@ -187,14 +219,19 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
         ),
         child: Stack(
           children: [
-            // Base background
+            // Radar-themed background
+            const Positioned.fill(
+              child: RadarBackground(),
+            ),
+
+            // Tint layer to keep it aligned with your theme
             Positioned.fill(
-              child: Container(
+              child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      theme.colorScheme.primaryContainer,
-                      theme.colorScheme.primary,
+                      theme.colorScheme.primary.withOpacity(0.20),
+                      theme.colorScheme.primaryContainer.withOpacity(0.05),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -205,20 +242,16 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
 
             // Big swoosh layer
             Positioned.fill(
+              top: 500,
+              left: 150,
               child: Opacity(
                 opacity: 0.35,
-                child: ClipPath(
-                  clipper: _SwooshClipper(),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Color(0xFFFFFFFF),
-                          Color(0x00FFFFFF),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                child: Center(
+                  child: FractionallySizedBox(
+                    widthFactor: 2,
+                    heightFactor: 2,
+                    child: SvgPicture.asset(
+                      'assets/maps/za4.svg',
                     ),
                   ),
                 ),

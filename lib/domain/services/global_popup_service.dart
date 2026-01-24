@@ -61,7 +61,7 @@ class GlobalPopupService {
     required String title,
     required String message,
     Duration? duration,
-    PopupPosition? position,
+    PopupPosition? position = PopupPosition.center,
   }) {
     _notifier.showError(title, message, duration: duration, position: position);
   }
