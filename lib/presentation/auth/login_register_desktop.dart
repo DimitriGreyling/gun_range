@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
+import 'package:gun_range_app/presentation/widgets/radar_background.dart';
 import 'package:gun_range_app/viewmodels/auth_vm.dart';
 
 class LoginRegisterDesktop extends ConsumerStatefulWidget {
@@ -27,12 +28,13 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
     final authState = ref.watch(authViewModelProvider);
 
     return Scaffold(
-        body: Stack(
-      children: [
-        _buildImageSection(),
-        _buildLoginForm(authModel, authState),
-      ],
-    ));
+      body: Row(
+        children: [
+          _buildImageSection(),
+          _buildLoginForm(authModel, authState),
+        ],
+      ),
+    );
   }
 
   Widget _buildLoginFields(AuthViewModel authViewModel, AuthState state) {
@@ -66,8 +68,9 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
           validator: (v) {
             final value = v ?? '';
             if (value.isEmpty) return 'Password is required';
-            if (value.length < 8)
+            if (value.length < 8) {
               return 'Password must be at least 8 characters';
+            }
             return null;
           },
         ),
@@ -161,7 +164,7 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
       children: [
         Text(label,
             style: TextStyle(
-                color: theme.colorScheme.onBackground,
+            color: theme.colorScheme.onSurface,
                 fontWeight: FontWeight.w500)),
         const SizedBox(height: 8),
         TextFormField(
@@ -201,14 +204,19 @@ class _LoginRegisterDesktopState extends ConsumerState<LoginRegisterDesktop> {
         ),
         child: Stack(
           children: [
-            // Base background
+            // Radar-themed background
+            const Positioned.fill(
+              child: RadarBackground(),
+            ),
+
+            // Tint layer to keep it aligned with your theme
             Positioned.fill(
-              child: Container(
+              child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      theme.colorScheme.primaryContainer,
-                      theme.colorScheme.primary,
+                      theme.colorScheme.primary.withOpacity(0.20),
+                      theme.colorScheme.primaryContainer.withOpacity(0.05),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
