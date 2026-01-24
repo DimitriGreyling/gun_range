@@ -2,8 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/presentation/auth/login_app_shell.dart';
 import 'package:gun_range_app/presentation/home/home_app_shell.dart';
-import '../../presentation/home/home_screen_mobile.dart';
-import '../../presentation/auth/login_register_web.dart';
 import '../../presentation/ranges/range_list_screen.dart';
 import '../../presentation/events/event_list_screen.dart';
 import '../../presentation/bookings/booking_list_screen.dart';
@@ -13,7 +11,7 @@ import '../../presentation/profile/profile_screen.dart';
 final isMobile = !kIsWeb &&
     (defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.android);
-final isWeb = kIsWeb;
+const isWeb = kIsWeb;
 final isDesktop = !isMobile && !isWeb;
 
 final appRouter = GoRouter(

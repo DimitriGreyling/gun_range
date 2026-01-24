@@ -1,8 +1,12 @@
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/theme/theme_provider.dart';
+import 'package:gun_range_app/data/models/event.dart';
+import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/presentation/widgets/controllers/expanded_collapsed_menu_controller.dart';
 import 'package:gun_range_app/presentation/widgets/loading_card_widget.dart';
@@ -166,7 +170,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                             ? [
                                                 for (var range
                                                     in rangeState.ranges)
-                                                  _buildCard(),
+                                                  _buildCardRange(range),
                                               ]
                                             : [
                                                 SizedBox(
@@ -233,7 +237,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                             ? [
                                                 for (var event
                                                     in rangeState.events)
-                                                  _buildCard(),
+                                                  _buildCardEvent(event),
                                               ]
                                             : [
                                                 SizedBox(
@@ -381,7 +385,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     );
   }
 
-  Widget _buildCard() {
+  Widget _buildCardEvent(Event? event) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
@@ -418,10 +422,68 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                for (int i = 0; i < 3; i++) ...[
-                  line(factors[i % factors.length]),
-                  const SizedBox(height: 8),
-                ],
+                Text(event?.title ?? 'Range Name',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                Text(event?.description ?? 'Range Location',
+                    style: Theme.of(context).textTheme.bodyMedium),
+                const SizedBox(height: 8),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCardRange(Range? range) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width / 4,
+        height: MediaQuery.of(context).size.height / 3,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            Widget line(double factor) => Skeleton.shade(
+                  child: Container(
+                    width: constraints.maxWidth * factor,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                );
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Skeleton.shade(
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(18),
+                      topRight: Radius.circular(18),
+                    ),
+                    child: Container(
+                      width: double.infinity,
+                      height: MediaQuery.of(context).size.height / 6,
+                      color: Colors.grey[300],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(range?.name ?? 'Range Name',
+                    style: Theme.of(context).textTheme.titleMedium),
+                const SizedBox(height: 8),
+                Text(range?.description ?? 'Range Location',
+                    style: Theme.of(context).textTheme.bodyMedium),
+                const SizedBox(height: 8),
+
+                // for (int i = 0; i < 3; i++) ...[
+                //   line(factors[i % factors.length]),
+                //   const SizedBox(height: 8),
+                // ],
               ],
             );
           },
