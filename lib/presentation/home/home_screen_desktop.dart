@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/theme/theme_provider.dart';
 import 'package:gun_range_app/data/models/event.dart';
@@ -268,6 +269,8 @@ class _HomeScreenDesktopState extends ConsumerState<HomeScreenDesktop> {
         children: [
           _buildMenuHeader(expanded),
           _buildTitle(Icons.home, 'Home', expanded),
+          _buildTitle(Icons.location_pin, 'Ranges', expanded),
+          _buildTitle(Icons.event, 'Events', expanded),
           _buildTitle(Icons.settings, 'Settings', expanded),
         ],
       ),
@@ -361,7 +364,7 @@ class _HomeScreenDesktopState extends ConsumerState<HomeScreenDesktop> {
   Widget _buildTitle(IconData icon, String label, bool expanded) {
     if (expanded) {
       return ListTile(
-        leading: Icon(icon),
+        leading: FaIcon(icon),
         title: AnimatedSwitcher(
           duration: const Duration(milliseconds: 180),
           switchInCurve: Curves.easeOut,
