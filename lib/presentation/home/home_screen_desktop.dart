@@ -268,10 +268,21 @@ class _HomeScreenDesktopState extends ConsumerState<HomeScreenDesktop> {
         padding: EdgeInsets.zero,
         children: [
           _buildMenuHeader(expanded),
-          _buildTitle(Icons.home, 'Home', expanded),
-          _buildTitle(Icons.location_pin, 'Ranges', expanded),
-          _buildTitle(Icons.event, 'Events', expanded),
-          _buildTitle(Icons.settings, 'Settings', expanded),
+          _buildTitle(
+            Icons.home,
+            'Home',
+            expanded,
+            () {},
+          ),
+          _buildTitle(Icons.location_pin, 'Ranges', expanded, () {
+            GoRouter.of(context).go('/ranges');
+          }),
+          _buildTitle(Icons.event, 'Events', expanded, () {
+            GoRouter.of(context).go('/events');
+          }),
+          _buildTitle(Icons.settings, 'Settings', expanded, () {
+            GoRouter.of(context).go('/settings');
+          }),
         ],
       ),
     );
@@ -361,34 +372,39 @@ class _HomeScreenDesktopState extends ConsumerState<HomeScreenDesktop> {
     );
   }
 
-  Widget _buildTitle(IconData icon, String label, bool expanded) {
+  Widget _buildTitle(
+      IconData icon, String label, bool expanded, VoidCallback? onTap) {
     if (expanded) {
-      return ListTile(
-        leading: FaIcon(icon),
-        title: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 180),
-          switchInCurve: Curves.easeOut,
-          switchOutCurve: Curves.easeIn,
-          transitionBuilder: (child, anim) => FadeTransition(
-            opacity: anim,
-            child: SizeTransition(
-              sizeFactor: anim,
-              axis: Axis.horizontal,
-              child: child,
+      return GestureDetector(
+        onTap: onTap,
+        
+        child: ListTile(
+          leading: FaIcon(icon),
+          title: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 180),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+            transitionBuilder: (child, anim) => FadeTransition(
+              opacity: anim,
+              child: SizeTransition(
+                sizeFactor: anim,
+                axis: Axis.horizontal,
+                child: child,
+              ),
             ),
+            child: expanded
+                ? Align(
+                    key: ValueKey(label),
+                    alignment: Alignment.centerLeft,
+                    child: Text(label,
+                        maxLines: 1,
+                        overflow: TextOverflow.fade,
+                        softWrap: false),
+                  )
+                : const SizedBox(key: ValueKey('collapsed')),
           ),
-          child: expanded
-              ? Align(
-                  key: ValueKey(label),
-                  alignment: Alignment.centerLeft,
-                  child: Text(label,
-                      maxLines: 1,
-                      overflow: TextOverflow.fade,
-                      softWrap: false),
-                )
-              : const SizedBox(key: ValueKey('collapsed')),
+          minLeadingWidth: 0,
         ),
-        minLeadingWidth: 0,
       );
     }
 

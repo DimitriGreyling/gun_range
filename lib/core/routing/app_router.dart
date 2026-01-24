@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/presentation/add_range/add_range_app_shell.dart';
 import 'package:gun_range_app/presentation/auth/login_app_shell.dart';
 import 'package:gun_range_app/presentation/home/home_app_shell.dart';
 import '../../presentation/ranges/range_list_screen.dart';
@@ -47,6 +48,10 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/profile',
       builder: (context, state) => const ProfileScreen(),
+    ),
+    GoRoute(
+      path: '/add_range',
+      builder: (context, state) => const AddRangeAppShell(),
     ),
   ],
 );
