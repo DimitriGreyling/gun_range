@@ -1,48 +1,40 @@
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/providers/file_picker_provider.dart';
 
-class ImagePickerWidget extends StatefulWidget {
+class ImagePickerWidget extends ConsumerStatefulWidget {
   final void Function(File? image)? onImagePicked;
 
-  const ImagePickerWidget({Key? key, this.onImagePicked}) : super(key: key);
+  const ImagePickerWidget({super.key, this.onImagePicked});
 
   @override
-  State<ImagePickerWidget> createState() => _ImagePickerWidgetState();
+  ConsumerState<ImagePickerWidget> createState() => _ImagePickerWidgetState();
 }
 
-class _ImagePickerWidgetState extends State<ImagePickerWidget> {
-  File? _image;
-  bool _isLoading = false;
+class _ImagePickerWidgetState extends ConsumerState<ImagePickerWidget> {
+  // File? _image;
+  // bool _isLoading = false;
 
-  Future<void> _pickImageFiles() async {
-    setState(() => _isLoading = true);
-    try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.image);
-      if (result != null) {
-        File file = File(result.files.single.path!);
-        setState(() {
-          _image = file;
-        });
-        widget.onImagePicked?.call(_image);
-      }
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
+    //VIEWMODEL LOGIC HERE
+    final viewModel = ref.watch(filePickerProvider.notifier);
+    final state = ref.watch(filePickerProvider);
+
     return Column(
       children: [
-        if (_isLoading)
+        if (state.isLoading)
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: CircularProgressIndicator(),
           )
         else
-          _image != null
-              ? Image.file(_image!, height: 150)
+          state.selectedFiles.isNotEmpty
+              ? Image.file(state.selectedFiles.first, height: 150)
               : const Icon(Icons.image, size: 150, color: Colors.grey),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -50,13 +42,13 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
             ElevatedButton.icon(
               icon: const Icon(Icons.photo_camera),
               label: const Text('Camera'),
-              onPressed: _isLoading ? null : _pickImageFiles,
+              onPressed: state.isLoading ? null : state.isLoading ? null : viewModel.pickImageFiles,
             ),
             const SizedBox(width: 16),
             ElevatedButton.icon(
               icon: const Icon(Icons.photo_library),
               label: const Text('Gallery'),
-              onPressed: _isLoading ? null : _pickImageFiles,
+              onPressed: state.isLoading ? null : state.isLoading ? null : viewModel.pickImageFiles,
             ),
           ],
         ),
