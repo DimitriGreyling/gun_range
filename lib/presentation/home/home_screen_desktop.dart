@@ -275,7 +275,7 @@ class _HomeScreenDesktopState extends ConsumerState<HomeScreenDesktop> {
             () {},
           ),
           _buildTitle(Icons.location_pin, 'Ranges', expanded, () {
-            GoRouter.of(context).go('/ranges');
+            GoRouter.of(context).go('/add_range');
           }),
           _buildTitle(Icons.event, 'Events', expanded, () {
             GoRouter.of(context).go('/events');
