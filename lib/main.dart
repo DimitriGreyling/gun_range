@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -5,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/presentation/widgets/popup/global_popup_overlay.dart';
+import 'package:gun_range_app/providers/auth_state_provider.dart';
+import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/routing/app_router.dart';
@@ -41,8 +44,36 @@ Future<void> main() async {
   );
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends ConsumerStatefulWidget {
   const MainApp({super.key});
+
+  @override
+  ConsumerState<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends ConsumerState<MainApp> with WidgetsBindingObserver {
+  bool _signingOut = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_signingOut) return;
+    if (state == AppLifecycleState.detached) {
+      _signingOut = true;
+      unawaited(ref.read(authViewModelProvider.notifier).signOut());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,3 +110,43 @@ class MainApp extends StatelessWidget {
     );
   }
 }
+
+
+// class MainApp extends StatelessWidget {
+//   const MainApp({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Consumer(
+//       builder: (context, ref, _) {
+//         final themeMode = ref.watch(themeModeProvider);
+
+//         return MaterialApp.router(
+//           restorationScopeId: 'app',
+//           scrollBehavior: const MaterialScrollBehavior().copyWith(
+//             dragDevices: {
+//               PointerDeviceKind.mouse,
+//               PointerDeviceKind.touch,
+//               PointerDeviceKind.trackpad,
+//               PointerDeviceKind.stylus,
+//               PointerDeviceKind.unknown,
+//             },
+//           ),
+//           debugShowCheckedModeBanner: false,
+//           routerConfig: appRouter,
+//           title: 'Range Connect',
+//           theme: AppTheme.lightTheme,
+//           darkTheme: AppTheme.darkTheme,
+//           themeMode: themeMode,
+//           builder: (context, child) {
+//             if (child == null) return const SizedBox.shrink();
+
+//             return GlobalPopupOverlay(
+//               child: child,
+//             );
+//           },
+//         );
+//       },
+//     );
+//   }
+// }

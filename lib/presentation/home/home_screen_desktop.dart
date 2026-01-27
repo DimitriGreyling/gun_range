@@ -275,7 +275,7 @@ class _HomeScreenDesktopState extends ConsumerState<HomeScreenDesktop> {
             () {},
           ),
           _buildTitle(Icons.location_pin, 'Ranges', expanded, () {
-            GoRouter.of(context).go('/ranges');
+            GoRouter.of(context).go('/add_range');
           }),
           _buildTitle(Icons.event, 'Events', expanded, () {
             GoRouter.of(context).go('/events');
@@ -375,10 +375,10 @@ class _HomeScreenDesktopState extends ConsumerState<HomeScreenDesktop> {
   Widget _buildTitle(
       IconData icon, String label, bool expanded, VoidCallback? onTap) {
     if (expanded) {
-      return GestureDetector(
-        onTap: onTap,
-        
+      return MouseRegion(
+        cursor: SystemMouseCursors.click,
         child: ListTile(
+          onTap: onTap,
           leading: FaIcon(icon),
           title: AnimatedSwitcher(
             duration: const Duration(milliseconds: 180),

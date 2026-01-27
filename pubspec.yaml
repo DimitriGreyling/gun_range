@@ -8,9 +8,11 @@ environment:
 
 dependencies:
   # cloudflare_turnstile: ^3.6.2
+  file_picker: ^10.3.8
   flutter:
     sdk: flutter
   flutter_dotenv: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
   flutter_riverpod: ^2.6.1
   flutter_secure_storage: ^10.0.0
   flutter_svg: ^2.1.0
@@ -31,3 +33,9 @@ flutter:
     - .env
     - assets/
     - assets/maps/
+    - assets/logo/
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo/logo_bigger.svg"
