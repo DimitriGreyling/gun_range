@@ -291,12 +291,9 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      margin: const EdgeInsets.only(right: 8.0),
-                      child: Image.asset(
-                        'assets/logo/logo_no_buffer.png',
-                        height: 60,
-                      ),
+                    SvgPicture.asset(
+                      'assets/logo/logo_bigger.svg',
+                      height: 60,
                     ),
                     Text('RangeConnect',
                         style: Theme.of(context).textTheme.headlineMedium),
