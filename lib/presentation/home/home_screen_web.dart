@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/theme/theme_provider.dart';
 import 'package:gun_range_app/data/models/event.dart';
@@ -290,6 +291,13 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    Container(
+                      margin: const EdgeInsets.only(right: 8.0),
+                      child: Image.asset(
+                        'assets/logo/logo_no_buffer.png',
+                        height: 60,
+                      ),
+                    ),
                     Text('RangeConnect',
                         style: Theme.of(context).textTheme.headlineMedium),
                     const Spacer(),

@@ -22,14 +22,16 @@ final appRouter = GoRouter(
   initialLocation: isDesktop ? '/login' : '/home',
   restorationScopeId: 'appRouter',
   redirect: (context, state) {
+    if (isDesktop) {
       final isLoggingIn = state.matchedLocation == '/login';
       final isAuthedNow = Supabase.instance.client.auth.currentUser != null;
 
       if (!isAuthedNow) return isLoggingIn ? null : '/login';
       if (isLoggingIn) return '/home';
+    }
 
-      return null;
-    },
+    return state.matchedLocation;
+  },
   routes: [
     GoRoute(
       name: 'home',

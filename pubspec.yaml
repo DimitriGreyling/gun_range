@@ -32,3 +32,4 @@ flutter:
     - .env
     - assets/
     - assets/maps/
+    - assets/logo/
