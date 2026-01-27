@@ -219,7 +219,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                         rangeState.isLoadingEvents ||
                                                 rangeState.events.isNotEmpty
                                             ? MainAxisAlignment.spaceEvenly
-                                            : MainAxisAlignment.center,
+                                            : MainAxisAlignment.start,
                                     crossAxisAlignment:
                                         rangeState.isLoadingEvents ||
                                                 rangeState.events.isNotEmpty
@@ -391,107 +391,284 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
   }
 
   Widget _buildCardEvent(Event? event) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width / 4,
-        height: MediaQuery.of(context).size.height / 3,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            Widget line(double factor) => Skeleton.shade(
-                  child: Container(
-                    width: constraints.maxWidth * factor,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                );
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        child: Card(
+          elevation: 2,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width / 4,
+            height: MediaQuery.of(context).size.height / 3,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                Widget line(double factor) => Skeleton.shade(
+                      child: Container(
+                        width: constraints.maxWidth * factor,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    );
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Skeleton.shade(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(18),
-                      topRight: Radius.circular(18),
+                return Stack(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Skeleton.shade(
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(18),
+                              topRight: Radius.circular(18),
+                            ),
+                            child: Container(
+                              width: double.infinity,
+                              height: MediaQuery.of(context).size.height / 6,
+                              color: Colors.grey[300],
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 12),
+                              Text(event?.title ?? 'Range Name',
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium),
+                              const SizedBox(height: 8),
+                              Text(event?.description ?? 'Range Location',
+                                  maxLines: 2,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        overflow: TextOverflow.ellipsis,
+                                      )),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary
+                                          .withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                      ),
+                                    ),
+                                    child: const Text('OPEN'),
+                                  )
+                                ],
+                              )
+                            ],
+                          ),
+                        )
+                      ],
                     ),
-                    child: Container(
-                      width: double.infinity,
-                      height: MediaQuery.of(context).size.height / 6,
-                      color: Colors.grey[300],
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: IconButton(
+                        style: IconButton.styleFrom(
+                          backgroundColor: Theme.of(context)
+                              .colorScheme
+                              .surface
+                              .withOpacity(0.3),
+                        ),
+                        onPressed: () {},
+                        icon: Icon(
+                          Icons.favorite_border_outlined,
+                          color: Colors.red,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(event?.title ?? 'Range Name',
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                Text(event?.description ?? 'Range Location',
-                    style: Theme.of(context).textTheme.bodyMedium),
-                const SizedBox(height: 8),
-              ],
-            );
-          },
+                  ],
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildCardRange(Range? range) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width / 4,
-        height: MediaQuery.of(context).size.height / 3,
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            Widget line(double factor) => Skeleton.shade(
-                  child: Container(
-                    width: constraints.maxWidth * factor,
-                    height: 14,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(8),
+    // return Card(
+    //   elevation: 2,
+    //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+    //   child: SizedBox(
+    //     width: MediaQuery.of(context).size.width / 4,
+    //     height: MediaQuery.of(context).size.height / 3,
+    //     child: LayoutBuilder(
+    //       builder: (context, constraints) {
+    //         Widget line(double factor) => Skeleton.shade(
+    //               child: Container(
+    //                 width: constraints.maxWidth * factor,
+    //                 height: 14,
+    //                 decoration: BoxDecoration(
+    //                   color: Colors.grey[300],
+    //                   borderRadius: BorderRadius.circular(8),
+    //                 ),
+    //               ),
+    //             );
+
+    //         return Column(
+    //           crossAxisAlignment: CrossAxisAlignment.start,
+    //           children: [
+    //             Skeleton.shade(
+    //               child: ClipRRect(
+    //                 borderRadius: const BorderRadius.only(
+    //                   topLeft: Radius.circular(18),
+    //                   topRight: Radius.circular(18),
+    //                 ),
+    //                 child: Container(
+    //                   width: double.infinity,
+    //                   height: MediaQuery.of(context).size.height / 6,
+    //                   color: Colors.grey[300],
+    //                 ),
+    //               ),
+    //             ),
+    //             const SizedBox(height: 12),
+    //             Text(range?.name ?? 'Range Name',
+    //                 style: Theme.of(context).textTheme.titleMedium),
+    //             const SizedBox(height: 8),
+    //             Text(range?.description ?? 'Range Location',
+    //                 style: Theme.of(context).textTheme.bodyMedium),
+    //             const SizedBox(height: 8),
+
+    //             // for (int i = 0; i < 3; i++) ...[
+    //             //   line(factors[i % factors.length]),
+    //             //   const SizedBox(height: 8),
+    //             // ],
+    //           ],
+    //         );
+    //       },
+    //     ),
+    //   ),
+    // );
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        child: Card(
+          elevation: 2,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width / 4,
+            height: MediaQuery.of(context).size.height / 3,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                Widget line(double factor) => Skeleton.shade(
+                      child: Container(
+                        width: constraints.maxWidth * factor,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[300],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    );
+
+                return Stack(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Skeleton.shade(
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(18),
+                              topRight: Radius.circular(18),
+                            ),
+                            child: Container(
+                              width: double.infinity,
+                              height: MediaQuery.of(context).size.height / 6,
+                              color: Colors.grey[300],
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 12),
+                              Text(range?.name ?? 'Range Name',
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium),
+                              const SizedBox(height: 8),
+                              Text(range?.description ?? 'Range Location',
+                                  maxLines: 2,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        overflow: TextOverflow.ellipsis,
+                                      )),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary
+                                          .withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                      ),
+                                    ),
+                                    child: const Text('OPEN'),
+                                  )
+                                ],
+                              )
+                            ],
+                          ),
+                        )
+                      ],
                     ),
-                  ),
+                    Positioned(
+                      top: 0,
+                      right: 0,
+                      child: IconButton(
+                        style: IconButton.styleFrom(
+                          backgroundColor: Theme.of(context)
+                              .colorScheme
+                              .surface
+                              .withOpacity(0.3),
+                        ),
+                        onPressed: () {},
+                        icon: Icon(
+                          Icons.favorite_border_outlined,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
+                  ],
                 );
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Skeleton.shade(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(18),
-                      topRight: Radius.circular(18),
-                    ),
-                    child: Container(
-                      width: double.infinity,
-                      height: MediaQuery.of(context).size.height / 6,
-                      color: Colors.grey[300],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(range?.name ?? 'Range Name',
-                    style: Theme.of(context).textTheme.titleMedium),
-                const SizedBox(height: 8),
-                Text(range?.description ?? 'Range Location',
-                    style: Theme.of(context).textTheme.bodyMedium),
-                const SizedBox(height: 8),
-
-                // for (int i = 0; i < 3; i++) ...[
-                //   line(factors[i % factors.length]),
-                //   const SizedBox(height: 8),
-                // ],
-              ],
-            );
-          },
+              },
+            ),
+          ),
         ),
       ),
     );
