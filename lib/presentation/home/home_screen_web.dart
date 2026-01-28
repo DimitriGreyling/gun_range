@@ -139,58 +139,61 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                 ),
                               ],
                             ),
-                            Scrollbar(
-                              controller: _horizontalRangeController,
-                              thumbVisibility: true,
-                              child: SingleChildScrollView(
+                            SizedBox(
+                              width: double.infinity,
+                              child: Scrollbar(
                                 controller: _horizontalRangeController,
-                                scrollDirection: Axis.horizontal,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(bottom: 16.0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        rangeState.isLoadingRanges ||
-                                                rangeState.ranges.isNotEmpty
-                                            ? MainAxisAlignment.spaceEvenly
-                                            : MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        rangeState.isLoadingRanges ||
-                                                rangeState.ranges.isNotEmpty
-                                            ? CrossAxisAlignment.start
-                                            : CrossAxisAlignment.center,
-                                    children: rangeState.isLoadingRanges
-                                        ? [
-                                            const LoadingCardWidget(
-                                                lineCount: 3),
-                                            const LoadingCardWidget(
-                                                lineCount: 3),
-                                            const LoadingCardWidget(
-                                                lineCount: 3),
-                                          ]
-                                        : rangeState.ranges.isNotEmpty
-                                            ? [
-                                                for (var range
-                                                    in rangeState.ranges)
-                                                  _buildCardRange(range),
-                                              ]
-                                            : [
-                                                SizedBox(
-                                                  width: MediaQuery.of(context)
-                                                          .size
-                                                          .width /
-                                                      4,
-                                                  height: MediaQuery.of(context)
-                                                          .size
-                                                          .height /
-                                                      3,
-                                                  child: Text(
-                                                    'No Ranges Available',
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyLarge,
+                                thumbVisibility: true,
+                                child: SingleChildScrollView(
+                                  controller: _horizontalRangeController,
+                                  scrollDirection: Axis.horizontal,
+                                  child: Padding(
+                                    padding:
+                                        const EdgeInsets.only(bottom: 16.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          rangeState.isLoadingRanges ||
+                                                  rangeState.ranges.isNotEmpty
+                                              ? CrossAxisAlignment.start
+                                              : CrossAxisAlignment.center,
+                                      children: rangeState.isLoadingRanges
+                                          ? [
+                                              const LoadingCardWidget(
+                                                  lineCount: 3),
+                                              const LoadingCardWidget(
+                                                  lineCount: 3),
+                                              const LoadingCardWidget(
+                                                  lineCount: 3),
+                                            ]
+                                          : rangeState.ranges.isNotEmpty
+                                              ? [
+                                                  for (var range
+                                                      in rangeState.ranges)
+                                                    _buildCardRange(range),
+                                                ]
+                                              : [
+                                                  SizedBox(
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width /
+                                                            4,
+                                                    height:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .height /
+                                                            3,
+                                                    child: Text(
+                                                      'No Ranges Available',
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyLarge,
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                    ),
                                   ),
                                 ),
                               ),
@@ -206,58 +209,61 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                 ),
                               ],
                             ),
-                            Scrollbar(
-                              thumbVisibility: true,
-                              controller: _horizontalCompetitionController,
-                              child: SingleChildScrollView(
+                            SizedBox(
+                              width: double.infinity,
+                              child: Scrollbar(
+                                thumbVisibility: true,
                                 controller: _horizontalCompetitionController,
-                                scrollDirection: Axis.horizontal,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(bottom: 16.0),
-                                  child: Row(
-                                    mainAxisAlignment:
-                                        rangeState.isLoadingEvents ||
-                                                rangeState.events.isNotEmpty
-                                            ? MainAxisAlignment.spaceEvenly
-                                            : MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        rangeState.isLoadingEvents ||
-                                                rangeState.events.isNotEmpty
-                                            ? CrossAxisAlignment.start
-                                            : CrossAxisAlignment.center,
-                                    children: rangeState.isLoadingEvents
-                                        ? [
-                                            const LoadingCardWidget(
-                                                lineCount: 3),
-                                            const LoadingCardWidget(
-                                                lineCount: 3),
-                                            const LoadingCardWidget(
-                                                lineCount: 3),
-                                          ]
-                                        : rangeState.events.isNotEmpty
-                                            ? [
-                                                for (var event
-                                                    in rangeState.events)
-                                                  _buildCardEvent(event),
-                                              ]
-                                            : [
-                                                SizedBox(
-                                                  width: MediaQuery.of(context)
-                                                          .size
-                                                          .width /
-                                                      4,
-                                                  height: MediaQuery.of(context)
-                                                          .size
-                                                          .height /
-                                                      3,
-                                                  child: Text(
-                                                    'No Events Available',
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .bodyLarge,
+                                child: SingleChildScrollView(
+                                  controller: _horizontalCompetitionController,
+                                  scrollDirection: Axis.horizontal,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 16.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          rangeState.isLoadingEvents ||
+                                                  rangeState.events.isNotEmpty
+                                              ? MainAxisAlignment.spaceEvenly
+                                              : MainAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          rangeState.isLoadingEvents ||
+                                                  rangeState.events.isNotEmpty
+                                              ? CrossAxisAlignment.start
+                                              : CrossAxisAlignment.center,
+                                      children: rangeState.isLoadingEvents
+                                          ? [
+                                              const LoadingCardWidget(
+                                                  lineCount: 3),
+                                              const LoadingCardWidget(
+                                                  lineCount: 3),
+                                              const LoadingCardWidget(
+                                                  lineCount: 3),
+                                            ]
+                                          : rangeState.events.isNotEmpty
+                                              ? [
+                                                  for (var event
+                                                      in rangeState.events)
+                                                    _buildCardEvent(event),
+                                                ]
+                                              : [
+                                                  SizedBox(
+                                                    width: MediaQuery.of(context)
+                                                            .size
+                                                            .width /
+                                                        4,
+                                                    height: MediaQuery.of(context)
+                                                            .size
+                                                            .height /
+                                                        3,
+                                                    child: Text(
+                                                      'No Events Available',
+                                                      style: Theme.of(context)
+                                                          .textTheme
+                                                          .bodyLarge,
+                                                    ),
                                                   ),
-                                                ),
-                                              ],
+                                                ],
+                                    ),
                                   ),
                                 ),
                               ),

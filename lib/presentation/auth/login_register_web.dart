@@ -94,12 +94,15 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: theme.primaryColor.withOpacity(0.2),
+                        color: theme.colorScheme.primary.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(9999),
                       ),
                       padding: const EdgeInsets.all(16),
-                      child: Icon(Icons.zoom_out,
-                          color: theme.primaryColor, size: 32),
+                      child: Image.asset(
+                        'assets/logo/logo_no_buffer.png',
+                        width: 80,
+                        height: 80,
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Text(
@@ -107,7 +110,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                       style: theme.textTheme.displayLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         fontSize: 32,
-                        color: theme.colorScheme.onBackground,
+                        color: theme.colorScheme.onSurface,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -115,8 +118,8 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                     Container(
                       decoration: BoxDecoration(
                         color: theme.brightness == Brightness.dark
-                            ? Colors.white.withOpacity(0.05)
-                            : Colors.black.withOpacity(0.2),
+                            ? Colors.white.withOpacity(0.1)
+                            : Colors.black.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: Row(
@@ -465,7 +468,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
               ),
             ),
             const SizedBox(width: 16),
-           Expanded(
+            Expanded(
               child: _buildTextField(
                 isLoading: isLoading,
                 label: 'Confirm Password',
