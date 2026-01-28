@@ -292,6 +292,28 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                         child: Text(isLogin ? 'Login' : 'Register'),
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: theme.colorScheme.secondary,
+                          foregroundColor:
+                              Theme.of(context).colorScheme.onPrimary,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16)),
+                          textStyle: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 18),
+                        ),
+                        onPressed: authViewModel.isLoading
+                            ? null
+                            : () async {
+                                context.go('/home');
+                              },
+                        child: const Text('Go to Home'),
+                      ),
+                    ),
                     const SizedBox(height: 24),
                     const Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
