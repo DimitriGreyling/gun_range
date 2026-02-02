@@ -324,17 +324,6 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
             height: MediaQuery.of(context).size.height / 3,
             child: LayoutBuilder(
               builder: (context, constraints) {
-                Widget line(double factor) => Skeleton.shade(
-                      child: Container(
-                        width: constraints.maxWidth * factor,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    );
-
                 return Stack(
                   children: [
                     Column(

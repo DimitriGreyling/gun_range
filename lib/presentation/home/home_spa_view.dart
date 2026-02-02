@@ -259,6 +259,18 @@ class _HomeSPAViewState extends ConsumerState<HomeSPAView> {
             cursor: SystemMouseCursors.click,
             child: InkWell(
               onTap: () {
+                GoRouter.of(context).go('/bookings');
+              },
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: _buildTitle(Icons.book_online, 'Bookings', expanded),
+              ),
+            ),
+          ),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: InkWell(
+              onTap: () {
                 GoRouter.of(context).go('/settings');
               },
               child: _buildTitle(Icons.settings, 'Settings', expanded),
