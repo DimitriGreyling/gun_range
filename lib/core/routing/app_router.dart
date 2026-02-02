@@ -38,7 +38,14 @@ final appRouter = GoRouter(
     GoRoute(
       name: 'home',
       path: '/home',
-      builder: (context, state) => HomeSPAView(
+      builder: (context, state) => const HomeSPAView(
+        child: HomeAppShell(),
+      ),
+    ),
+    GoRoute(
+      name: 'home-2',
+      path: '/',
+      builder: (context, state) => const HomeSPAView(
         child: HomeAppShell(),
       ),
     ),

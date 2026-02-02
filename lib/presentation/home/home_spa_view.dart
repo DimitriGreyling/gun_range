@@ -246,8 +246,24 @@ class _HomeSPAViewState extends ConsumerState<HomeSPAView> {
         padding: EdgeInsets.zero,
         children: [
           _buildMenuHeader(expanded),
-          _buildTitle(Icons.home, 'Home', expanded),
-          _buildTitle(Icons.settings, 'Settings', expanded),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () {
+                GoRouter.of(context).go('/home');
+              },
+              child: _buildTitle(Icons.dashboard, 'Home', expanded),
+            ),
+          ),
+          MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: InkWell(
+              onTap: () {
+                GoRouter.of(context).go('/settings');
+              },
+              child: _buildTitle(Icons.settings, 'Settings', expanded),
+            ),
+          ),
         ],
       ),
     );

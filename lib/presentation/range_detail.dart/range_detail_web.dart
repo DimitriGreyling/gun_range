@@ -12,6 +12,10 @@ class RangeDetailWeb extends ConsumerStatefulWidget {
 class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    return Column(
+      children: [
+
+      ],
+    );
   }
 }

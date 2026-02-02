@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:gun_range_app/presentation/home/home_spa_view.dart';
 import 'package:gun_range_app/presentation/range_detail.dart/range_detail_web.dart';
 
 class RangeDetailAppShell extends StatelessWidget {
@@ -16,11 +17,11 @@ class RangeDetailAppShell extends StatelessWidget {
     final isDesktop = !isMobile && !isWeb;
 
     if (isMobile) {
-      return RangeDetailWeb(rangeId: rangeId  );
+      return RangeDetailWeb(rangeId: rangeId);
     } else if (isWeb) {
-      return const RangeDetailWeb();
+      return HomeSPAView(child: RangeDetailWeb(rangeId: rangeId));
     } else {
-      return const RangeDetailWeb();
+      return RangeDetailWeb(rangeId: rangeId);
     }
   }
 }

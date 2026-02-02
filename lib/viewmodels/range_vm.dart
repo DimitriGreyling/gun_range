@@ -1,7 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/event.dart';
+import 'package:gun_range_app/data/models/favorite.dart';
+import 'package:gun_range_app/data/models/popup_position.dart';
 import 'package:gun_range_app/data/repositories/event_repository.dart';
+import 'package:gun_range_app/data/repositories/favorite_repository.dart';
+import 'package:gun_range_app/domain/services/errors_exception_service.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/models/range.dart';
 import '../data/repositories/range_repository.dart';
 
@@ -41,8 +46,10 @@ class RangeState {
 class RangeViewModel extends StateNotifier<RangeState> {
   final RangeRepository _rangeRepository;
   final EventRepository _eventRepository;
+  final FavoriteRepository _favoriteRepository;
 
-  RangeViewModel(this._rangeRepository, this._eventRepository)
+  RangeViewModel(
+      this._rangeRepository, this._eventRepository, this._favoriteRepository)
       : super(const RangeState());
 
   Future<void> fetchRanges() async {
@@ -52,6 +59,7 @@ class RangeViewModel extends StateNotifier<RangeState> {
       state = state.copyWith(isLoadingRanges: false, ranges: ranges);
     } catch (e) {
       state = state.copyWith(isLoadingRanges: false, error: e.toString());
+      ErrorsExceptionService.handleException(e);
     }
   }
 
@@ -62,8 +70,44 @@ class RangeViewModel extends StateNotifier<RangeState> {
       state = state.copyWith(isLoadingEvents: false, events: events);
     } catch (e) {
       state = state.copyWith(isLoadingEvents: false, error: e.toString());
+      ErrorsExceptionService.handleException(e);
     }
   }
 
   Future<void> refresh() => fetchRanges();
+
+  Future<void> addFavorite(String userId, String rangeId) async {
+    try {
+      await _favoriteRepository.addFavorite(userId, rangeId);
+      GlobalPopupService.showSuccess(
+        title: 'Success',
+        message: 'Added to favorites',
+        position: PopupPosition.bottomRight,
+      );
+
+      refresh();
+    } catch (e) {
+      ErrorsExceptionService.handleException(e);
+    }
+  }
+
+  Future<void> removeFavorite(String userId, String rangeId) async {
+    try {
+      await _favoriteRepository.removeFavorite(userId, rangeId);
+      GlobalPopupService.showSuccess(
+        title: 'Success',
+        message: 'Removed from favorites',
+        position: PopupPosition.bottomRight,
+      );
+
+      refresh();
+    } catch (e) {
+      ErrorsExceptionService.handleException(e);
+    }
+  }
+
+  User? getCurrentUser() {
+    final supabase = Supabase.instance.client;
+    return supabase.auth.currentUser;
+  }
 }

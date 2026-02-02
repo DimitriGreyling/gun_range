@@ -5,8 +5,10 @@ import 'package:gun_range_app/core/routing/app_router.dart';
 import 'package:gun_range_app/data/models/event.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/widgets/loading_card_widget.dart';
+import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeScreenWeb extends ConsumerStatefulWidget {
   const HomeScreenWeb({super.key});
@@ -44,27 +46,25 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     //Ranges and Events would be fetched from ViewModels
     final rangeState = ref.watch(rangeViewModelProvider);
 
+    //Get user authentication state
+    final isAuthed = ref.watch(isAuthenticatedProvider);
+
+    User? currentUser;
+
+    if (isAuthed) {
+      currentUser =
+          ref.read(rangeViewModelProvider.notifier).getCurrentUser() as User?;
+    }
+
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            // const SizedBox(height: 16.0),
-            // _buildHeader(isAuthed),
-            // const SizedBox(height: 16.0),
             Expanded(
               child: Row(
                 children: [
-                  // AnimatedContainer(
-                  //   duration: const Duration(milliseconds: 300),
-                  //   curve: Curves.easeInOutCubic,
-                  //   width: menuWidth,
-                  //   child: SizedBox(
-                  //     width: menuWidth,
-                  //     child: _buildMenu(menuExpanded),
-                  //   ),
-                  // ),
                   Expanded(
                     child: SingleChildScrollView(
                       controller: _scrollController,
@@ -115,7 +115,10 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                               ? [
                                                   for (var range
                                                       in rangeState.ranges)
-                                                    _buildCardRange(range),
+                                                    _buildCardRange(
+                                                        range: range,
+                                                        isAuthed: isAuthed,
+                                                        user: currentUser),
                                                 ]
                                               : [
                                                   SizedBox(
@@ -162,7 +165,8 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                   controller: _horizontalCompetitionController,
                                   scrollDirection: Axis.horizontal,
                                   child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 16.0),
+                                    padding:
+                                        const EdgeInsets.only(bottom: 16.0),
                                     child: Row(
                                       mainAxisAlignment:
                                           rangeState.isLoadingEvents ||
@@ -187,18 +191,23 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                               ? [
                                                   for (var event
                                                       in rangeState.events)
-                                                    _buildCardEvent(event),
+                                                    _buildCardEvent(
+                                                        event: event,
+                                                        isAuthed: isAuthed,
+                                                        user: currentUser),
                                                 ]
                                               : [
                                                   SizedBox(
-                                                    width: MediaQuery.of(context)
-                                                            .size
-                                                            .width /
-                                                        4,
-                                                    height: MediaQuery.of(context)
-                                                            .size
-                                                            .height /
-                                                        3,
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width /
+                                                            4,
+                                                    height:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .height /
+                                                            3,
                                                     child: Text(
                                                       'No Events Available',
                                                       style: Theme.of(context)
@@ -227,7 +236,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     );
   }
 
-  Widget _buildCardEvent(Event? event) {
+  Widget _buildCardEvent({Event? event, required bool isAuthed, User? user}) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -325,10 +334,21 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                               .surface
                               .withOpacity(0.3),
                         ),
-                        onPressed: () {},
+                        onPressed: !isAuthed
+                            ? null
+                            : () {
+                                if (user == null) return;
+
+                                ref
+                                    .read(rangeViewModelProvider.notifier)
+                                    .addFavorite(
+                                      user.id,
+                                      event?.id ?? '',
+                                    );
+                              },
                         icon: Icon(
                           Icons.favorite_border_outlined,
-                          color: Colors.red,
+                          color: isAuthed ? Colors.red : null,
                         ),
                       ),
                     ),
@@ -342,13 +362,12 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     );
   }
 
-  Widget _buildCardRange(Range? range) {
-
+  Widget _buildCardRange({Range? range, required bool isAuthed, User? user}) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
         onTap: () => {
-          context.go('/ranges/${range?.id}'),
+          context.go('/range-detail/${range?.id}'),
         },
         child: Card(
           elevation: 2,
@@ -444,10 +463,22 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                               .surface
                               .withOpacity(0.3),
                         ),
-                        onPressed: () {},
+                        onPressed: !isAuthed
+                            ? null
+                            : () {
+                                if (user == null) return;
+
+                                ref
+                                    .read(rangeViewModelProvider.notifier)
+                                    .addFavorite(
+                                      user?.id ??
+                                          '', // Replace with actual user ID
+                                      range?.id ?? '',
+                                    );
+                              },
                         icon: Icon(
                           Icons.favorite_border_outlined,
-                          color: Colors.red,
+                          color: isAuthed ? Colors.red : null,
                         ),
                       ),
                     ),
@@ -460,5 +491,4 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
       ),
     );
   }
-
 }

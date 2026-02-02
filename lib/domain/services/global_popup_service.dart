@@ -24,7 +24,7 @@ class GlobalPopupService {
     required String title,
     required String message,
     Duration? duration,
-    PopupPosition? position,
+    PopupPosition? position = PopupPosition.center,
   }) {
     try {
       _notifier.showInfo(title, message,
@@ -39,7 +39,7 @@ class GlobalPopupService {
     required String title,
     required String message,
     Duration? duration,
-    PopupPosition? position,
+    PopupPosition? position = PopupPosition.center,
   }) {
     _notifier.showSuccess(title, message,
         duration: duration, position: position);
@@ -50,7 +50,7 @@ class GlobalPopupService {
     required String title,
     required String message,
     Duration? duration,
-    PopupPosition? position,
+    PopupPosition? position = PopupPosition.center,
   }) {
     _notifier.showWarning(title, message,
         duration: duration, position: position);
