@@ -11,10 +11,6 @@ class RangeRepository {
   final tablename = Tables.ranges;
 
   Future<List<Range>> getRanges() async {
-    final user = _supabase.auth.currentUser;
-    if (user == null) {
-      throw Exception('Login required');
-    }
     final response =
         await _supabase.from(tablename).select().eq('is_active', true);
     return (response as List).map((e) => Range.fromJson(e)).toList();

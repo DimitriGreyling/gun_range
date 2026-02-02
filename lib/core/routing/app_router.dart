@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/presentation/add_range/add_range_app_shell.dart';
 import 'package:gun_range_app/presentation/auth/login_app_shell.dart';
 import 'package:gun_range_app/presentation/home/home_app_shell.dart';
+import 'package:gun_range_app/presentation/home/home_spa_view.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../presentation/ranges/range_list_screen.dart';
 import '../../presentation/events/event_list_screen.dart';
@@ -36,7 +37,9 @@ final appRouter = GoRouter(
     GoRoute(
       name: 'home',
       path: '/home',
-      builder: (context, state) => const HomeAppShell(),
+      builder: (context, state) => HomeSPAView(
+        child: HomeAppShell(),
+      ),
     ),
     GoRoute(
       name: 'login',

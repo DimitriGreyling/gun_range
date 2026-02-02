@@ -166,4 +166,46 @@ class AuthViewModel extends StateNotifier<AuthState> {
       ErrorsExceptionService.handleException(e);
     }
   }
+
+  Future<void> signInWithGoogle() async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+
+      if (_authRepository.supabase.auth.currentUser != null) {
+        await signOut();
+      }
+
+      String? fullName;
+      final userId = await _authRepository.signInWithGoogle();
+
+      _authRepository.callUserCreationEdgeFunction();
+
+      log('Google Sign in initiated, userId:');
+      final profileInformation = await _profileRepository.getMyProfile();
+
+      fullName = profileInformation.fullName;
+      _ref.read(themeModeProvider.notifier).state =
+          themeModeFromDb(profileInformation.themeMode);
+
+      log('User profile loaded: $profileInformation');
+
+      if (fullName != null) {
+        GlobalPopupService.showSuccess(
+          title: 'Login Successful',
+          message: 'Hi there, $fullName! Welcome back.',
+          position: PopupPosition.bottomRight,
+        );
+      } else {
+        GlobalPopupService.showSuccess(
+          title: 'Login Successful',
+          message: 'You have been logged in successfully.',
+          position: PopupPosition.bottomRight,
+        );
+      }
+    } catch (e) {
+      log('Google Sign in error: $e');
+      state = state.copyWith(isLoading: false, error: e.toString());
+      ErrorsExceptionService.handleException(e);
+    }
+  }
 }
