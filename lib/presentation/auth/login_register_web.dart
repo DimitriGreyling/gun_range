@@ -339,7 +339,9 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                           : 'Register with Google',
                       background: Theme.of(context).colorScheme.surface,
                       textColor: Theme.of(context).colorScheme.onSurface,
-                      onPressed: authViewModel.isLoading ? null : () {},
+                      onPressed: authViewModel.isLoading ? null : () {
+                        authViewModelState.signInWithGoogle();
+                      },
                     ),
                   ],
                 ),
