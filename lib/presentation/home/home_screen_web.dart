@@ -1,8 +1,11 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/routing/app_router.dart';
 import 'package:gun_range_app/data/models/event.dart';
+import 'package:gun_range_app/data/models/favorite.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/widgets/loading_card_widget.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
@@ -39,6 +42,66 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     _horizontalRangeController.dispose();
     _horizontalCompetitionController.dispose();
     super.dispose();
+  }
+
+  void _onEventFavoriteClicked({
+    Event? event,
+    required bool isAuthed,
+    User? user,
+    required List<Favorite> favorites,
+  }) {
+    if (user == null) return;
+
+    final Iterable<Favorite> matchingFavorites = favorites.where(
+      (favorite) => favorite.rangeId == event?.id,
+    );
+
+    final Favorite? foundFavorite =
+        matchingFavorites.isNotEmpty ? matchingFavorites.first : null;
+
+    // Prevent duplicate favorites.
+    if (foundFavorite != null) {
+      ref.read(rangeViewModelProvider.notifier).removeEventFavorite(
+            user.id,
+            event?.id ?? '',
+          );
+      return;
+    }
+
+    ref.read(rangeViewModelProvider.notifier).addEventFavorite(
+          user.id,
+          event?.id ?? '',
+        );
+  }
+
+  void _onRangeFavoriteClicked({
+    Range? range,
+    required bool isAuthed,
+    User? user,
+    required List<Favorite> favorites,
+  }) {
+    if (user == null) return;
+
+    final Iterable<Favorite> matchingFavorites = favorites.where(
+      (favorite) => favorite.rangeId == range?.id,
+    );
+
+    final Favorite? foundFavorite =
+        matchingFavorites.isNotEmpty ? matchingFavorites.first : null;
+
+    // Prevent duplicate favorites.
+    if (foundFavorite != null) {
+      ref.read(rangeViewModelProvider.notifier).removeRangeFavorite(
+            user.id,
+            range?.id ?? '',
+          );
+      return;
+    }
+
+    ref.read(rangeViewModelProvider.notifier).addRangeFavorite(
+          user.id,
+          range?.id ?? '',
+        );
   }
 
   @override
@@ -116,9 +179,12 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                                   for (var range
                                                       in rangeState.ranges)
                                                     _buildCardRange(
-                                                        range: range,
-                                                        isAuthed: isAuthed,
-                                                        user: currentUser),
+                                                      range: range,
+                                                      isAuthed: isAuthed,
+                                                      user: currentUser,
+                                                      favorites:
+                                                          rangeState.favorites,
+                                                    ),
                                                 ]
                                               : [
                                                   SizedBox(
@@ -192,9 +258,12 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                                   for (var event
                                                       in rangeState.events)
                                                     _buildCardEvent(
-                                                        event: event,
-                                                        isAuthed: isAuthed,
-                                                        user: currentUser),
+                                                      event: event,
+                                                      isAuthed: isAuthed,
+                                                      user: currentUser,
+                                                      favorites:
+                                                          rangeState.favorites,
+                                                    ),
                                                 ]
                                               : [
                                                   SizedBox(
@@ -236,7 +305,12 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     );
   }
 
-  Widget _buildCardEvent({Event? event, required bool isAuthed, User? user}) {
+  Widget _buildCardEvent({
+    Event? event,
+    required bool isAuthed,
+    User? user,
+    required List<Favorite> favorites,
+  }) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -337,17 +411,18 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                         onPressed: !isAuthed
                             ? null
                             : () {
-                                if (user == null) return;
-
-                                ref
-                                    .read(rangeViewModelProvider.notifier)
-                                    .addFavorite(
-                                      user.id,
-                                      event?.id ?? '',
-                                    );
+                                _onEventFavoriteClicked(
+                                  event: event,
+                                  isAuthed: isAuthed,
+                                  user: user,
+                                  favorites: favorites,
+                                );
                               },
                         icon: Icon(
-                          Icons.favorite_border_outlined,
+                          favorites.any(
+                                  (favorite) => favorite.eventId == event?.id)
+                              ? Icons.favorite
+                              : Icons.favorite_border_outlined,
                           color: isAuthed ? Colors.red : null,
                         ),
                       ),
@@ -362,7 +437,12 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     );
   }
 
-  Widget _buildCardRange({Range? range, required bool isAuthed, User? user}) {
+  Widget _buildCardRange({
+    Range? range,
+    required bool isAuthed,
+    User? user,
+    required List<Favorite> favorites,
+  }) {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -378,17 +458,6 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
             height: MediaQuery.of(context).size.height / 3,
             child: LayoutBuilder(
               builder: (context, constraints) {
-                Widget line(double factor) => Skeleton.shade(
-                      child: Container(
-                        width: constraints.maxWidth * factor,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    );
-
                 return Stack(
                   children: [
                     Column(
@@ -466,18 +535,18 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                         onPressed: !isAuthed
                             ? null
                             : () {
-                                if (user == null) return;
-
-                                ref
-                                    .read(rangeViewModelProvider.notifier)
-                                    .addFavorite(
-                                      user?.id ??
-                                          '', // Replace with actual user ID
-                                      range?.id ?? '',
-                                    );
+                                _onRangeFavoriteClicked(
+                                  range: range,
+                                  isAuthed: isAuthed,
+                                  user: user,
+                                  favorites: favorites,
+                                );
                               },
                         icon: Icon(
-                          Icons.favorite_border_outlined,
+                          favorites.any(
+                                  (favorite) => favorite.rangeId == range?.id)
+                              ? Icons.favorite
+                              : Icons.favorite_border_outlined,
                           color: isAuthed ? Colors.red : null,
                         ),
                       ),

@@ -2,6 +2,7 @@ class Favorite {
   String? id;
   String? userId;
   String? rangeId;
+  String? eventId;
   DateTime? createdAt;
   DateTime? modifiedDate;
 
@@ -11,6 +12,7 @@ class Favorite {
     this.rangeId,
     this.createdAt,
     this.modifiedDate,
+    this.eventId,
   });
 
   factory Favorite.fromMap(Map<String, dynamic> map) {
@@ -24,6 +26,7 @@ class Favorite {
       modifiedDate: map['modified_date'] != null
           ? DateTime.parse(map['modified_date'] as String)
           : null,
+      eventId: map['event_id'] as String?,
     );
   }
 
@@ -32,6 +35,7 @@ class Favorite {
       'id': id,
       'user_id': userId,
       'range_id': rangeId,
+      'event_id': eventId,
       'created_at': createdAt?.toIso8601String(),
       'modified_date': modifiedDate?.toIso8601String(),
     };
