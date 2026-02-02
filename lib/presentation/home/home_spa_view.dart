@@ -87,30 +87,33 @@ class _HomeSPAViewState extends ConsumerState<HomeSPAView> {
     final isAuthed = ref.watch(isAuthenticatedProvider);
 
     return Scaffold(
-        body: Column(
-      children: [
-        const SizedBox(height: 16.0),
-        _buildHeader(isAuthed),
-        const SizedBox(height: 16.0),
-        Expanded(
-          child: Row(
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOutCubic,
-                width: menuWidth,
-                child: SizedBox(
+        body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          const SizedBox(height: 16.0),
+          _buildHeader(isAuthed),
+          const SizedBox(height: 16.0),
+          Expanded(
+            child: Row(
+              children: [
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOutCubic,
                   width: menuWidth,
-                  child: _buildMenu(menuExpanded),
+                  child: SizedBox(
+                    width: menuWidth,
+                    child: _buildMenu(menuExpanded),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: widget.child,
-              ),
-            ],
+                Expanded(
+                  child: widget.child,
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     ));
   }
 
