@@ -40,6 +40,8 @@ class FavoriteRepository {
   }
 
   Future<List<Favorite>> getFavoritesByUserId(String userId) async {
+    if(userId.isEmpty || userId == '') return [];
+
     final response = await _client
         .from(_tableName)
         .select()

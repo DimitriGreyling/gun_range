@@ -17,16 +17,17 @@ final authViewModelProvider =
 final rangeViewModelProvider =
     StateNotifierProvider<RangeViewModel, RangeState>((ref) {
   final rangeRepository = ref.watch(rangeRepositoryProvider);
-  final eventRepository = ref.watch(eventRepositoryProvider);
   final favoriteRepository = ref.watch(favoriteProvider);
-  
-  return RangeViewModel(rangeRepository, eventRepository, favoriteRepository);
+
+  return RangeViewModel(rangeRepository, favoriteRepository);
 });
 
 final eventViewModelProvider =
     StateNotifierProvider<EventViewModel, EventState>((ref) {
   final eventRepository = ref.watch(eventRepositoryProvider);
-  return EventViewModel(eventRepository);
+  final favoriteRepository = ref.watch(favoriteProvider);
+
+  return EventViewModel(eventRepository, favoriteRepository);
 });
 
 final bookingViewModelProvider =

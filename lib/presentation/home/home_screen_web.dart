@@ -32,7 +32,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scaffoldKey.currentState?.openDrawer();
       ref.read(rangeViewModelProvider.notifier).fetchRanges();
-      ref.read(rangeViewModelProvider.notifier).fetchEvents();
+      ref.read(eventViewModelProvider.notifier).fetchEvents();
     });
   }
 
@@ -53,7 +53,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     if (user == null) return;
 
     final Iterable<Favorite> matchingFavorites = favorites.where(
-      (favorite) => favorite.rangeId == event?.id,
+      (favorite) => favorite.eventId == event?.id,
     );
 
     final Favorite? foundFavorite =
@@ -61,14 +61,14 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
 
     // Prevent duplicate favorites.
     if (foundFavorite != null) {
-      ref.read(rangeViewModelProvider.notifier).removeEventFavorite(
+      ref.read(eventViewModelProvider.notifier).removeEventFavorite(
             user.id,
             event?.id ?? '',
           );
       return;
     }
 
-    ref.read(rangeViewModelProvider.notifier).addEventFavorite(
+    ref.read(eventViewModelProvider.notifier).addEventFavorite(
           user.id,
           event?.id ?? '',
         );
@@ -108,6 +108,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
   Widget build(BuildContext context) {
     //Ranges and Events would be fetched from ViewModels
     final rangeState = ref.watch(rangeViewModelProvider);
+    final eventState = ref.watch(eventViewModelProvider);
 
     //Get user authentication state
     final isAuthed = ref.watch(isAuthenticatedProvider);
@@ -182,8 +183,8 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                                       range: range,
                                                       isAuthed: isAuthed,
                                                       user: currentUser,
-                                                      favorites:
-                                                          rangeState.favorites,
+                                                      favorites: rangeState
+                                                          .rangeFavorites,
                                                     ),
                                                 ]
                                               : [
@@ -235,16 +236,16 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                         const EdgeInsets.only(bottom: 16.0),
                                     child: Row(
                                       mainAxisAlignment:
-                                          rangeState.isLoadingEvents ||
-                                                  rangeState.events.isNotEmpty
+                                          eventState.isLoadingEvents ||
+                                                  eventState.events.isNotEmpty
                                               ? MainAxisAlignment.spaceEvenly
                                               : MainAxisAlignment.start,
                                       crossAxisAlignment:
-                                          rangeState.isLoadingEvents ||
-                                                  rangeState.events.isNotEmpty
+                                          eventState.isLoadingEvents ||
+                                                  eventState.events.isNotEmpty
                                               ? CrossAxisAlignment.start
                                               : CrossAxisAlignment.center,
-                                      children: rangeState.isLoadingEvents
+                                      children: eventState.isLoadingEvents
                                           ? [
                                               const LoadingCardWidget(
                                                   lineCount: 3),
@@ -253,16 +254,16 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                               const LoadingCardWidget(
                                                   lineCount: 3),
                                             ]
-                                          : rangeState.events.isNotEmpty
+                                          : eventState.events.isNotEmpty
                                               ? [
                                                   for (var event
-                                                      in rangeState.events)
+                                                      in eventState.events)
                                                     _buildCardEvent(
                                                       event: event,
                                                       isAuthed: isAuthed,
                                                       user: currentUser,
-                                                      favorites:
-                                                          rangeState.favorites,
+                                                      favorites: eventState
+                                                          .eventFavorites,
                                                     ),
                                                 ]
                                               : [
@@ -398,35 +399,36 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                         )
                       ],
                     ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: IconButton(
-                        style: IconButton.styleFrom(
-                          backgroundColor: Theme.of(context)
-                              .colorScheme
-                              .surface
-                              .withOpacity(0.3),
-                        ),
-                        onPressed: !isAuthed
-                            ? null
-                            : () {
-                                _onEventFavoriteClicked(
-                                  event: event,
-                                  isAuthed: isAuthed,
-                                  user: user,
-                                  favorites: favorites,
-                                );
-                              },
-                        icon: Icon(
-                          favorites.any(
-                                  (favorite) => favorite.eventId == event?.id)
-                              ? Icons.favorite
-                              : Icons.favorite_border_outlined,
-                          color: isAuthed ? Colors.red : null,
+                    if (isAuthed)
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: IconButton(
+                          style: IconButton.styleFrom(
+                            backgroundColor: Theme.of(context)
+                                .colorScheme
+                                .surface
+                                .withOpacity(0.3),
+                          ),
+                          onPressed: !isAuthed
+                              ? null
+                              : () {
+                                  _onEventFavoriteClicked(
+                                    event: event,
+                                    isAuthed: isAuthed,
+                                    user: user,
+                                    favorites: favorites,
+                                  );
+                                },
+                          icon: Icon(
+                            favorites.any(
+                                    (favorite) => favorite.eventId == event?.id)
+                                ? Icons.favorite
+                                : Icons.favorite_border_outlined,
+                            color: isAuthed ? Colors.red : null,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 );
               },
@@ -522,35 +524,36 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                         )
                       ],
                     ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: IconButton(
-                        style: IconButton.styleFrom(
-                          backgroundColor: Theme.of(context)
-                              .colorScheme
-                              .surface
-                              .withOpacity(0.3),
-                        ),
-                        onPressed: !isAuthed
-                            ? null
-                            : () {
-                                _onRangeFavoriteClicked(
-                                  range: range,
-                                  isAuthed: isAuthed,
-                                  user: user,
-                                  favorites: favorites,
-                                );
-                              },
-                        icon: Icon(
-                          favorites.any(
-                                  (favorite) => favorite.rangeId == range?.id)
-                              ? Icons.favorite
-                              : Icons.favorite_border_outlined,
-                          color: isAuthed ? Colors.red : null,
+                    if (isAuthed)
+                      Positioned(
+                        top: 0,
+                        right: 0,
+                        child: IconButton(
+                          style: IconButton.styleFrom(
+                            backgroundColor: Theme.of(context)
+                                .colorScheme
+                                .surface
+                                .withOpacity(0.3),
+                          ),
+                          onPressed: !isAuthed
+                              ? null
+                              : () {
+                                  _onRangeFavoriteClicked(
+                                    range: range,
+                                    isAuthed: isAuthed,
+                                    user: user,
+                                    favorites: favorites,
+                                  );
+                                },
+                          icon: Icon(
+                            favorites.any(
+                                    (favorite) => favorite.rangeId == range?.id)
+                                ? Icons.favorite
+                                : Icons.favorite_border_outlined,
+                            color: isAuthed ? Colors.red : null,
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 );
               },

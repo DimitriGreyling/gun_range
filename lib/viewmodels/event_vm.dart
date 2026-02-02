@@ -1,31 +1,102 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/data/models/favorite.dart';
+import 'package:gun_range_app/data/models/popup_position.dart';
+import 'package:gun_range_app/data/repositories/favorite_repository.dart';
+import 'package:gun_range_app/domain/services/errors_exception_service.dart';
+import 'package:gun_range_app/domain/services/global_popup_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/repositories/event_repository.dart';
 import '../data/models/event.dart';
 
 class EventState {
   final List<Event> events;
-  final bool isLoading;
+  final bool isLoadingEvents;
+  final List<Favorite> eventFavorites;
   final String? error;
-  const EventState({this.events = const [], this.isLoading = false, this.error});
 
-  EventState copyWith({List<Event>? events, bool? isLoading, String? error}) => EventState(
+  const EventState(
+      {this.events = const [],
+      this.isLoadingEvents = false,
+      this.eventFavorites = const [],
+      this.error});
+
+  EventState copyWith(
+          {List<Event>? events,
+          bool? isLoadingEvents,
+          List<Favorite>? eventFavorites,
+          String? error}) =>
+      EventState(
         events: events ?? this.events,
-        isLoading: isLoading ?? this.isLoading,
+        isLoadingEvents: isLoadingEvents ?? this.isLoadingEvents,
+        eventFavorites: eventFavorites ?? this.eventFavorites,
         error: error,
       );
 }
 
 class EventViewModel extends StateNotifier<EventState> {
   final EventRepository _eventRepository;
-  EventViewModel(this._eventRepository) : super(const EventState());
+  final FavoriteRepository _favoriteRepository;
+
+  EventViewModel(this._eventRepository, this._favoriteRepository)
+      : super(const EventState());
 
   Future<void> fetchEvents() async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoadingEvents: true, error: null);
     try {
       final events = await _eventRepository.getEvents();
-      state = state.copyWith(isLoading: false, events: events);
+      final favorites = await fetchUserFavorites(getCurrentUser()?.id ?? '');
+      state = state.copyWith(
+          isLoadingEvents: false, events: events, eventFavorites: favorites);
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoadingEvents: false, error: e.toString());
+      ErrorsExceptionService.handleException(e);
+    }
+  }
+
+  User? getCurrentUser() {
+    final supabase = Supabase.instance.client;
+    return supabase.auth.currentUser;
+  }
+
+  Future<void> refresh() => fetchEvents();
+
+  Future<void> addEventFavorite(String userId, String eventId) async {
+    try {
+      await _favoriteRepository.addEventFavorite(userId, eventId);
+      GlobalPopupService.showSuccess(
+        title: 'Success',
+        message: 'Added to favorites',
+        position: PopupPosition.bottomRight,
+      );
+
+      refresh();
+    } catch (e) {
+      ErrorsExceptionService.handleException(e);
+    }
+  }
+
+  Future<void> removeEventFavorite(String userId, String eventId) async {
+    try {
+      await _favoriteRepository.removeEventFavorite(userId, eventId);
+      GlobalPopupService.showSuccess(
+        title: 'Success',
+        message: 'Removed from favorites',
+        position: PopupPosition.bottomRight,
+      );
+
+      refresh();
+    } catch (e) {
+      ErrorsExceptionService.handleException(e);
+    }
+  }
+
+  Future<List<Favorite>> fetchUserFavorites(String userId) async {
+    try {
+      final favorites = await _favoriteRepository.getFavoritesByUserId(userId);
+      return favorites;
+    } catch (e) {
+      ErrorsExceptionService.handleException(e);
+      return [];
     }
   }
 }

@@ -15,7 +15,7 @@ class RangeState {
   final List<Event> events;
   final bool isLoadingRanges;
   final bool isLoadingEvents;
-  final List<Favorite> favorites;
+  final List<Favorite> rangeFavorites;
 
   final String? error;
 
@@ -24,7 +24,7 @@ class RangeState {
     this.events = const [],
     this.isLoadingRanges = false,
     this.isLoadingEvents = false,
-    this.favorites = const [],
+    this.rangeFavorites = const [],
     this.error,
   });
 
@@ -42,18 +42,17 @@ class RangeState {
       isLoadingEvents: isLoadingEvents ?? this.isLoadingEvents,
       error: error,
       events: events ?? this.events,
-      favorites: favorites ?? this.favorites,
+      rangeFavorites: favorites ?? this.rangeFavorites,
     );
   }
 }
 
 class RangeViewModel extends StateNotifier<RangeState> {
   final RangeRepository _rangeRepository;
-  final EventRepository _eventRepository;
+  // final EventRepository _eventRepository;
   final FavoriteRepository _favoriteRepository;
 
-  RangeViewModel(
-      this._rangeRepository, this._eventRepository, this._favoriteRepository)
+  RangeViewModel(this._rangeRepository, this._favoriteRepository)
       : super(const RangeState());
 
   Future<void> fetchRanges() async {
@@ -66,17 +65,6 @@ class RangeViewModel extends StateNotifier<RangeState> {
           isLoadingRanges: false, ranges: ranges, favorites: favorites);
     } catch (e) {
       state = state.copyWith(isLoadingRanges: false, error: e.toString());
-      ErrorsExceptionService.handleException(e);
-    }
-  }
-
-  Future<void> fetchEvents() async {
-    state = state.copyWith(isLoadingEvents: true, error: null);
-    try {
-      final events = await _eventRepository.getEvents();
-      state = state.copyWith(isLoadingEvents: false, events: events);
-    } catch (e) {
-      state = state.copyWith(isLoadingEvents: false, error: e.toString());
       ErrorsExceptionService.handleException(e);
     }
   }
@@ -113,38 +101,10 @@ class RangeViewModel extends StateNotifier<RangeState> {
     }
   }
 
-  Future<void> addEventFavorite(String userId, String eventId) async {
-    try {
-      await _favoriteRepository.addEventFavorite(userId, eventId);
-      GlobalPopupService.showSuccess(
-        title: 'Success',
-        message: 'Added to favorites',
-        position: PopupPosition.bottomRight,
-      );
-
-      refresh();
-    } catch (e) {
-      ErrorsExceptionService.handleException(e);
-    }
-  }
-
-  Future<void> removeEventFavorite(String userId, String eventId) async {
-    try {
-      await _favoriteRepository.removeEventFavorite(userId, eventId);
-      GlobalPopupService.showSuccess(
-        title: 'Success',
-        message: 'Removed from favorites',
-        position: PopupPosition.bottomRight,
-      );
-
-      refresh();
-    } catch (e) {
-      ErrorsExceptionService.handleException(e);
-    }
-  }
-
   Future<List<Favorite>> fetchUserFavorites(String userId) async {
     try {
+      if(userId.isEmpty || userId == '') return [];
+
       final favorites = await _favoriteRepository.getFavoritesByUserId(userId);
       return favorites;
     } catch (e) {
