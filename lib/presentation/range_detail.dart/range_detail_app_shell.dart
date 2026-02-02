@@ -16,7 +16,7 @@ class RangeDetailAppShell extends StatelessWidget {
     final isDesktop = !isMobile && !isWeb;
 
     if (isMobile) {
-      return RangeDetailWeb();
+      return RangeDetailWeb(rangeId: rangeId  );
     } else if (isWeb) {
       return const RangeDetailWeb();
     } else {
