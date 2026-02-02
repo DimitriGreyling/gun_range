@@ -26,6 +26,8 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
   final ScrollController _horizontalCompetitionController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  final Map<String, Future<bool>> _favoriteFutures = {};
+
   @override
   void initState() {
     super.initState();
@@ -44,6 +46,26 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     super.dispose();
   }
 
+  Future<bool> _getRangeFavoriteFuture(String userId, Range range) async {
+    final key = '${userId}_${range.id}';
+    return _favoriteFutures.putIfAbsent(
+      key,
+      () => ref
+          .read(rangeViewModelProvider.notifier)
+          .isRangeFavorite(userId, range),
+    );
+  }
+
+  Future<bool> _getEventFavoriteFuture(String userId, Event event) {
+    final key = '${userId}_${event.id}';
+    return _favoriteFutures.putIfAbsent(
+      key,
+      () => ref
+          .read(eventViewModelProvider.notifier)
+          .isEventFavorite(userId, event),
+    );
+  }
+
   void _onEventFavoriteClicked({
     Event? event,
     required bool isAuthed,
@@ -52,25 +74,13 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
   }) {
     if (user == null) return;
 
-    final Iterable<Favorite> matchingFavorites = favorites.where(
-      (favorite) => favorite.eventId == event?.id,
-    );
+    //CLear cached version of favorite future
+    final key = '${user.id}_${event?.id}';
+    _favoriteFutures.remove(key);
 
-    final Favorite? foundFavorite =
-        matchingFavorites.isNotEmpty ? matchingFavorites.first : null;
-
-    // Prevent duplicate favorites.
-    if (foundFavorite != null) {
-      ref.read(eventViewModelProvider.notifier).removeEventFavorite(
-            user.id,
-            event?.id ?? '',
-          );
-      return;
-    }
-
-    ref.read(eventViewModelProvider.notifier).addEventFavorite(
+    ref.read(eventViewModelProvider.notifier).toggleFavorite(
           user.id,
-          event?.id ?? '',
+          event!,
         );
   }
 
@@ -82,25 +92,13 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
   }) {
     if (user == null) return;
 
-    final Iterable<Favorite> matchingFavorites = favorites.where(
-      (favorite) => favorite.rangeId == range?.id,
-    );
+    //CLear cached version of favorite future
+    final key = '${user.id}_${range?.id}';
+    _favoriteFutures.remove(key);
 
-    final Favorite? foundFavorite =
-        matchingFavorites.isNotEmpty ? matchingFavorites.first : null;
-
-    // Prevent duplicate favorites.
-    if (foundFavorite != null) {
-      ref.read(rangeViewModelProvider.notifier).removeRangeFavorite(
-            user.id,
-            range?.id ?? '',
-          );
-      return;
-    }
-
-    ref.read(rangeViewModelProvider.notifier).addRangeFavorite(
+    ref.read(rangeViewModelProvider.notifier).toggleFavorite(
           user.id,
-          range?.id ?? '',
+          range!,
         );
   }
 
@@ -116,8 +114,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     User? currentUser;
 
     if (isAuthed) {
-      currentUser =
-          ref.read(rangeViewModelProvider.notifier).getCurrentUser() as User?;
+      currentUser = ref.read(rangeViewModelProvider.notifier).getCurrentUser();
     }
 
     return Scaffold(
@@ -312,6 +309,9 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     User? user,
     required List<Favorite> favorites,
   }) {
+    Future<bool> favoriteFuture =
+        _getEventFavoriteFuture(user?.id ?? '', event!);
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -400,34 +400,38 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                       ],
                     ),
                     if (isAuthed)
-                      Positioned(
-                        top: 0,
-                        right: 0,
-                        child: IconButton(
-                          style: IconButton.styleFrom(
-                            backgroundColor: Theme.of(context)
-                                .colorScheme
-                                .surface
-                                .withOpacity(0.3),
-                          ),
-                          onPressed: !isAuthed
-                              ? null
-                              : () {
-                                  _onEventFavoriteClicked(
-                                    event: event,
-                                    isAuthed: isAuthed,
-                                    user: user,
-                                    favorites: favorites,
-                                  );
-                                },
-                          icon: Icon(
-                            favorites.any(
-                                    (favorite) => favorite.eventId == event?.id)
-                                ? Icons.favorite
-                                : Icons.favorite_border_outlined,
-                            color: isAuthed ? Colors.red : null,
-                          ),
-                        ),
+                      FutureBuilder(
+                        future: favoriteFuture,
+                        builder: (context, snapshot) {
+                          return Positioned(
+                            top: 0,
+                            right: 0,
+                            child: IconButton(
+                              style: IconButton.styleFrom(
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .surface
+                                    .withOpacity(0.3),
+                              ),
+                              onPressed: !isAuthed
+                                  ? null
+                                  : () {
+                                      _onEventFavoriteClicked(
+                                        event: event,
+                                        isAuthed: isAuthed,
+                                        user: user,
+                                        favorites: favorites,
+                                      );
+                                    },
+                              icon: Icon(
+                                snapshot.data == true
+                                    ? Icons.favorite
+                                    : Icons.favorite_border_outlined,
+                                color: isAuthed ? Colors.red : null,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                   ],
                 );
@@ -445,6 +449,9 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     User? user,
     required List<Favorite> favorites,
   }) {
+    Future<bool> favoriteFuture =
+        _getRangeFavoriteFuture(user?.id ?? '', range!);
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -525,34 +532,38 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                       ],
                     ),
                     if (isAuthed)
-                      Positioned(
-                        top: 0,
-                        right: 0,
-                        child: IconButton(
-                          style: IconButton.styleFrom(
-                            backgroundColor: Theme.of(context)
-                                .colorScheme
-                                .surface
-                                .withOpacity(0.3),
-                          ),
-                          onPressed: !isAuthed
-                              ? null
-                              : () {
-                                  _onRangeFavoriteClicked(
-                                    range: range,
-                                    isAuthed: isAuthed,
-                                    user: user,
-                                    favorites: favorites,
-                                  );
-                                },
-                          icon: Icon(
-                            favorites.any(
-                                    (favorite) => favorite.rangeId == range?.id)
-                                ? Icons.favorite
-                                : Icons.favorite_border_outlined,
-                            color: isAuthed ? Colors.red : null,
-                          ),
-                        ),
+                      FutureBuilder(
+                        future: favoriteFuture,
+                        builder: (context, snapshot) {
+                          return Positioned(
+                            top: 0,
+                            right: 0,
+                            child: IconButton(
+                              style: IconButton.styleFrom(
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .surface
+                                    .withOpacity(0.3),
+                              ),
+                              onPressed: !isAuthed
+                                  ? null
+                                  : () {
+                                      _onRangeFavoriteClicked(
+                                        range: range,
+                                        isAuthed: isAuthed,
+                                        user: user,
+                                        favorites: favorites,
+                                      );
+                                    },
+                              icon: Icon(
+                                snapshot.data == true
+                                    ? Icons.favorite
+                                    : Icons.favorite_border_outlined,
+                                color: isAuthed ? Colors.red : null,
+                              ),
+                            ),
+                          );
+                        },
                       ),
                   ],
                 );

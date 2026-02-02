@@ -1,20 +1,23 @@
 class Event {
-  final String id;
-  final String rangeId;
-  final String title;
-  final String description;
-  final DateTime eventDate;
-  final double price;
-  final int capacity;
+  String? id;
+  String? rangeId;
+  String? title;
+  String? description;
+  DateTime? eventDate;
+  double? price;
+  int? capacity;
+
+  bool nspIsFavorite = false;
 
   Event({
-    required this.id,
-    required this.rangeId,
-    required this.title,
-    required this.description,
-    required this.eventDate,
-    required this.price,
-    required this.capacity,
+    this.id,
+    this.rangeId,
+    this.title,
+    this.description,
+    this.eventDate,
+    this.price,
+    this.capacity,
+    this.nspIsFavorite = false,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) => Event(

@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/event.dart';
 import 'package:gun_range_app/data/models/favorite.dart';
 import 'package:gun_range_app/data/models/popup_position.dart';
-import 'package:gun_range_app/data/repositories/event_repository.dart';
 import 'package:gun_range_app/data/repositories/favorite_repository.dart';
 import 'package:gun_range_app/domain/services/errors_exception_service.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
@@ -12,18 +11,14 @@ import '../data/repositories/range_repository.dart';
 
 class RangeState {
   final List<Range> ranges;
-  final List<Event> events;
   final bool isLoadingRanges;
-  final bool isLoadingEvents;
   final List<Favorite> rangeFavorites;
 
   final String? error;
 
   const RangeState({
     this.ranges = const [],
-    this.events = const [],
     this.isLoadingRanges = false,
-    this.isLoadingEvents = false,
     this.rangeFavorites = const [],
     this.error,
   });
@@ -39,9 +34,7 @@ class RangeState {
     return RangeState(
       ranges: ranges ?? this.ranges,
       isLoadingRanges: isLoadingRanges ?? this.isLoadingRanges,
-      isLoadingEvents: isLoadingEvents ?? this.isLoadingEvents,
       error: error,
-      events: events ?? this.events,
       rangeFavorites: favorites ?? this.rangeFavorites,
     );
   }
@@ -49,7 +42,6 @@ class RangeState {
 
 class RangeViewModel extends StateNotifier<RangeState> {
   final RangeRepository _rangeRepository;
-  // final EventRepository _eventRepository;
   final FavoriteRepository _favoriteRepository;
 
   RangeViewModel(this._rangeRepository, this._favoriteRepository)
@@ -74,13 +66,6 @@ class RangeViewModel extends StateNotifier<RangeState> {
   Future<void> addRangeFavorite(String userId, String rangeId) async {
     try {
       await _favoriteRepository.addRangeFavorite(userId, rangeId);
-      GlobalPopupService.showSuccess(
-        title: 'Success',
-        message: 'Added to favorites',
-        position: PopupPosition.bottomRight,
-      );
-
-      refresh();
     } catch (e) {
       ErrorsExceptionService.handleException(e);
     }
@@ -89,13 +74,6 @@ class RangeViewModel extends StateNotifier<RangeState> {
   Future<void> removeRangeFavorite(String userId, String rangeId) async {
     try {
       await _favoriteRepository.removeRangeFavorite(userId, rangeId);
-      GlobalPopupService.showSuccess(
-        title: 'Success',
-        message: 'Removed from favorites',
-        position: PopupPosition.bottomRight,
-      );
-
-      refresh();
     } catch (e) {
       ErrorsExceptionService.handleException(e);
     }
@@ -103,13 +81,43 @@ class RangeViewModel extends StateNotifier<RangeState> {
 
   Future<List<Favorite>> fetchUserFavorites(String userId) async {
     try {
-      if(userId.isEmpty || userId == '') return [];
+      if (userId.isEmpty || userId == '') return [];
 
       final favorites = await _favoriteRepository.getFavoritesByUserId(userId);
       return favorites;
     } catch (e) {
       ErrorsExceptionService.handleException(e);
       return [];
+    }
+  }
+
+  Future<bool> isRangeFavorite(String userId, Range range) async {
+    final favorites = await fetchUserFavorites(userId);
+    final isFavorite = favorites.any((fav) => fav.rangeId == range.id);
+    range.nspIsFavorite = isFavorite;
+    // state = state.copyWith(ranges: state.ranges);
+
+    return isFavorite;
+  }
+
+  Future<void> toggleFavorite(String userId, Range range) async {
+    try {
+      final favorites = await fetchUserFavorites(userId);
+      final isFavorite = favorites.any((fav) => fav.rangeId == range.id);
+
+      if (isFavorite == false) {
+        addRangeFavorite(userId, range.id!);
+        range.nspIsFavorite = true;
+        state = state.copyWith(ranges: state.ranges);
+        return;
+      } else {
+        removeRangeFavorite(userId, range.id!);
+        range.nspIsFavorite = false;
+        state = state.copyWith(ranges: state.ranges);
+        return;
+      }
+    } catch (e) {
+      ErrorsExceptionService.handleException(e);
     }
   }
 

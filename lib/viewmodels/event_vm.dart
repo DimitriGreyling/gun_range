@@ -63,13 +63,6 @@ class EventViewModel extends StateNotifier<EventState> {
   Future<void> addEventFavorite(String userId, String eventId) async {
     try {
       await _favoriteRepository.addEventFavorite(userId, eventId);
-      GlobalPopupService.showSuccess(
-        title: 'Success',
-        message: 'Added to favorites',
-        position: PopupPosition.bottomRight,
-      );
-
-      refresh();
     } catch (e) {
       ErrorsExceptionService.handleException(e);
     }
@@ -78,13 +71,6 @@ class EventViewModel extends StateNotifier<EventState> {
   Future<void> removeEventFavorite(String userId, String eventId) async {
     try {
       await _favoriteRepository.removeEventFavorite(userId, eventId);
-      GlobalPopupService.showSuccess(
-        title: 'Success',
-        message: 'Removed from favorites',
-        position: PopupPosition.bottomRight,
-      );
-
-      refresh();
     } catch (e) {
       ErrorsExceptionService.handleException(e);
     }
@@ -97,6 +83,35 @@ class EventViewModel extends StateNotifier<EventState> {
     } catch (e) {
       ErrorsExceptionService.handleException(e);
       return [];
+    }
+  }
+
+  Future<bool> isEventFavorite(String userId, Event event) async {
+    final favorites = await fetchUserFavorites(userId);
+    final isFavorite = favorites.any((fav) => fav.eventId == event.id);
+    event.nspIsFavorite = isFavorite;
+    state = state.copyWith(events: state.events);
+    return isFavorite;
+  }
+
+  Future<void> toggleFavorite(String userId, Event event) async {
+    try {
+      final favorites = await fetchUserFavorites(userId);
+      final isFavorite = favorites.any((fav) => fav.eventId == event.id);
+
+      if (isFavorite == false) {
+        addEventFavorite(userId, event.id!);
+        event.nspIsFavorite = true;
+        state = state.copyWith(events: state.events);
+        return;
+      } else {
+        removeEventFavorite(userId, event.id!);
+        event.nspIsFavorite = false;
+        state = state.copyWith(events: state.events);
+        return;
+      }
+    } catch (e) {
+      ErrorsExceptionService.handleException(e);
     }
   }
 }
