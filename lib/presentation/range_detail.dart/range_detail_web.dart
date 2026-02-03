@@ -105,6 +105,16 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStateProperty.all<Color>(
+                              Theme.of(context)
+                                  .colorScheme
+                                  .secondaryContainer
+                                  .withOpacity(0.3)),
+                          foregroundColor: WidgetStateProperty.all<Color>(
+                              Theme.of(context).colorScheme.onSurface),
+                          elevation: WidgetStateProperty.all<double>(0),
+                        ),
                         onPressed: () {},
                         child: const Text('Reviews'),
                       ),
@@ -134,10 +144,7 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                         ElevatedButton(
                           style: ButtonStyle(
                             backgroundColor: WidgetStateProperty.all<Color>(
-                                Theme.of(context)
-                                    .colorScheme
-                                    .secondaryContainer
-                                    .withOpacity(0.3)),
+                                Colors.transparent),
                             foregroundColor: WidgetStateProperty.all<Color>(
                                 Theme.of(context).colorScheme.onSurface),
                             elevation: WidgetStateProperty.all<double>(0),
