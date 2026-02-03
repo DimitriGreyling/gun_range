@@ -8,19 +8,22 @@ class ReviewRepository {
 
   final tableName = Tables.reviews;
 
-  Future<List<Review?>?> getReviewsByRangeId(String rangeId) async {
+  Future<List<Review?>?> getReviewsByRangeId({
+    required String rangeId,
+    required int page,
+    int pageSize = 10,
+  }) async {
+    final offset = (page - 1) * pageSize;
     final response = await _client
-        .from(tableName)
+        .from('reviews')
         .select()
         .eq('range_id', rangeId)
-        .order('created_at', ascending: false);
+        .order('created_at', ascending: false)
+        .range(offset, offset + pageSize - 1);
 
     if (response.isEmpty) {
       return [];
     }
-
-    return response.map((e) => Review.fromMap(e)).toList();
-
-    // return (response as List).map((e) => e['review_text'] as String).toList();
+    return (response as List).map((json) => Review.fromMap(json)).toList();
   }
 }

@@ -16,14 +16,12 @@ class RangeDetailWeb extends ConsumerStatefulWidget {
 
 class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
   bool _isExpanded = false;
-  final Set<int> _expandedReviews = {};
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadRangeDetails();
-      _loadReviews();
     });
   }
 
@@ -33,17 +31,12 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
         .fetchRangeDetail(widget.rangeId ?? '');
   }
 
-  Future<void> _loadReviews() async {
-    await ref
-        .watch(rangeDetailViewModelProvider.notifier)
-        .fetchReviews(widget.rangeId ?? '');
-  }
-
   @override
   Widget build(BuildContext context) {
     final rangeDetailState = ref.watch(rangeDetailViewModelProvider);
 
-    return Padding(
+    return SingleChildScrollView(
+      child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,12 +51,15 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
               range: rangeDetailState.range,
             ),
             const SizedBox(height: 16),
-            _buildReviewsSection(
+            ReviewsSection(
+              rangeId: widget.rangeId ?? '',
               isLoading: rangeDetailState.isLoading,
-              reviews: rangeDetailState.reviews,
+              // initialReviews: rangeDetailState.reviews,
             ),
           ],
-        ));
+        ),
+      ),
+    );
   }
 
   Widget _buildPictureSection({
@@ -87,77 +83,78 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
     return Skeletonizer(
       enabled: isLoading,
       child: Skeleton.leaf(
-          enabled: isLoading,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (!isLoading)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      range?.name ?? 'Loading name...',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
+        enabled: isLoading,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (!isLoading)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    range?.name ?? 'Loading name...',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  Row(
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {},
+                        child: const Text('Book Now'),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: () {},
+                        child: const Text('Reviews'),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            if (!isLoading) const SizedBox(height: 8),
+            if (!isLoading)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    range?.description ?? 'Loading description...',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    overflow: _isExpanded
+                        ? TextOverflow.visible
+                        : TextOverflow.ellipsis,
+                    maxLines: _isExpanded ? null : 3,
+                  ),
+                  if ((range?.description?.length ?? 0) > 0)
+                    const SizedBox(height: 8),
+                  if ((range?.description?.length ?? 0) > 0)
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         ElevatedButton(
-                          onPressed: () {},
-                          child: const Text('Book Now'),
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: () {},
-                          child: const Text('Reviews'),
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStateProperty.all<Color>(
+                                Theme.of(context)
+                                    .colorScheme
+                                    .secondaryContainer
+                                    .withOpacity(0.3)),
+                            foregroundColor: WidgetStateProperty.all<Color>(
+                                Theme.of(context).colorScheme.onSurface),
+                            elevation: WidgetStateProperty.all<double>(0),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _isExpanded = !_isExpanded;
+                            });
+                          },
+                          child: Text(_isExpanded ? 'Read less' : 'Read more'),
                         ),
                       ],
                     )
-                  ],
-                ),
-              if (!isLoading) const SizedBox(height: 8),
-              if (!isLoading)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      range?.description ?? 'Loading description...',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                      overflow: _isExpanded
-                          ? TextOverflow.visible
-                          : TextOverflow.ellipsis,
-                      maxLines: _isExpanded ? null : 3,
-                    ),
-                    if ((range?.description?.length ?? 0) > 0)
-                      const SizedBox(height: 8),
-                    if ((range?.description?.length ?? 0) > 0)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          ElevatedButton(
-                              style: ButtonStyle(
-                                backgroundColor: WidgetStateProperty.all<Color>(
-                                    Theme.of(context)
-                                        .colorScheme
-                                        .secondaryContainer
-                                        .withOpacity(0.3)),
-                                foregroundColor: WidgetStateProperty.all<Color>(
-                                    Theme.of(context).colorScheme.onSurface),
-                                elevation: WidgetStateProperty.all<double>(0),
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _isExpanded = !_isExpanded;
-                                });
-                              },
-                              child: Text(
-                                  _isExpanded ? 'Read less' : 'Read more')),
-                        ],
-                      )
-                  ],
-                ),
-              if (isLoading) _buildLines(3),
-            ],
-          )),
+                ],
+              ),
+            if (isLoading) _buildLines(3),
+          ],
+        ),
+      ),
     );
   }
 
@@ -189,16 +186,70 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
       );
     });
   }
+}
 
-  Widget _buildReviewsSection(
-      {bool isLoading = false, List<Review?>? reviews}) {
-    if (isLoading) {
+class ReviewsSection extends ConsumerStatefulWidget {
+  final String rangeId;
+  final bool isLoading;
+
+  const ReviewsSection({
+    super.key,
+    required this.rangeId,
+    required this.isLoading,
+    // initialReviews is no longer needed
+  });
+
+  @override
+  ConsumerState<ReviewsSection> createState() => _ReviewsSectionState();
+}
+
+class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
+  final Set<int> _expandedReviews = {};
+  int _currentPage = 1;
+  bool _isLoadingMore = false;
+  bool _hasMoreReviews = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadReviews();
+    });
+  }
+
+  Future<void> _loadReviews({int page = 1}) async {
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    final newReviews =
+        await ref.read(rangeDetailViewModelProvider.notifier).fetchReviews(
+              rangeId: widget.rangeId,
+              page: page,
+              pageSize: GeneralConstants.pageSize,
+            );
+
+    setState(() {
+      _isLoadingMore = false;
+      if (newReviews == null || newReviews.isEmpty) {
+        _hasMoreReviews = false;
+      } else {
+        _currentPage = page;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final reviews = ref.watch(rangeDetailViewModelProvider).reviews ?? [];
+
+    if (widget.isLoading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 16.0),
         child: CircularProgressIndicator(),
       );
     }
-    if (reviews == null || reviews.isEmpty) {
+    if (reviews.isEmpty) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 16.0),
         child: Text('No reviews yet.'),
@@ -215,7 +266,7 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
           ),
           const SizedBox(height: 8),
           SizedBox(
-            height: 300, // Set your desired height here
+            height: 300,
             child: ListView.builder(
               itemCount: reviews.length,
               itemBuilder: (context, index) {
@@ -280,6 +331,26 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
               },
             ),
           ),
+          if (_hasMoreReviews)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: ElevatedButton(
+                  onPressed: _isLoadingMore
+                      ? null
+                      : () {
+                          _loadReviews(page: _currentPage + 1);
+                        },
+                  child: _isLoadingMore
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Load more'),
+                ),
+              ),
+            ),
         ],
       ),
     );

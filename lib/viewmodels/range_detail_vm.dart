@@ -32,16 +32,17 @@ class RangeDetailState {
   }
 }
 
-class RangeDetailVm  extends StateNotifier<RangeDetailState> {
+class RangeDetailVm extends StateNotifier<RangeDetailState> {
   final RangeRepository _rangeRepository;
   final ReviewRepository _reviewRepository;
 
-  RangeDetailVm(this._rangeRepository, this._reviewRepository) : super(RangeDetailState());
+  RangeDetailVm(this._rangeRepository, this._reviewRepository)
+      : super(RangeDetailState());
 
   Future<Range?> fetchRangeDetail(String rangeId) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final range = await _rangeRepository.getRangeById(rangeId);  
+      final range = await _rangeRepository.getRangeById(rangeId);
       state = state.copyWith(isLoading: false, range: range);
       return range;
     } catch (e) {
@@ -50,11 +51,20 @@ class RangeDetailVm  extends StateNotifier<RangeDetailState> {
     }
   }
 
-  Future<void> fetchReviews(String rangeId) async {
+  Future<List<Review?>?> fetchReviews({
+    required String rangeId,
+    required int page,
+    int pageSize = 10,
+  }) async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final reviews = await _reviewRepository.getReviewsByRangeId(rangeId);
+      final reviews = await _reviewRepository.getReviewsByRangeId(
+        rangeId: rangeId,
+        page: page,
+        pageSize: pageSize,
+      );
       state = state.copyWith(isLoading: false, reviews: reviews);
+      return reviews;
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
       rethrow;
