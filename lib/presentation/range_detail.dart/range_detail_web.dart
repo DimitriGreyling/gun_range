@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/widgets/review_widget.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
@@ -99,27 +100,71 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                   ),
                   Row(
                     children: [
-                      ElevatedButton(
-                        onPressed: () {},
-                        child: const Text('Book Now'),
+                      Tooltip(
+                        message: 'Share our range',
+                        child: IconButton(
+                          onPressed: () {},
+                          icon: const Icon(
+                            Icons.share,
+                            size: 30,
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 8),
-                      ElevatedButton(
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStateProperty.all<Color>(
-                              Theme.of(context)
-                                  .colorScheme
-                                  .secondaryContainer
-                                  .withOpacity(0.3)),
-                          foregroundColor: WidgetStateProperty.all<Color>(
-                              Theme.of(context).colorScheme.onSurface),
-                          elevation: WidgetStateProperty.all<double>(0),
+                      Tooltip(
+                        message: 'Message us on WhatsApp',
+                        child: IconButton(
+                          onPressed: () {},
+                          icon: const Icon(
+                            FontAwesomeIcons.whatsapp,
+                            size: 30,
+                          ),
                         ),
-                        onPressed: () {},
-                        child: const Text('Reviews'),
+                      ),
+                      const SizedBox(width: 8),
+                      Tooltip(
+                        message: 'Make a booking',
+                        child: ElevatedButton(
+                          onPressed: () {},
+                          child: const Text('Book Now'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Tooltip(
+                        message: 'Add a review',
+                        child: ElevatedButton(
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStateProperty.all<Color>(
+                                Theme.of(context)
+                                    .colorScheme
+                                    .secondaryContainer
+                                    .withOpacity(0.3)),
+                            foregroundColor: WidgetStateProperty.all<Color>(
+                                Theme.of(context).colorScheme.onSurface),
+                            elevation: WidgetStateProperty.all<double>(0),
+                          ),
+                          onPressed: () {},
+                          child: const Text('Reviews'),
+                        ),
                       ),
                     ],
                   )
+                ],
+              ),
+            if (!isLoading)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Location Address',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Contact Number',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
                 ],
               ),
             if (!isLoading) const SizedBox(height: 8),
