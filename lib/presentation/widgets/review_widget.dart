@@ -101,7 +101,7 @@ class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text('Loading...'),
+                                    const Text('Loading...'),
                                     _buildRatingStars(5),
                                   ],
                                 ),
