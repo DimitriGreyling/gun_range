@@ -255,6 +255,8 @@ class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
         child: Text('No reviews yet.'),
       );
     }
+    // For demonstration, assume total pages is known or can be calculated. Replace with actual total if available.
+    final int totalPages = _hasMoreReviews ? _currentPage + 1 : _currentPage;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: Column(
@@ -263,6 +265,25 @@ class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
           Text(
             'Reviews',
             style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_left),
+                onPressed: _currentPage > 1 && !_isLoadingMore
+                    ? () => _loadReviews(page: _currentPage - 1)
+                    : null,
+              ),
+              Text('Page $_currentPage of $totalPages'),
+              IconButton(
+                icon: const Icon(Icons.arrow_right),
+                onPressed: (_hasMoreReviews && !_isLoadingMore)
+                    ? () => _loadReviews(page: _currentPage + 1)
+                    : null,
+              ),
+            ],
           ),
           const SizedBox(height: 8),
           SizedBox(
@@ -331,26 +352,6 @@ class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
               },
             ),
           ),
-          if (_hasMoreReviews)
-            Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                child: ElevatedButton(
-                  onPressed: _isLoadingMore
-                      ? null
-                      : () {
-                          _loadReviews(page: _currentPage + 1);
-                        },
-                  child: _isLoadingMore
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Load more'),
-                ),
-              ),
-            ),
         ],
       ),
     );
