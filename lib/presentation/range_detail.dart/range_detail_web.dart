@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/range.dart';
+import 'package:gun_range_app/data/models/review.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -20,6 +21,7 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadRangeDetails();
+      _loadReviews();
     });
   }
 
@@ -27,6 +29,12 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
     await ref
         .watch(rangeDetailViewModelProvider.notifier)
         .fetchRangeDetail(widget.rangeId ?? '');
+  }
+
+  Future<void> _loadReviews() async {
+    await ref
+        .watch(rangeDetailViewModelProvider.notifier)
+        .fetchReviews(widget.rangeId ?? '');
   }
 
   @override
@@ -46,6 +54,11 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
             _buildInfoSection(
               isLoading: rangeDetailState.isLoading,
               range: rangeDetailState.range,
+            ),
+            const SizedBox(height: 16),
+            _buildReviewsSection(
+              isLoading: rangeDetailState.isLoading,
+              reviews: rangeDetailState.reviews,
             ),
           ],
         ));
@@ -173,5 +186,56 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
         }),
       );
     });
+  }
+
+  Widget _buildReviewsSection(
+      {bool isLoading = false, List<Review?>? reviews}) {
+    if (isLoading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.0),
+        child: CircularProgressIndicator(),
+      );
+    }
+    if (reviews == null || reviews.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 16.0),
+        child: Text('No reviews yet.'),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Reviews',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          ...reviews.map((review) => Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Container(
+                  width: double.infinity,
+                  child: Card(
+                    elevation: 0,
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(review?.title ?? ''),
+                          const SizedBox(height: 4),
+                          Text(review?.description ?? ''),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              )),
+        ],
+      ),
+    );
   }
 }

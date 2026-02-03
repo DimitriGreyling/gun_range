@@ -6,4 +6,5 @@ class Tables {
   static const String events = 'events';
   static const String favorites = 'favorites';
   static const String photos = 'photos';
+  static const String reviews = 'reviews';
 }
