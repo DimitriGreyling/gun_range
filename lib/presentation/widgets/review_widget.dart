@@ -75,10 +75,9 @@ class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
             child: ListView.builder(
               itemCount: 3,
               itemBuilder: (context, index) {
-                // final review = reviews[index];
                 final isExpanded = _expandedReviews.contains(index);
-                final reviewText = 'Loading review content...';
-                final showReadMore = reviewText.length > 100;
+                const reviewText = 'Loading review content...';
+                const showReadMore = reviewText.length > 100;
 
                 return Skeletonizer(
                   enabled: true,
