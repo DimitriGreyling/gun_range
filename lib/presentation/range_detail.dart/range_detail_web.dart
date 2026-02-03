@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/core/constants/general_constants.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/data/models/review.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
@@ -15,6 +16,7 @@ class RangeDetailWeb extends ConsumerStatefulWidget {
 
 class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
   bool _isExpanded = false;
+  final Set<int> _expandedReviews = {};
 
   @override
   void initState() {
@@ -212,30 +214,83 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          ...reviews.map((review) => Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: Container(
-                  width: double.infinity,
-                  child: Card(
-                    elevation: 0,
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(review?.title ?? ''),
-                          const SizedBox(height: 4),
-                          Text(review?.description ?? ''),
-                        ],
-                      ),
+          ...reviews.asMap().entries.map((entry) {
+            final index = entry.key;
+            final review = entry.value;
+            final isExpanded = _expandedReviews.contains(index);
+            final reviewText = review?.description ?? '';
+            final showReadMore = reviewText.length > 100; // adjust as needed
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: Card(
+                  elevation: 0,
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(review?.title ?? ''),
+                            _buildRatingStars(review?.rating),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          reviewText,
+                          maxLines: isExpanded ? null : 2,
+                          overflow: isExpanded
+                              ? TextOverflow.visible
+                              : TextOverflow.ellipsis,
+                        ),
+                        if (showReadMore)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    if (isExpanded) {
+                                      _expandedReviews.remove(index);
+                                    } else {
+                                      _expandedReviews.add(index);
+                                    }
+                                  });
+                                },
+                                child: Text(
+                                    isExpanded ? 'Read less' : 'Read more'),
+                              ),
+                            ],
+                          ),
+                      ],
                     ),
                   ),
                 ),
-              )),
+              ),
+            );
+          }),
         ],
       ),
     );
+  }
+
+  Widget _buildRatingStars(int? rating) {
+    final stars = <Widget>[];
+    final filledStars = rating ?? 0;
+    const totalStars = GeneralConstants.ratingLimit;
+
+    for (var i = 0; i < filledStars; i++) {
+      stars.add(const Icon(Icons.star, color: Colors.amber, size: 16));
+    }
+    for (var i = filledStars; i < totalStars; i++) {
+      stars.add(const Icon(Icons.star_border, color: Colors.amber, size: 16));
+    }
+
+    return Row(children: stars);
   }
 }
