@@ -7,12 +7,14 @@ import 'package:gun_range_app/data/repositories/review_repository.dart';
 class RangeDetailState {
   Range? range;
   bool isLoading;
+  bool isLoadingReviews;
   String? error;
   List<Review?>? reviews;
 
   RangeDetailState({
     this.range,
     this.isLoading = false,
+    this.isLoadingReviews = false,
     this.error,
     this.reviews,
   });
@@ -20,12 +22,14 @@ class RangeDetailState {
   RangeDetailState copyWith({
     Range? range,
     bool? isLoading,
+    bool? isLoadingReviews,
     String? error,
     List<Review?>? reviews,
   }) {
     return RangeDetailState(
       range: range ?? this.range,
       isLoading: isLoading ?? this.isLoading,
+      isLoadingReviews: isLoadingReviews ?? this.isLoadingReviews,
       error: error,
       reviews: reviews ?? this.reviews,
     );
@@ -56,17 +60,17 @@ class RangeDetailVm extends StateNotifier<RangeDetailState> {
     required int page,
     int pageSize = 10,
   }) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoadingReviews: true, error: null);
     try {
       final reviews = await _reviewRepository.getReviewsByRangeId(
         rangeId: rangeId,
         page: page,
         pageSize: pageSize,
       );
-      state = state.copyWith(isLoading: false, reviews: reviews);
+      state = state.copyWith(isLoadingReviews: false, reviews: reviews);
       return reviews;
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: e.toString());
+      state = state.copyWith(isLoadingReviews: false, error: e.toString());
       rethrow;
     }
   }
