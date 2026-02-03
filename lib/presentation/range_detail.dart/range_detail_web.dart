@@ -207,7 +207,6 @@ class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
   final Set<int> _expandedReviews = {};
   int _currentPage = 1;
   bool _isLoadingMore = false;
-  bool _hasMoreReviews = true;
 
   @override
   void initState() {
@@ -222,18 +221,15 @@ class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
       _isLoadingMore = true;
     });
 
-    final newReviews =
-        await ref.read(rangeDetailViewModelProvider.notifier).fetchReviews(
-              rangeId: widget.rangeId,
-              page: page,
-              pageSize: GeneralConstants.pageSize,
-            );
+    final pagedItems = await ref.read(rangeDetailViewModelProvider.notifier).fetchReviews(
+      rangeId: widget.rangeId,
+      page: page,
+      pageSize: GeneralConstants.pageSize,
+    );
 
     setState(() {
       _isLoadingMore = false;
-      if (newReviews == null || newReviews.isEmpty) {
-        _hasMoreReviews = false;
-      } else {
+      if (pagedItems != null) {
         _currentPage = page;
       }
     });
@@ -241,7 +237,11 @@ class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
 
   @override
   Widget build(BuildContext context) {
-    final reviews = ref.watch(rangeDetailViewModelProvider).reviews ?? [];
+    final pagedItems = ref.watch(rangeDetailViewModelProvider).reviews;
+    final reviews = pagedItems?.items ?? [];
+    final totalCount = pagedItems?.totalCount ?? 0;
+    final hasMore = pagedItems?.hasMore ?? false;
+    final int totalPages = (totalCount / GeneralConstants.pageSize).ceil().clamp(1, 9999);
 
     if (widget.isLoading) {
       return const Padding(
@@ -255,8 +255,6 @@ class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
         child: Text('No reviews yet.'),
       );
     }
-    // For demonstration, assume total pages is known or can be calculated. Replace with actual total if available.
-    final int totalPages = _hasMoreReviews ? _currentPage + 1 : _currentPage;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0),
       child: Column(
@@ -279,7 +277,7 @@ class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
               Text('Page $_currentPage of $totalPages'),
               IconButton(
                 icon: const Icon(Icons.arrow_right),
-                onPressed: (_hasMoreReviews && !_isLoadingMore)
+                onPressed: (_currentPage < totalPages && !_isLoadingMore && hasMore)
                     ? () => _loadReviews(page: _currentPage + 1)
                     : null,
               ),

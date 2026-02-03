@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/data/models/paged_items.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/data/models/review.dart';
 import 'package:gun_range_app/data/repositories/range_repository.dart';
@@ -9,7 +10,7 @@ class RangeDetailState {
   bool isLoading;
   bool isLoadingReviews;
   String? error;
-  List<Review?>? reviews;
+  PagedItems? reviews;
 
   RangeDetailState({
     this.range,
@@ -24,7 +25,7 @@ class RangeDetailState {
     bool? isLoading,
     bool? isLoadingReviews,
     String? error,
-    List<Review?>? reviews,
+    PagedItems? reviews,
   }) {
     return RangeDetailState(
       range: range ?? this.range,
@@ -55,7 +56,7 @@ class RangeDetailVm extends StateNotifier<RangeDetailState> {
     }
   }
 
-  Future<List<Review?>?> fetchReviews({
+  Future<PagedItems?> fetchReviews({
     required String rangeId,
     required int page,
     int pageSize = 10,
