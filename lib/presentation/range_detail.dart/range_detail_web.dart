@@ -53,7 +53,7 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
             const SizedBox(height: 16),
             ReviewsSection(
               rangeId: widget.rangeId ?? '',
-              isLoading: rangeDetailState.isLoading,
+              isLoading: rangeDetailState.isLoadingReviews,
               // initialReviews: rangeDetailState.reviews,
             ),
           ],
