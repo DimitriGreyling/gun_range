@@ -77,9 +77,27 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (!isLoading)
-                Text(
-                  range?.name ?? 'Loading name...',
-                  style: Theme.of(context).textTheme.titleLarge,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      range?.name ?? 'Loading name...',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {},
+                          child: const Text('Book Now'),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: () {},
+                          child: const Text('Reviews'),
+                        ),
+                      ],
+                    )
+                  ],
                 ),
               if (!isLoading) const SizedBox(height: 8),
               if (!isLoading)
@@ -95,36 +113,29 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                       maxLines: _isExpanded ? null : 3,
                     ),
                     if ((range?.description?.length ?? 0) > 0)
-                    const SizedBox(height: 8),
+                      const SizedBox(height: 8),
                     if ((range?.description?.length ?? 0) > 0)
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          TextButton(
-                            style: ButtonStyle(
-                              backgroundColor: WidgetStateProperty.all(
-                                Theme.of(context)
-                                    .colorScheme
-                                    .tertiaryContainer
-                                    .withOpacity(0.3),
+                          ElevatedButton(
+                              style: ButtonStyle(
+                                backgroundColor: WidgetStateProperty.all<Color>(
+                                    Theme.of(context)
+                                        .colorScheme
+                                        .secondaryContainer
+                                        .withOpacity(0.3)),
+                                foregroundColor: WidgetStateProperty.all<Color>(
+                                    Theme.of(context).colorScheme.onSurface),
+                                elevation: WidgetStateProperty.all<double>(0),
                               ),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isExpanded = !_isExpanded;
-                              });
-                            },
-                            child: Text(
-                              _isExpanded ? 'Read less' : 'Read more',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color:
-                                        Theme.of(context).colorScheme.onSurface,
-                                  ),
-                            ),
-                          ),
+                              onPressed: () {
+                                setState(() {
+                                  _isExpanded = !_isExpanded;
+                                });
+                              },
+                              child: Text(
+                                  _isExpanded ? 'Read less' : 'Read more')),
                         ],
                       )
                   ],
