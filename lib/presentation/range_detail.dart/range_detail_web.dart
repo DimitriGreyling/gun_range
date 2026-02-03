@@ -214,66 +214,72 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          ...reviews.asMap().entries.map((entry) {
-            final index = entry.key;
-            final review = entry.value;
-            final isExpanded = _expandedReviews.contains(index);
-            final reviewText = review?.description ?? '';
-            final showReadMore = reviewText.length > 100; // adjust as needed
+          SizedBox(
+            height: 300, // Set your desired height here
+            child: ListView.builder(
+              itemCount: reviews.length,
+              itemBuilder: (context, index) {
+                final review = reviews[index];
+                final isExpanded = _expandedReviews.contains(index);
+                final reviewText = review?.description ?? '';
+                final showReadMore = reviewText.length > 100;
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: Card(
-                  elevation: 0,
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: Card(
+                      elevation: 0,
+                      color:
+                          Theme.of(context).colorScheme.surfaceContainerHighest,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(review?.title ?? ''),
-                            _buildRatingStars(review?.rating),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(review?.title ?? ''),
+                                _buildRatingStars(review?.rating),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              reviewText,
+                              maxLines: isExpanded ? null : 2,
+                              overflow: isExpanded
+                                  ? TextOverflow.visible
+                                  : TextOverflow.ellipsis,
+                            ),
+                            if (showReadMore)
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        if (isExpanded) {
+                                          _expandedReviews.remove(index);
+                                        } else {
+                                          _expandedReviews.add(index);
+                                        }
+                                      });
+                                    },
+                                    child: Text(
+                                        isExpanded ? 'Read less' : 'Read more'),
+                                  ),
+                                ],
+                              ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          reviewText,
-                          maxLines: isExpanded ? null : 2,
-                          overflow: isExpanded
-                              ? TextOverflow.visible
-                              : TextOverflow.ellipsis,
-                        ),
-                        if (showReadMore)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              TextButton(
-                                onPressed: () {
-                                  setState(() {
-                                    if (isExpanded) {
-                                      _expandedReviews.remove(index);
-                                    } else {
-                                      _expandedReviews.add(index);
-                                    }
-                                  });
-                                },
-                                child: Text(
-                                    isExpanded ? 'Read less' : 'Read more'),
-                              ),
-                            ],
-                          ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-              ),
-            );
-          }),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );
