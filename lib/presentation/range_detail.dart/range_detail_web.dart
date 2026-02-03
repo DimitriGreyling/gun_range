@@ -13,6 +13,8 @@ class RangeDetailWeb extends ConsumerStatefulWidget {
 }
 
 class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
+  bool _isExpanded = false;
+
   @override
   void initState() {
     super.initState();
@@ -81,11 +83,51 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                 ),
               if (!isLoading) const SizedBox(height: 8),
               if (!isLoading)
-                Text(
-                  range?.description ?? 'Loading description...',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 3,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      range?.description ?? 'Loading description...',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      overflow: _isExpanded
+                          ? TextOverflow.visible
+                          : TextOverflow.ellipsis,
+                      maxLines: _isExpanded ? null : 3,
+                    ),
+                    if ((range?.description?.length ?? 0) > 0)
+                    const SizedBox(height: 8),
+                    if ((range?.description?.length ?? 0) > 0)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            style: ButtonStyle(
+                              backgroundColor: WidgetStateProperty.all(
+                                Theme.of(context)
+                                    .colorScheme
+                                    .tertiaryContainer
+                                    .withOpacity(0.3),
+                              ),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _isExpanded = !_isExpanded;
+                              });
+                            },
+                            child: Text(
+                              _isExpanded ? 'Read less' : 'Read more',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color:
+                                        Theme.of(context).colorScheme.onSurface,
+                                  ),
+                            ),
+                          ),
+                        ],
+                      )
+                  ],
                 ),
               if (isLoading) _buildLines(3),
             ],
