@@ -196,7 +196,8 @@ class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8.0),
-                  child: SizedBox(
+                  child: Container(
+                    padding: const EdgeInsets.only(right: 16.0, left: 16.0),
                     width: double.infinity,
                     child: Card(
                       elevation: 0,
