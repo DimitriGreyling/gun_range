@@ -15,4 +15,13 @@ class RangeRepository {
         await _supabase.from(tablename).select().eq('is_active', true);
     return (response as List).map((e) => Range.fromJson(e)).toList();
   }
+
+  Future<Range?> getRangeById(String rangeId) async {
+    final response =
+        await _supabase.from(tablename).select().eq('id', rangeId).single();
+    if (response != null) {
+      return Range.fromJson(response);
+    }
+    return null;
+  }
 }

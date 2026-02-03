@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/providers/favorite_provider.dart';
+import 'package:gun_range_app/providers/photo_provider.dart';
 import '../viewmodels/auth_vm.dart';
 import '../viewmodels/range_vm.dart';
 import '../viewmodels/event_vm.dart';
@@ -18,8 +19,9 @@ final rangeViewModelProvider =
     StateNotifierProvider<RangeViewModel, RangeState>((ref) {
   final rangeRepository = ref.watch(rangeRepositoryProvider);
   final favoriteRepository = ref.watch(favoriteProvider);
+  final photoRepository = ref.watch(photoProvider);
 
-  return RangeViewModel(rangeRepository, favoriteRepository);
+  return RangeViewModel(rangeRepository, favoriteRepository, photoRepository);
 });
 
 final eventViewModelProvider =

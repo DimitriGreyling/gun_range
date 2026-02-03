@@ -10,11 +10,16 @@ class RangeDetailWeb extends ConsumerStatefulWidget {
 }
 
 class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
+  
+  Future<void> _loadRangeDetails() async {
+  
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-
+        
       ],
     );
   }

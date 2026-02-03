@@ -3,6 +3,7 @@ import 'package:gun_range_app/data/models/event.dart';
 import 'package:gun_range_app/data/models/favorite.dart';
 import 'package:gun_range_app/data/models/popup_position.dart';
 import 'package:gun_range_app/data/repositories/favorite_repository.dart';
+import 'package:gun_range_app/data/repositories/photo_repository.dart';
 import 'package:gun_range_app/domain/services/errors_exception_service.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -43,8 +44,10 @@ class RangeState {
 class RangeViewModel extends StateNotifier<RangeState> {
   final RangeRepository _rangeRepository;
   final FavoriteRepository _favoriteRepository;
+  final PhotoRepository _photoRepository;
 
-  RangeViewModel(this._rangeRepository, this._favoriteRepository)
+  RangeViewModel(
+      this._rangeRepository, this._favoriteRepository, this._photoRepository)
       : super(const RangeState());
 
   Future<void> fetchRanges() async {
@@ -124,5 +127,21 @@ class RangeViewModel extends StateNotifier<RangeState> {
   User? getCurrentUser() {
     final supabase = Supabase.instance.client;
     return supabase.auth.currentUser;
+  }
+
+  Future<void> getRangeDetails(String rangeId) async {
+    try {
+      final rangeDetails = await _rangeRepository.getRangeById(rangeId);
+
+      if (rangeDetails == null) {
+        throw Exception('Range not found');
+      }
+
+      final photos = _photoRepository.getPhotoUrlsByRangeId(rangeId);
+
+      rangeDetails.nspPhotoUrls = await photos;
+    } catch (e) {
+      ErrorsExceptionService.handleException(e);
+    }
   }
 }

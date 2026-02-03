@@ -8,6 +8,7 @@ class Range {
   bool? isActive;
 
   bool nspIsFavorite = false;
+  List<String> nspPhotoUrls = [];
 
   Range({
     this.id,
@@ -18,6 +19,7 @@ class Range {
     this.facilities = const {},
     this.isActive,
     this.nspIsFavorite = false,
+    this.nspPhotoUrls = const [],
   });
 
   factory Range.fromJson(Map<String, dynamic> json) => Range(
