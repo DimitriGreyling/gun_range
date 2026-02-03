@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/core/constants/general_constants.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class ReviewsSection extends ConsumerStatefulWidget {
   final String rangeId;
@@ -61,9 +62,90 @@ class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
         (totalCount / GeneralConstants.pageSize).ceil().clamp(1, 9999);
 
     if (widget.isLoading) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16.0),
-        child: CircularProgressIndicator(),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Reviews',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 300,
+            child: ListView.builder(
+              itemCount: 3,
+              itemBuilder: (context, index) {
+                // final review = reviews[index];
+                final isExpanded = _expandedReviews.contains(index);
+                final reviewText = 'Loading review content...';
+                final showReadMore = reviewText.length > 100;
+
+                return Skeletonizer(
+                  enabled: true,
+                  child: Skeleton.leaf(
+                    enabled: true,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 8.0),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Card(
+                          elevation: 0,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text('Loading...'),
+                                    _buildRatingStars(5),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Loading review content...',
+                                  maxLines: isExpanded ? null : 2,
+                                  overflow: isExpanded
+                                      ? TextOverflow.visible
+                                      : TextOverflow.ellipsis,
+                                ),
+                                if (showReadMore)
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            if (isExpanded) {
+                                              _expandedReviews.remove(index);
+                                            } else {
+                                              _expandedReviews.add(index);
+                                            }
+                                          });
+                                        },
+                                        child: Text(isExpanded
+                                            ? 'Read less'
+                                            : 'Read more'),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       );
     }
     if (reviews.isEmpty) {
