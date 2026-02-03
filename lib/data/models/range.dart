@@ -1,20 +1,25 @@
 class Range {
-  final String id;
-  final String name;
-  final String description;
-  final double latitude;
-  final double longitude;
-  final Map<String, dynamic> facilities;
-  final bool isActive;
+  String? id;
+  String? name;
+  String? description;
+  double? latitude;
+  double? longitude;
+  Map<String, dynamic> facilities;
+  bool? isActive;
+
+  bool nspIsFavorite = false;
+  List<String> nspPhotoUrls = [];
 
   Range({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.latitude,
-    required this.longitude,
-    required this.facilities,
-    required this.isActive,
+    this.id,
+    this.name,
+    this.description,
+    this.latitude,
+    this.longitude,
+    this.facilities = const {},
+    this.isActive,
+    this.nspIsFavorite = false,
+    this.nspPhotoUrls = const [],
   });
 
   factory Range.fromJson(Map<String, dynamic> json) => Range(

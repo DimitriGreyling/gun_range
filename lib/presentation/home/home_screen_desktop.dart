@@ -77,7 +77,7 @@ class _HomeScreenDesktopState extends ConsumerState<HomeScreenDesktop> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scaffoldKey.currentState?.openDrawer();
       ref.read(rangeViewModelProvider.notifier).fetchRanges();
-      ref.read(rangeViewModelProvider.notifier).fetchEvents();
+      ref.read(eventViewModelProvider.notifier).fetchEvents();
     });
   }
 

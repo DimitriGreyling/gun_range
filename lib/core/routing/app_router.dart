@@ -6,6 +6,7 @@ import 'package:gun_range_app/presentation/add_range/add_range_app_shell.dart';
 import 'package:gun_range_app/presentation/auth/login_app_shell.dart';
 import 'package:gun_range_app/presentation/home/home_app_shell.dart';
 import 'package:gun_range_app/presentation/home/home_spa_view.dart';
+import 'package:gun_range_app/presentation/range_detail.dart/range_detail_app_shell.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../presentation/ranges/range_list_screen.dart';
 import '../../presentation/events/event_list_screen.dart';
@@ -37,7 +38,14 @@ final appRouter = GoRouter(
     GoRoute(
       name: 'home',
       path: '/home',
-      builder: (context, state) => HomeSPAView(
+      builder: (context, state) => const HomeSPAView(
+        child: HomeAppShell(),
+      ),
+    ),
+    GoRoute(
+      name: 'home-2',
+      path: '/',
+      builder: (context, state) => const HomeSPAView(
         child: HomeAppShell(),
       ),
     ),
@@ -69,6 +77,15 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/add_range',
       builder: (context, state) => const AddRangeAppShell(),
+    ),
+    GoRoute(
+      path: '/range-detail/:id',
+      builder: (context, state) {
+        final rangeId = state.pathParameters['id'];
+        return RangeDetailAppShell(
+          rangeId: rangeId,
+        );
+      },
     ),
   ],
 );

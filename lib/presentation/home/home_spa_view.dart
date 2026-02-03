@@ -246,8 +246,24 @@ class _HomeSPAViewState extends ConsumerState<HomeSPAView> {
         padding: EdgeInsets.zero,
         children: [
           _buildMenuHeader(expanded),
-          _buildTitle(Icons.home, 'Home', expanded),
-          _buildTitle(Icons.settings, 'Settings', expanded),
+          _buildTitle(
+            icon: Icons.dashboard,
+            label: 'Home',
+            expanded: expanded,
+            path: '/home',
+          ),
+          _buildTitle(
+            icon: Icons.book_online,
+            label: 'Bookings',
+            expanded: expanded,
+            path: '/bookings',
+          ),
+          _buildTitle(
+            icon: Icons.settings,
+            label: 'Settings',
+            expanded: expanded,
+            path: '/settings',
+          ),
         ],
       ),
     );
@@ -337,9 +353,17 @@ class _HomeSPAViewState extends ConsumerState<HomeSPAView> {
     );
   }
 
-  Widget _buildTitle(IconData icon, String label, bool expanded) {
+  Widget _buildTitle({
+    required IconData icon,
+    required String label,
+    required bool expanded,
+    required String path,
+  }) {
     if (expanded) {
       return ListTile(
+        onTap: () {
+          context.go(path);
+        },
         leading: Icon(icon),
         title: AnimatedSwitcher(
           duration: const Duration(milliseconds: 180),

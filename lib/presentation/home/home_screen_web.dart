@@ -1,10 +1,17 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/core/routing/app_router.dart';
 import 'package:gun_range_app/data/models/event.dart';
+import 'package:gun_range_app/data/models/favorite.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/widgets/loading_card_widget.dart';
+import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeScreenWeb extends ConsumerStatefulWidget {
   const HomeScreenWeb({super.key});
@@ -19,13 +26,15 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
   final ScrollController _horizontalCompetitionController = ScrollController();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  final Map<String, Future<bool>> _favoriteFutures = {};
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scaffoldKey.currentState?.openDrawer();
       ref.read(rangeViewModelProvider.notifier).fetchRanges();
-      ref.read(rangeViewModelProvider.notifier).fetchEvents();
+      ref.read(eventViewModelProvider.notifier).fetchEvents();
     });
   }
 
@@ -37,10 +46,76 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     super.dispose();
   }
 
+  Future<bool> _getRangeFavoriteFuture(String userId, Range range) async {
+    final key = '${userId}_${range.id}';
+    return _favoriteFutures.putIfAbsent(
+      key,
+      () => ref
+          .read(rangeViewModelProvider.notifier)
+          .isRangeFavorite(userId, range),
+    );
+  }
+
+  Future<bool> _getEventFavoriteFuture(String userId, Event event) {
+    final key = '${userId}_${event.id}';
+    return _favoriteFutures.putIfAbsent(
+      key,
+      () => ref
+          .read(eventViewModelProvider.notifier)
+          .isEventFavorite(userId, event),
+    );
+  }
+
+  void _onEventFavoriteClicked({
+    Event? event,
+    required bool isAuthed,
+    User? user,
+    required List<Favorite> favorites,
+  }) {
+    if (user == null) return;
+
+    //CLear cached version of favorite future
+    final key = '${user.id}_${event?.id}';
+    _favoriteFutures.remove(key);
+
+    ref.read(eventViewModelProvider.notifier).toggleFavorite(
+          user.id,
+          event!,
+        );
+  }
+
+  void _onRangeFavoriteClicked({
+    Range? range,
+    required bool isAuthed,
+    User? user,
+    required List<Favorite> favorites,
+  }) {
+    if (user == null) return;
+
+    //CLear cached version of favorite future
+    final key = '${user.id}_${range?.id}';
+    _favoriteFutures.remove(key);
+
+    ref.read(rangeViewModelProvider.notifier).toggleFavorite(
+          user.id,
+          range!,
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
     //Ranges and Events would be fetched from ViewModels
     final rangeState = ref.watch(rangeViewModelProvider);
+    final eventState = ref.watch(eventViewModelProvider);
+
+    //Get user authentication state
+    final isAuthed = ref.watch(isAuthenticatedProvider);
+
+    User? currentUser;
+
+    if (isAuthed) {
+      currentUser = ref.read(rangeViewModelProvider.notifier).getCurrentUser();
+    }
 
     return Scaffold(
       body: Padding(
@@ -48,21 +123,9 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            // const SizedBox(height: 16.0),
-            // _buildHeader(isAuthed),
-            // const SizedBox(height: 16.0),
             Expanded(
               child: Row(
                 children: [
-                  // AnimatedContainer(
-                  //   duration: const Duration(milliseconds: 300),
-                  //   curve: Curves.easeInOutCubic,
-                  //   width: menuWidth,
-                  //   child: SizedBox(
-                  //     width: menuWidth,
-                  //     child: _buildMenu(menuExpanded),
-                  //   ),
-                  // ),
                   Expanded(
                     child: SingleChildScrollView(
                       controller: _scrollController,
@@ -113,7 +176,13 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                               ? [
                                                   for (var range
                                                       in rangeState.ranges)
-                                                    _buildCardRange(range),
+                                                    _buildCardRange(
+                                                      range: range,
+                                                      isAuthed: isAuthed,
+                                                      user: currentUser,
+                                                      favorites: rangeState
+                                                          .rangeFavorites,
+                                                    ),
                                                 ]
                                               : [
                                                   SizedBox(
@@ -160,19 +229,20 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                   controller: _horizontalCompetitionController,
                                   scrollDirection: Axis.horizontal,
                                   child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 16.0),
+                                    padding:
+                                        const EdgeInsets.only(bottom: 16.0),
                                     child: Row(
                                       mainAxisAlignment:
-                                          rangeState.isLoadingEvents ||
-                                                  rangeState.events.isNotEmpty
+                                          eventState.isLoadingEvents ||
+                                                  eventState.events.isNotEmpty
                                               ? MainAxisAlignment.spaceEvenly
                                               : MainAxisAlignment.start,
                                       crossAxisAlignment:
-                                          rangeState.isLoadingEvents ||
-                                                  rangeState.events.isNotEmpty
+                                          eventState.isLoadingEvents ||
+                                                  eventState.events.isNotEmpty
                                               ? CrossAxisAlignment.start
                                               : CrossAxisAlignment.center,
-                                      children: rangeState.isLoadingEvents
+                                      children: eventState.isLoadingEvents
                                           ? [
                                               const LoadingCardWidget(
                                                   lineCount: 3),
@@ -181,22 +251,30 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                                               const LoadingCardWidget(
                                                   lineCount: 3),
                                             ]
-                                          : rangeState.events.isNotEmpty
+                                          : eventState.events.isNotEmpty
                                               ? [
                                                   for (var event
-                                                      in rangeState.events)
-                                                    _buildCardEvent(event),
+                                                      in eventState.events)
+                                                    _buildCardEvent(
+                                                      event: event,
+                                                      isAuthed: isAuthed,
+                                                      user: currentUser,
+                                                      favorites: eventState
+                                                          .eventFavorites,
+                                                    ),
                                                 ]
                                               : [
                                                   SizedBox(
-                                                    width: MediaQuery.of(context)
-                                                            .size
-                                                            .width /
-                                                        4,
-                                                    height: MediaQuery.of(context)
-                                                            .size
-                                                            .height /
-                                                        3,
+                                                    width:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .width /
+                                                            4,
+                                                    height:
+                                                        MediaQuery.of(context)
+                                                                .size
+                                                                .height /
+                                                            3,
                                                     child: Text(
                                                       'No Events Available',
                                                       style: Theme.of(context)
@@ -225,7 +303,15 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     );
   }
 
-  Widget _buildCardEvent(Event? event) {
+  Widget _buildCardEvent({
+    Event? event,
+    required bool isAuthed,
+    User? user,
+    required List<Favorite> favorites,
+  }) {
+    Future<bool> favoriteFuture =
+        _getEventFavoriteFuture(user?.id ?? '', event!);
+
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
@@ -238,17 +324,6 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
             height: MediaQuery.of(context).size.height / 3,
             child: LayoutBuilder(
               builder: (context, constraints) {
-                Widget line(double factor) => Skeleton.shade(
-                      child: Container(
-                        width: constraints.maxWidth * factor,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    );
-
                 return Stack(
                   children: [
                     Column(
@@ -313,23 +388,40 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                         )
                       ],
                     ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: IconButton(
-                        style: IconButton.styleFrom(
-                          backgroundColor: Theme.of(context)
-                              .colorScheme
-                              .surface
-                              .withOpacity(0.3),
-                        ),
-                        onPressed: () {},
-                        icon: Icon(
-                          Icons.favorite_border_outlined,
-                          color: Colors.red,
-                        ),
+                    if (isAuthed)
+                      FutureBuilder(
+                        future: favoriteFuture,
+                        builder: (context, snapshot) {
+                          return Positioned(
+                            top: 0,
+                            right: 0,
+                            child: IconButton(
+                              style: IconButton.styleFrom(
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .surface
+                                    .withOpacity(0.3),
+                              ),
+                              onPressed: !isAuthed
+                                  ? null
+                                  : () {
+                                      _onEventFavoriteClicked(
+                                        event: event,
+                                        isAuthed: isAuthed,
+                                        user: user,
+                                        favorites: favorites,
+                                      );
+                                    },
+                              icon: Icon(
+                                snapshot.data == true
+                                    ? Icons.favorite
+                                    : Icons.favorite_border_outlined,
+                                color: isAuthed ? Colors.red : null,
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    ),
                   ],
                 );
               },
@@ -340,64 +432,21 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     );
   }
 
-  Widget _buildCardRange(Range? range) {
-    // return Card(
-    //   elevation: 2,
-    //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-    //   child: SizedBox(
-    //     width: MediaQuery.of(context).size.width / 4,
-    //     height: MediaQuery.of(context).size.height / 3,
-    //     child: LayoutBuilder(
-    //       builder: (context, constraints) {
-    //         Widget line(double factor) => Skeleton.shade(
-    //               child: Container(
-    //                 width: constraints.maxWidth * factor,
-    //                 height: 14,
-    //                 decoration: BoxDecoration(
-    //                   color: Colors.grey[300],
-    //                   borderRadius: BorderRadius.circular(8),
-    //                 ),
-    //               ),
-    //             );
-
-    //         return Column(
-    //           crossAxisAlignment: CrossAxisAlignment.start,
-    //           children: [
-    //             Skeleton.shade(
-    //               child: ClipRRect(
-    //                 borderRadius: const BorderRadius.only(
-    //                   topLeft: Radius.circular(18),
-    //                   topRight: Radius.circular(18),
-    //                 ),
-    //                 child: Container(
-    //                   width: double.infinity,
-    //                   height: MediaQuery.of(context).size.height / 6,
-    //                   color: Colors.grey[300],
-    //                 ),
-    //               ),
-    //             ),
-    //             const SizedBox(height: 12),
-    //             Text(range?.name ?? 'Range Name',
-    //                 style: Theme.of(context).textTheme.titleMedium),
-    //             const SizedBox(height: 8),
-    //             Text(range?.description ?? 'Range Location',
-    //                 style: Theme.of(context).textTheme.bodyMedium),
-    //             const SizedBox(height: 8),
-
-    //             // for (int i = 0; i < 3; i++) ...[
-    //             //   line(factors[i % factors.length]),
-    //             //   const SizedBox(height: 8),
-    //             // ],
-    //           ],
-    //         );
-    //       },
-    //     ),
-    //   ),
-    // );
+  Widget _buildCardRange({
+    Range? range,
+    required bool isAuthed,
+    User? user,
+    required List<Favorite> favorites,
+  }) {
+    Future<bool> favoriteFuture =
+        _getRangeFavoriteFuture(user?.id ?? '', range!);
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: GestureDetector(
+        onTap: () => {
+          context.go('/range-detail/${range?.id}'),
+        },
         child: Card(
           elevation: 2,
           shape:
@@ -407,17 +456,6 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
             height: MediaQuery.of(context).size.height / 3,
             child: LayoutBuilder(
               builder: (context, constraints) {
-                Widget line(double factor) => Skeleton.shade(
-                      child: Container(
-                        width: constraints.maxWidth * factor,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    );
-
                 return Stack(
                   children: [
                     Column(
@@ -482,23 +520,40 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
                         )
                       ],
                     ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: IconButton(
-                        style: IconButton.styleFrom(
-                          backgroundColor: Theme.of(context)
-                              .colorScheme
-                              .surface
-                              .withOpacity(0.3),
-                        ),
-                        onPressed: () {},
-                        icon: Icon(
-                          Icons.favorite_border_outlined,
-                          color: Colors.red,
-                        ),
+                    if (isAuthed)
+                      FutureBuilder(
+                        future: favoriteFuture,
+                        builder: (context, snapshot) {
+                          return Positioned(
+                            top: 0,
+                            right: 0,
+                            child: IconButton(
+                              style: IconButton.styleFrom(
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .surface
+                                    .withOpacity(0.3),
+                              ),
+                              onPressed: !isAuthed
+                                  ? null
+                                  : () {
+                                      _onRangeFavoriteClicked(
+                                        range: range,
+                                        isAuthed: isAuthed,
+                                        user: user,
+                                        favorites: favorites,
+                                      );
+                                    },
+                              icon: Icon(
+                                snapshot.data == true
+                                    ? Icons.favorite
+                                    : Icons.favorite_border_outlined,
+                                color: isAuthed ? Colors.red : null,
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    ),
                   ],
                 );
               },
@@ -508,5 +563,4 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
       ),
     );
   }
-
 }
