@@ -62,7 +62,6 @@ class RangeDetailVm extends StateNotifier<RangeDetailState> {
   }) async {
     state = state.copyWith(isLoadingReviews: true, error: null);
     try {
-      await Future.delayed(const Duration(seconds: 10)); // Simulate delay
       final reviews = await _reviewRepository.getReviewsByRangeId(
         rangeId: rangeId,
         page: page,

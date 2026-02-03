@@ -71,7 +71,10 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
         enabled: isLoading,
         child: Container(
           height: 200,
-          color: Colors.grey[300],
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.grey[300],
+          ),
           child: const Center(child: Text('Picture Section Placeholder')),
         ),
       ),

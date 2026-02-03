@@ -70,7 +70,8 @@ class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          SizedBox(
+          Container(
+            padding: const EdgeInsets.all(16.0),
             height: 300,
             child: ListView.builder(
               itemCount: 3,
@@ -216,7 +217,7 @@ class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
                             const SizedBox(height: 4),
                             Text(
                               reviewText,
-                              maxLines: isExpanded ? null : 2,
+                              maxLines: isExpanded ? null : 1,
                               overflow: isExpanded
                                   ? TextOverflow.visible
                                   : TextOverflow.ellipsis,
