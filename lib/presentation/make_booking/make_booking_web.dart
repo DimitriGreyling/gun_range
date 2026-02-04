@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/routing/app_router.dart';
 import 'package:gun_range_app/data/models/range.dart';
+import 'package:gun_range_app/data/models/booking_guest.dart'; // <-- Import your model
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/make_booking_provider.dart';
@@ -91,18 +92,35 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       final notes = _notesController.text;
       final date = _selectedDate;
 
-      final guests = _guests
-          .map((guest) => {
-                'name': guest['name']!.text,
-                'email': guest['email']!.text,
-                'phone': guest['phone']!.text,
-              })
-          .toList();
+      // Build BookingGuest list
+      final List<BookingGuest>? bookingGuests = [];
+
+      // Add main booker or recipient
+      bookingGuests?.add(
+        BookingGuest(
+          name: name,
+          email: email,
+          phone: phone,
+          isPrimary: true,
+        ),
+      );
+
+      // Add guests
+      for (final guest in _guests) {
+        bookingGuests?.add(
+          BookingGuest(
+            name: guest['name']!.text,
+            email: guest['email']!.text,
+            phone: guest['phone']!.text,
+            isPrimary: false,
+          ),
+        );
+      }
 
       ref.read(makeBookingProvider.notifier).makeBooking(
             range: widget.range!,
             date: date!,
-            // guests: guests, // Add this to your booking logic
+            bookingGuest: bookingGuests,
           );
 
       GlobalPopupService.showInfo(
@@ -313,6 +331,13 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                     child: const Text('Select Date'),
                   ),
                 ],
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                controller: _notesController,
+                decoration:
+                    const InputDecoration(labelText: 'Notes (optional)'),
+                maxLines: 3,
               ),
               const SizedBox(height: 24),
               Row(

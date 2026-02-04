@@ -9,7 +9,7 @@ class BookingGuestRepository {
 
   final tableName = Tables.bookingGuests;
 
-  Future<void> addGuestToBooking({
+  Future<BookingGuest?> addGuestToBooking({
     required String bookingId,
     required BookingGuest guest,
   }) async {
@@ -19,11 +19,13 @@ class BookingGuestRepository {
       'email': guest.email,
       'phone': guest.phone,
       'is_primary': guest.isPrimary,
-    });
+    }).select();
 
-    if (response == null) {
+    if (response.isEmpty) {
       throw Exception('Failed to add guest to booking');
     }
+
+    return BookingGuest.fromJson((response as List).first);
   }
 
   Future<List<BookingGuest>> getGuestsForBooking(String bookingId) async {

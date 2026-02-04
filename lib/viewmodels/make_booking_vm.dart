@@ -48,12 +48,15 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
       // Call the repository to create the booking
       final bookingResponse = await _bookingRepository.createBooking(booking);
 
-      if(bookingResponse.id == null) {
+      if (bookingResponse.id == null) {
         throw Exception('Booking cannot be found or created');
       }
 
       // Add the primary guest (the user making the booking)
-      if(bookingGuest != null && bookingGuest.isNotEmpty){
+      if (bookingGuest != null && bookingGuest.isNotEmpty) {
+        bookingGuest
+            .removeWhere((guest) => (guest.name == null || guest.name!.isEmpty) && (guest.email == null || guest.email!.isEmpty));
+
         for (var guest in bookingGuest) {
           await _bookingGuestRepository.addGuestToBooking(
             bookingId: bookingResponse.id!,
@@ -61,7 +64,6 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
           );
         }
       }
-
     } catch (e) {
       ErrorsExceptionService.handleException(e);
     } finally {
