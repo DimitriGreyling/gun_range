@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/routing/app_router.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
+import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/make_booking_provider.dart';
 
 class MakeBookingWeb extends ConsumerStatefulWidget {
@@ -22,7 +23,10 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _notesController = TextEditingController();
+  final _recipientNameController = TextEditingController();
+  final _recipientEmailController = TextEditingController();
   DateTime? _selectedDate;
+  String _bookingFor = 'myself'; // 'myself' or 'someone'
 
   @override
   void dispose() {
@@ -30,6 +34,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
     _emailController.dispose();
     _phoneController.dispose();
     _notesController.dispose();
+    _recipientNameController.dispose();
+    _recipientEmailController.dispose();
     super.dispose();
   }
 
@@ -50,10 +56,12 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      // Process the booking submission
-      // You can access the form values using the controllers
-      final name = _nameController.text;
-      final email = _emailController.text;
+      final name = _bookingFor == 'myself'
+          ? _nameController.text
+          : _recipientNameController.text;
+      final email = _bookingFor == 'myself'
+          ? _emailController.text
+          : _recipientEmailController.text;
       final phone = _phoneController.text;
       final notes = _notesController.text;
       final date = _selectedDate;
@@ -61,9 +69,9 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       ref.read(makeBookingProvider.notifier).makeBooking(
             range: widget.range!,
             date: date!,
+            // You can pass more details as needed
           );
 
-      // For now, just show a confirmation dialog
       GlobalPopupService.showInfo(
         title: 'Booking Submitted',
         message:
@@ -74,6 +82,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
 
   @override
   Widget build(BuildContext context) {
+    final currentUser = ref.watch(authUserProvider).value;
+
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -81,31 +91,71 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Text('Make Booking for Range: ${widget.range?.name ?? ""}',
                   style: Theme.of(context).textTheme.titleLarge),
-              const SizedBox(height: 24),
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Enter your name' : null,
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Radio<String>(
+                    value: 'myself',
+                    groupValue: _bookingFor,
+                    onChanged: (value) {
+                      setState(() {
+                        _bookingFor = value!;
+                      });
+                    },
+                  ),
+                  const Text('For myself'),
+                  Radio<String>(
+                    value: 'someone',
+                    groupValue: _bookingFor,
+                    onChanged: (value) {
+                      setState(() {
+                        _bookingFor = value!;
+                      });
+                    },
+                  ),
+                  const Text('For someone else'),
+                ],
               ),
               const SizedBox(height: 12),
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Enter your email' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _phoneController,
-                decoration: const InputDecoration(labelText: 'Phone'),
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Enter your phone' : null,
-              ),
-              const SizedBox(height: 12),
+              if (_bookingFor == 'myself') ...[
+                const Text('Booking for: '),
+                const SizedBox(height: 12),
+                Text('Name: ${currentUser?.userMetadata?['full_name'] ?? ''}'),
+                const SizedBox(height: 12),
+                Text('Email: ${currentUser?.email ?? ''}'),
+                const SizedBox(height: 12),
+                Text(
+                    'Phone: ${currentUser?.userMetadata?['phone'] ?? 'Not Provided'}'),
+                const SizedBox(height: 12),
+              ] else ...[
+                TextFormField(
+                  controller: _recipientNameController,
+                  decoration:
+                      const InputDecoration(labelText: 'Recipient Name'),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'Enter recipient name' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _recipientEmailController,
+                  decoration:
+                      const InputDecoration(labelText: 'Recipient Email'),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'Enter recipient email' : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _phoneController,
+                  decoration: const InputDecoration(labelText: 'Phone'),
+                  validator: (v) =>
+                      v == null || v.isEmpty ? 'Enter your phone' : null,
+                ),
+                const SizedBox(height: 12),
+              ],
               Row(
                 children: [
                   Expanded(
@@ -120,13 +170,6 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                     child: const Text('Select Date'),
                   ),
                 ],
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _notesController,
-                decoration:
-                    const InputDecoration(labelText: 'Notes (optional)'),
-                maxLines: 3,
               ),
               const SizedBox(height: 24),
               Row(
@@ -150,7 +193,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                   ),
                   ElevatedButton(
                     onPressed: _submit,
-                    child: const Text('Submit Booking'),
+                    child: const Text('Book and Pay'),
                   ),
                 ],
               )
