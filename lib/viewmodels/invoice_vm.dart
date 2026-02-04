@@ -69,6 +69,7 @@ class InvoiceVm extends StateNotifier<InvoiceStateVm> {
         boldItalic: ttf,
       ),
     );
+    
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,

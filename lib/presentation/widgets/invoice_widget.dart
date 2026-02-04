@@ -37,9 +37,17 @@ class _InvoiceWidgetState extends ConsumerState<InvoiceWidget> {
         : PdfViewer.data(
            invoiceState.pdfDocument ?? Uint8List(0),
             sourceName: 'Generated PDF',
-            params: const PdfViewerParams(
+            params: PdfViewerParams(
+              errorBannerBuilder: (context, error, stackTrace, documentRef) {
+                return Center(
+                  child: Text(
+                    'Error loading PDF: $error',
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                );
+              },
               backgroundColor: Colors.transparent,
-              pageDropShadow: BoxShadow(
+              pageDropShadow: const BoxShadow(
                 color: Colors.transparent,
                 blurRadius: 4,
                 spreadRadius: 0,
