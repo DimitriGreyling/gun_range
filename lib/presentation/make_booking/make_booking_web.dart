@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/data/models/range.dart';
-import 'package:gun_range_app/data/models/booking_guest.dart'; // <-- Import your model
+import 'package:gun_range_app/data/models/booking_guest.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/make_booking_provider.dart';
@@ -27,8 +27,9 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
   final _recipientNameController = TextEditingController();
   final _recipientEmailController = TextEditingController();
   DateTime? _selectedDate;
+  final _dateController = TextEditingController();
   String _bookingFor = 'myself'; // 'myself' or 'someone'
-  List<Map<String, TextEditingController>> _guests = [];
+  final List<Map<String, TextEditingController>> _guests = [];
 
   @override
   void initState() {
@@ -51,6 +52,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       guest['email']?.dispose();
       guest['phone']?.dispose();
     }
+    _dateController.dispose();
     super.dispose();
   }
 
@@ -155,7 +157,16 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
   @override
   Widget build(BuildContext context) {
     //CURRENT USER
-    final currentUser = ref.watch(authUserProvider).value;
+    final authUserAsync = ref.watch(authUserProvider);
+    final currentUser = authUserAsync.whenOrNull(data: (user) => user);
+
+    // Defensive null check for provider loading
+    if (authUserAsync.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (authUserAsync.hasError) {
+      return Center(child: Text('Error loading user'));
+    }
 
     //BOKKING STATE
     final makeBookingState = ref.watch(makeBookingProvider);
@@ -371,17 +382,18 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                   hintText: 'Select a date',
                   suffixIcon: Icon(Icons.calendar_today),
                 ),
-                controller: TextEditingController(
-                  text: _selectedDate == null
-                      ? ''
-                      : _selectedDate!.toLocal().toString().split(' ')[0],
-                ),
+                controller: _dateController,
                 onTap: makeBookingState.isLoading
                     ? null
                     : () async {
                         FocusScope.of(context)
                             .requestFocus(FocusNode()); // Prevents keyboard
                         await _pickDate(context);
+                        setState(() {
+                          _dateController.text = _selectedDate == null
+                              ? ''
+                              : _selectedDate!.toLocal().toString().split(' ')[0];
+                        });
                       },
                 validator: (v) => _selectedDate == null
                     ? 'Please select a booking date'
