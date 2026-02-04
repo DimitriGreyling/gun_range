@@ -25,13 +25,15 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
   final BookingRepository _bookingRepository;
   final User _authUserProvider;
   final BookingGuestRepository _bookingGuestRepository;
-  
-  MakeBookingVm(this._bookingRepository, this._authUserProvider, this._bookingGuestRepository)
+
+  MakeBookingVm(this._bookingRepository, this._authUserProvider,
+      this._bookingGuestRepository)
       : super(MakeBookingState());
 
   Future<void> makeBooking({
     required Range range,
     required DateTime date,
+    List<BookingGuest>? bookingGuest,
   }) async {
     state = state.copyWith(isLoading: true);
     try {
@@ -44,7 +46,22 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
       );
 
       // Call the repository to create the booking
-      await _bookingRepository.createBooking(booking);
+      final bookingResponse = await _bookingRepository.createBooking(booking);
+
+      if(bookingResponse.id == null) {
+        throw Exception('Booking cannot be found or created');
+      }
+
+      // Add the primary guest (the user making the booking)
+      if(bookingGuest != null && bookingGuest.isNotEmpty){
+        for (var guest in bookingGuest) {
+          await _bookingGuestRepository.addGuestToBooking(
+            bookingId: bookingResponse.id!,
+            guest: guest,
+          );
+        }
+      }
+
     } catch (e) {
       ErrorsExceptionService.handleException(e);
     } finally {
