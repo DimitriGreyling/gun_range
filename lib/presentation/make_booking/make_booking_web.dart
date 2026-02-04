@@ -121,9 +121,14 @@ class _MakeBookingWebState extends State<MakeBookingWeb> {
                         backgroundColor: WidgetStateProperty.all<Color>(
                             Theme.of(context).colorScheme.secondary)),
                     onPressed: () {
-                      GlobalPopupService.showAction(title: 'Cancel Booking', message: 'Are you sure you want to cancel the booking?', actionText: 'Yes, Cancel', onAction: () {
-                        context.go('/range-detail/${widget.rangeId ?? ''}');
-                      });
+                      GlobalPopupService.showAction(
+                          title: 'Cancel Booking',
+                          message:
+                              'Are you sure you want to cancel the booking?',
+                          actionText: 'Yes, Cancel',
+                          onAction: () {
+                            context.go('/range-detail/${widget.rangeId ?? ''}');
+                          });
                     },
                     child: const Text('Cancel'),
                   ),
