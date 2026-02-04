@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/widgets/review_widget.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class RangeDetailWeb extends ConsumerStatefulWidget {
@@ -101,9 +102,17 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                   Row(
                     children: [
                       Tooltip(
-                        message: 'Share our range',
+                        message: 'Share range',
                         child: IconButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            SharePlus.instance.share(
+                              ShareParams(
+                                title: 'Range Connect',
+                                subject: 'Check out this gun range',
+                                uri: Uri.parse('http://localhost:62377/ranges/${range?.id ?? ''}'),//TODO: make this generic to use actual link etc
+                              ),
+                            );
+                          },
                           icon: const Icon(
                             Icons.share,
                             size: 30,
@@ -137,14 +146,14 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                             backgroundColor: WidgetStateProperty.all<Color>(
                                 Theme.of(context)
                                     .colorScheme
-                                    .secondaryContainer
-                                    .withOpacity(0.3)),
-                            foregroundColor: WidgetStateProperty.all<Color>(
-                                Theme.of(context).colorScheme.onSurface),
+                                    .secondaryContainer),
+                            // foregroundColor: WidgetStateProperty.all<Color>(
+                            //     Theme.of(context).colorScheme.onSecondaryContainer),
                             elevation: WidgetStateProperty.all<double>(0),
                           ),
                           onPressed: () {},
-                          child: const Text('Reviews'),
+                          child: const Text('Reviews',
+                              style: TextStyle(fontSize: 14)),
                         ),
                       ),
                     ],
@@ -160,9 +169,21 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    'Contact Number',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      // color: Theme.of(context).colorScheme.tertiaryContainer,
+                      // border: Border.all(
+                      //   color: Theme.of(context).colorScheme.tertiaryContainer,
+                      // ),
+                    ),
+                    child: Text(
+                      'Contact Number: ${range?.contactNumber ?? ''}',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onTertiaryContainer),
+                    ),
                   ),
                   const SizedBox(height: 16),
                 ],
