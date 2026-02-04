@@ -1,20 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/routing/app_router.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
+import 'package:gun_range_app/providers/make_booking_provider.dart';
 
-class MakeBookingWeb extends StatefulWidget {
+class MakeBookingWeb extends ConsumerStatefulWidget {
   final String? rangeId;
   final Range? range;
 
   const MakeBookingWeb({super.key, this.rangeId, this.range});
 
   @override
-  State<MakeBookingWeb> createState() => _MakeBookingWebState();
+  ConsumerState<MakeBookingWeb> createState() => _MakeBookingWebState();
 }
 
-class _MakeBookingWebState extends State<MakeBookingWeb> {
+class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -48,11 +50,25 @@ class _MakeBookingWebState extends State<MakeBookingWeb> {
 
   void _submit() {
     if (_formKey.currentState?.validate() ?? false) {
-      // TODO: Send booking data to backend/Supabase
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Booking submitted!')),
+      // Process the booking submission
+      // You can access the form values using the controllers
+      final name = _nameController.text;
+      final email = _emailController.text;
+      final phone = _phoneController.text;
+      final notes = _notesController.text;
+      final date = _selectedDate;
+
+      ref.read(makeBookingProvider.notifier).makeBooking(
+            range: widget.range!,
+            date: date!,
+          );
+
+      // For now, just show a confirmation dialog
+      GlobalPopupService.showInfo(
+        title: 'Booking Submitted',
+        message:
+            'Thank you, $name! Your booking for ${widget.range?.name ?? ''} on ${date != null ? date.toLocal().toString().split(' ')[0] : 'N/A'} has been submitted.',
       );
-      // Optionally clear form or navigate away
     }
   }
 

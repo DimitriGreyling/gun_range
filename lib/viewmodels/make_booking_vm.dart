@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/data/models/booking.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/data/repositories/booking_repository.dart';
 import 'package:gun_range_app/domain/services/errors_exception_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MakeBookingState {
   final String? rangeId;
@@ -19,14 +21,27 @@ class MakeBookingState {
 
 class MakeBookingVm extends StateNotifier<MakeBookingState> {
   final BookingRepository _bookingRepository;
-  
-  MakeBookingVm(this._bookingRepository) : super(MakeBookingState());
+  final User authUserProvider;
 
-  Future<void> makeBooking(Range range, DateTime date, String name,
-      String email, String phone, String notes) async {
+  MakeBookingVm(this._bookingRepository, this.authUserProvider)
+      : super(MakeBookingState());
+
+  Future<void> makeBooking({
+    required Range range,
+    required DateTime date,
+  }) async {
     state = state.copyWith(isLoading: true);
     try {
-      await Future.delayed(const Duration(seconds: 2));
+      // Create a Booking object
+      final booking = Booking(
+        userId: authUserProvider.id,
+        rangeId: range.id!,
+        status: 'pending',
+        paymentStatus: 'unpaid',
+      );
+
+      // Call the repository to create the booking
+      await _bookingRepository.createBooking(booking);
     } catch (e) {
       ErrorsExceptionService.handleException(e);
     } finally {
