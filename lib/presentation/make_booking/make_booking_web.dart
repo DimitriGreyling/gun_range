@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gun_range_app/core/routing/app_router.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/data/models/booking_guest.dart'; // <-- Import your model
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
@@ -31,10 +30,12 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
   String _bookingFor = 'myself'; // 'myself' or 'someone'
   List<Map<String, TextEditingController>> _guests = [];
 
-  @override 
+  @override
   void initState() {
     super.initState();
-    _loadRangeDetailsIfNotExists();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadRangeDetailsIfNotExists();
+    });
   }
 
   @override
@@ -101,7 +102,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
     }
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
       final name = _bookingFor == 'myself'
           ? _nameController.text
@@ -110,14 +111,13 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
           ? _emailController.text
           : _recipientEmailController.text;
       final phone = _phoneController.text;
-      final notes = _notesController.text;
       final date = _selectedDate;
 
       // Build BookingGuest list
-      final List<BookingGuest>? bookingGuests = [];
+      final List<BookingGuest> bookingGuests = [];
 
       // Add main booker or recipient
-      bookingGuests?.add(
+      bookingGuests.add(
         BookingGuest(
           name: name,
           email: email,
@@ -128,7 +128,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
 
       // Add guests
       for (final guest in _guests) {
-        bookingGuests?.add(
+        bookingGuests.add(
           BookingGuest(
             name: guest['name']!.text,
             email: guest['email']!.text,
@@ -138,7 +138,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
         );
       }
 
-      ref.read(makeBookingProvider.notifier).makeBooking(
+      await ref.read(makeBookingProvider.notifier).makeBooking(
             range: widget.range!,
             date: date!,
             bookingGuest: bookingGuests,
@@ -147,14 +147,18 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       GlobalPopupService.showInfo(
         title: 'Booking Submitted',
         message:
-            'Thank you, $name! Your booking for ${widget.range?.name ?? ''} on ${date != null ? date.toLocal().toString().split(' ')[0] : 'N/A'} has been submitted.',
+            'Thank you, $name! Your booking for ${widget.range?.name ?? ''} on ${date.toLocal().toString().split(' ')[0]} has been submitted.',
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    //CURRENT USER
     final currentUser = ref.watch(authUserProvider).value;
+
+    //BOKKING STATE
+    final makeBookingState = ref.watch(makeBookingProvider);
 
     return SingleChildScrollView(
       child: Padding(
@@ -173,21 +177,25 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                   Radio<String>(
                     value: 'myself',
                     groupValue: _bookingFor,
-                    onChanged: (value) {
-                      setState(() {
-                        _bookingFor = value!;
-                      });
-                    },
+                    onChanged: makeBookingState.isLoading
+                        ? null
+                        : (value) {
+                            setState(() {
+                              _bookingFor = value!;
+                            });
+                          },
                   ),
                   const Text('For myself'),
                   Radio<String>(
                     value: 'someone',
                     groupValue: _bookingFor,
-                    onChanged: (value) {
-                      setState(() {
-                        _bookingFor = value!;
-                      });
-                    },
+                    onChanged: makeBookingState.isLoading
+                        ? null
+                        : (value) {
+                            setState(() {
+                              _bookingFor = value!;
+                            });
+                          },
                   ),
                   const Text('For someone else / group'),
                 ],
@@ -214,6 +222,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                         children: [
                           Expanded(
                             child: TextFormField(
+                              enabled:
+                                  makeBookingState.isLoading ? false : true,
                               controller: guest['name'],
                               decoration: const InputDecoration(
                                   labelText: 'Guest Name'),
@@ -225,7 +235,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: TextFormField(
-                              controller: guest['email'],
+                              enabled:
+                                  makeBookingState.isLoading ? false : true,
                               decoration: const InputDecoration(
                                   labelText: 'Guest Email'),
                             ),
@@ -233,6 +244,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: TextFormField(
+                              enabled:
+                                  makeBookingState.isLoading ? false : true,
                               controller: guest['phone'],
                               decoration: const InputDecoration(
                                   labelText: 'Guest Phone'),
@@ -241,7 +254,9 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                           IconButton(
                             icon: const Icon(Icons.remove_circle,
                                 color: Colors.red),
-                            onPressed: () => _removeGuest(i),
+                            onPressed: makeBookingState.isLoading
+                                ? null
+                                : () => _removeGuest(i),
                           ),
                         ],
                       ),
@@ -254,12 +269,13 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                   child: TextButton.icon(
                     icon: const Icon(Icons.add),
                     label: const Text('Add Guest'),
-                    onPressed: _addGuest,
+                    onPressed: makeBookingState.isLoading ? null : _addGuest,
                   ),
                 ),
                 const SizedBox(height: 12),
               ] else ...[
                 TextFormField(
+                  enabled: makeBookingState.isLoading ? false : true,
                   controller: _recipientNameController,
                   decoration:
                       const InputDecoration(labelText: 'Recipient Name'),
@@ -268,6 +284,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
+                  enabled: makeBookingState.isLoading ? false : true,
                   controller: _recipientEmailController,
                   decoration:
                       const InputDecoration(labelText: 'Recipient Email'),
@@ -276,6 +293,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
+                  enabled: makeBookingState.isLoading ? false : true,
                   controller: _phoneController,
                   decoration: const InputDecoration(labelText: 'Phone'),
                   validator: (v) =>
@@ -293,6 +311,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                         children: [
                           Expanded(
                             child: TextFormField(
+                              enabled:
+                                  makeBookingState.isLoading ? false : true,
                               controller: guest['name'],
                               decoration: const InputDecoration(
                                   labelText: 'Guest Name'),
@@ -304,6 +324,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: TextFormField(
+                              enabled:
+                                  makeBookingState.isLoading ? false : true,
                               controller: guest['email'],
                               decoration: const InputDecoration(
                                   labelText: 'Guest Email'),
@@ -312,6 +334,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: TextFormField(
+                              enabled:
+                                  makeBookingState.isLoading ? false : true,
                               controller: guest['phone'],
                               decoration: const InputDecoration(
                                   labelText: 'Guest Phone'),
@@ -320,7 +344,9 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                           IconButton(
                             icon: const Icon(Icons.remove_circle,
                                 color: Colors.red),
-                            onPressed: () => _removeGuest(i),
+                            onPressed: makeBookingState.isLoading
+                                ? null
+                                : () => _removeGuest(i),
                           ),
                         ],
                       ),
@@ -333,26 +359,11 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                   child: TextButton.icon(
                     icon: const Icon(Icons.add),
                     label: const Text('Add Guest'),
-                    onPressed: _addGuest,
+                    onPressed: makeBookingState.isLoading ? null : _addGuest,
                   ),
                 ),
                 const SizedBox(height: 12),
               ],
-              // Row(
-              //   children: [
-              //     Expanded(
-              //       child: Text(
-              //         _selectedDate == null
-              //             ? 'No date selected'
-              //             : 'Date: ${_selectedDate!.toLocal()}'.split(' ')[0],
-              //       ),
-              //     ),
-              //     ElevatedButton(
-              //       onPressed: () => _pickDate(context),
-              //       child: const Text('Select Date'),
-              //     ),
-              //   ],
-              // ),
               TextFormField(
                 readOnly: true,
                 decoration: const InputDecoration(
@@ -365,21 +376,16 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                       ? ''
                       : _selectedDate!.toLocal().toString().split(' ')[0],
                 ),
-                onTap: () async {
-                  FocusScope.of(context)
-                      .requestFocus(FocusNode()); // Prevents keyboard
-                  await _pickDate(context);
-                },
+                onTap: makeBookingState.isLoading
+                    ? null
+                    : () async {
+                        FocusScope.of(context)
+                            .requestFocus(FocusNode()); // Prevents keyboard
+                        await _pickDate(context);
+                      },
                 validator: (v) => _selectedDate == null
                     ? 'Please select a booking date'
                     : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _notesController,
-                decoration:
-                    const InputDecoration(labelText: 'Notes (optional)'),
-                maxLines: 3,
               ),
               const SizedBox(height: 24),
               Row(
@@ -389,20 +395,23 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                     style: ButtonStyle(
                         backgroundColor: WidgetStateProperty.all<Color>(
                             Theme.of(context).colorScheme.secondary)),
-                    onPressed: () {
-                      GlobalPopupService.showAction(
-                          title: 'Cancel Booking',
-                          message:
-                              'Are you sure you want to cancel the booking?',
-                          actionText: 'Yes, Cancel',
-                          onAction: () {
-                            context.go('/range-detail/${widget.rangeId ?? ''}');
-                          });
-                    },
+                    onPressed: makeBookingState.isLoading
+                        ? null
+                        : () {
+                            GlobalPopupService.showAction(
+                                title: 'Cancel Booking',
+                                message:
+                                    'Are you sure you want to cancel the booking?',
+                                actionText: 'Yes, Cancel',
+                                onAction: () {
+                                  context.go(
+                                      '/range-detail/${widget.rangeId ?? ''}');
+                                });
+                          },
                     child: const Text('Cancel'),
                   ),
                   ElevatedButton(
-                    onPressed: _submit,
+                    onPressed: makeBookingState.isLoading ? null : _submit,
                     child: const Text('Book and Pay'),
                   ),
                 ],

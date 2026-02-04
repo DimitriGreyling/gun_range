@@ -37,6 +37,7 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
   }) async {
     state = state.copyWith(isLoading: true);
     try {
+      await Future.delayed(const Duration(seconds: 10));
       // Create a Booking object
       final booking = Booking(
         bookedBy: _authUserProvider.id,

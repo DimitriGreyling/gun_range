@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/routing/app_router.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/widgets/review_widget.dart';
+import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -85,6 +86,8 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
   }
 
   Widget _buildInfoSection({bool isLoading = false, Range? range}) {
+    final currentUser = ref.watch(authUserProvider).value;
+    
     return Skeletonizer(
       enabled: isLoading,
       child: Skeleton.leaf(
@@ -133,9 +136,9 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                       ),
                       const SizedBox(width: 8),
                       Tooltip(
-                        message: 'Make a booking',
+                        message: currentUser == null ? 'Please log in to make a booking' : 'Make a booking',
                         child: ElevatedButton(
-                          onPressed: () {
+                          onPressed: currentUser == null ? null : () {
                             context.go('/make-booking/${range?.id ?? ''}', extra: range);
                           },
                           child: const Text('Book Now'),
