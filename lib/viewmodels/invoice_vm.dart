@@ -57,9 +57,18 @@ class InvoiceVm extends StateNotifier<InvoiceStateVm> {
   Future<pw.Document> _buildInvoicePdf() async {
     // final logo = await _getLogo();
     // final logo = pw.MemoryImage(logoBytes.buffer.asUint8List());
+    final fontData = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
+    final ttf = pw.Font.ttf(fontData);
     final invoiceNumber = await _invoiceRepository.getNextInvoiceNumber();
 
-    final pdf = pw.Document();
+    final pdf = pw.Document(
+      theme: pw.ThemeData.withFont(
+        base: ttf,
+        bold: ttf,
+        italic: ttf,
+        boldItalic: ttf,
+      ),
+    );
     pdf.addPage(
       pw.Page(
         pageFormat: PdfPageFormat.a4,
