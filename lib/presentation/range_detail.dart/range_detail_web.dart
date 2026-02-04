@@ -57,7 +57,6 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
             ReviewsSection(
               rangeId: widget.rangeId ?? '',
               isLoading: rangeDetailState.isLoadingReviews,
-              // initialReviews: rangeDetailState.reviews,
             ),
           ],
         ),
@@ -137,7 +136,7 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                         message: 'Make a booking',
                         child: ElevatedButton(
                           onPressed: () {
-                            context.go('/make-booking/${range?.id ?? ''}');
+                            context.go('/make-booking/${range?.id ?? ''}', extra: range);
                           },
                           child: const Text('Book Now'),
                         ),
