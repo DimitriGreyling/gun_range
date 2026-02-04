@@ -7,12 +7,13 @@ import 'package:gun_range_app/data/models/booking_guest.dart'; // <-- Import you
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/make_booking_provider.dart';
+import 'package:gun_range_app/providers/repository_providers.dart';
 
 class MakeBookingWeb extends ConsumerStatefulWidget {
   final String? rangeId;
-  final Range? range;
+  Range? range;
 
-  const MakeBookingWeb({super.key, this.rangeId, this.range});
+  MakeBookingWeb({super.key, this.rangeId, this.range});
 
   @override
   ConsumerState<MakeBookingWeb> createState() => _MakeBookingWebState();
@@ -29,6 +30,12 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
   DateTime? _selectedDate;
   String _bookingFor = 'myself'; // 'myself' or 'someone'
   List<Map<String, TextEditingController>> _guests = [];
+
+  @override 
+  void initState() {
+    super.initState();
+    _loadRangeDetailsIfNotExists();
+  }
 
   @override
   void dispose() {
@@ -63,6 +70,20 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       _guests[index]['phone']?.dispose();
       _guests.removeAt(index);
     });
+  }
+
+  Future<void> _loadRangeDetailsIfNotExists() async {
+    if (widget.range == null && widget.rangeId != null) {
+      // Load range details using the rangeId
+      final range =
+          await ref.read(rangeRepositoryProvider).getRangeById(widget.rangeId!);
+      if (range != null) {
+        setState(() {
+          // Update the widget's range property
+          widget.range = range;
+        });
+      }
+    }
   }
 
   Future<void> _pickDate(BuildContext context) async {
@@ -317,20 +338,41 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                 ),
                 const SizedBox(height: 12),
               ],
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      _selectedDate == null
-                          ? 'No date selected'
-                          : 'Date: ${_selectedDate!.toLocal()}'.split(' ')[0],
-                    ),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => _pickDate(context),
-                    child: const Text('Select Date'),
-                  ),
-                ],
+              // Row(
+              //   children: [
+              //     Expanded(
+              //       child: Text(
+              //         _selectedDate == null
+              //             ? 'No date selected'
+              //             : 'Date: ${_selectedDate!.toLocal()}'.split(' ')[0],
+              //       ),
+              //     ),
+              //     ElevatedButton(
+              //       onPressed: () => _pickDate(context),
+              //       child: const Text('Select Date'),
+              //     ),
+              //   ],
+              // ),
+              TextFormField(
+                readOnly: true,
+                decoration: const InputDecoration(
+                  labelText: 'Booking Date',
+                  hintText: 'Select a date',
+                  suffixIcon: Icon(Icons.calendar_today),
+                ),
+                controller: TextEditingController(
+                  text: _selectedDate == null
+                      ? ''
+                      : _selectedDate!.toLocal().toString().split(' ')[0],
+                ),
+                onTap: () async {
+                  FocusScope.of(context)
+                      .requestFocus(FocusNode()); // Prevents keyboard
+                  await _pickDate(context);
+                },
+                validator: (v) => _selectedDate == null
+                    ? 'Please select a booking date'
+                    : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
