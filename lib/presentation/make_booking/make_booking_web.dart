@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/data/models/booking_guest.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
+import 'package:gun_range_app/presentation/widgets/invoice_widget.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/make_booking_provider.dart';
 import 'package:gun_range_app/providers/repository_providers.dart';
@@ -164,7 +165,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       return const Center(child: CircularProgressIndicator());
     }
     if (authUserAsync.hasError) {
-      return Center(child: Text('Error loading user'));
+      return const Center(child: Text('Error loading user'));
     }
 
     //BOKKING STATE

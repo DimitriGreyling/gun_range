@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/data/repositories/invoice_repository.dart';
 import 'package:gun_range_app/data/repositories/profile_repository.dart';
 import '../data/repositories/range_repository.dart';
 import '../data/repositories/event_repository.dart';
@@ -29,4 +30,9 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   final supabase = ref.read(supabaseProvider);
   return SupabaseProfileRepository(supabase);
+});
+
+final invoiceRepositoryProvider = Provider<InvoiceRepository>((ref) {
+  final supabase = ref.watch(supabaseProvider);
+  return InvoiceRepository(supabase);
 });
