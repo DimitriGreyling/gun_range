@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/core/routing/app_router.dart';
 import 'package:gun_range_app/data/models/range.dart';
+import 'package:gun_range_app/domain/services/global_popup_service.dart';
 
 class MakeBookingWeb extends StatefulWidget {
   final String? rangeId;
@@ -69,19 +72,22 @@ class _MakeBookingWebState extends State<MakeBookingWeb> {
               TextFormField(
                 controller: _nameController,
                 decoration: const InputDecoration(labelText: 'Name'),
-                validator: (v) => v == null || v.isEmpty ? 'Enter your name' : null,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Enter your name' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _emailController,
                 decoration: const InputDecoration(labelText: 'Email'),
-                validator: (v) => v == null || v.isEmpty ? 'Enter your email' : null,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Enter your email' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _phoneController,
                 decoration: const InputDecoration(labelText: 'Phone'),
-                validator: (v) => v == null || v.isEmpty ? 'Enter your phone' : null,
+                validator: (v) =>
+                    v == null || v.isEmpty ? 'Enter your phone' : null,
               ),
               const SizedBox(height: 12),
               Row(
@@ -102,16 +108,31 @@ class _MakeBookingWebState extends State<MakeBookingWeb> {
               const SizedBox(height: 12),
               TextFormField(
                 controller: _notesController,
-                decoration: const InputDecoration(labelText: 'Notes (optional)'),
+                decoration:
+                    const InputDecoration(labelText: 'Notes (optional)'),
                 maxLines: 3,
               ),
               const SizedBox(height: 24),
-              Center(
-                child: ElevatedButton(
-                  onPressed: _submit,
-                  child: const Text('Submit Booking'),
-                ),
-              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton(
+                    style: ButtonStyle(
+                        backgroundColor: WidgetStateProperty.all<Color>(
+                            Theme.of(context).colorScheme.secondary)),
+                    onPressed: () {
+                      GlobalPopupService.showAction(title: 'Cancel Booking', message: 'Are you sure you want to cancel the booking?', actionText: 'Yes, Cancel', onAction: () {
+                        context.go('/range-detail/${widget.rangeId ?? ''}');
+                      });
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: _submit,
+                    child: const Text('Submit Booking'),
+                  ),
+                ],
+              )
             ],
           ),
         ),
