@@ -1,6 +1,6 @@
 class Booking {
   String? id;
-  String? userId;
+  String? bookedBy;
   String? eventId;
   String? rangeId;
   String? status;
@@ -8,7 +8,7 @@ class Booking {
 
   Booking({
     this.id,
-    this.userId,
+    this.bookedBy,
     this.eventId,
     this.rangeId,
     this.status,
@@ -17,7 +17,7 @@ class Booking {
 
   factory Booking.fromJson(Map<String, dynamic> json) => Booking(
         id: json['id'],
-        userId: json['user_id'],
+        bookedBy: json['booked_by'],
         eventId: json['event_id'],
         rangeId: json['range_id'],
         status: json['status'],
@@ -25,7 +25,7 @@ class Booking {
       );
 
   Map<String, dynamic> toJson() => {
-        'user_id': userId,
+        'booked_by': bookedBy,
         'event_id': eventId,
         'range_id': rangeId,
         'status': status,

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:gun_range_app/core/constants/tables.dart';
 
 import '../models/booking.dart';
@@ -14,7 +16,13 @@ class BookingRepository {
     return (response as List).map((e) => Booking.fromJson(e)).toList();
   }
 
-  Future<void> createBooking(Booking booking) async {
-    await supabase.from(tableName).insert(booking.toJson());
+  Future<Booking> createBooking(Booking booking) async {
+    final response = await supabase.from(tableName).insert(booking.toJson()).select();
+
+    if (response.isEmpty) {
+      throw Exception('Failed to create booking');
+    }
+
+    return Booking.fromJson((response as List).first);
   }
 }

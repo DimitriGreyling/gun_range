@@ -27,6 +27,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
   final _recipientEmailController = TextEditingController();
   DateTime? _selectedDate;
   String _bookingFor = 'myself'; // 'myself' or 'someone'
+  List<Map<String, TextEditingController>> _guests = [];
 
   @override
   void dispose() {
@@ -36,7 +37,31 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
     _notesController.dispose();
     _recipientNameController.dispose();
     _recipientEmailController.dispose();
+    for (final guest in _guests) {
+      guest['name']?.dispose();
+      guest['email']?.dispose();
+      guest['phone']?.dispose();
+    }
     super.dispose();
+  }
+
+  void _addGuest() {
+    setState(() {
+      _guests.add({
+        'name': TextEditingController(),
+        'email': TextEditingController(),
+        'phone': TextEditingController(),
+      });
+    });
+  }
+
+  void _removeGuest(int index) {
+    setState(() {
+      _guests[index]['name']?.dispose();
+      _guests[index]['email']?.dispose();
+      _guests[index]['phone']?.dispose();
+      _guests.removeAt(index);
+    });
   }
 
   Future<void> _pickDate(BuildContext context) async {
@@ -66,10 +91,18 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       final notes = _notesController.text;
       final date = _selectedDate;
 
+      final guests = _guests
+          .map((guest) => {
+                'name': guest['name']!.text,
+                'email': guest['email']!.text,
+                'phone': guest['phone']!.text,
+              })
+          .toList();
+
       ref.read(makeBookingProvider.notifier).makeBooking(
             range: widget.range!,
             date: date!,
-            // You can pass more details as needed
+            // guests: guests, // Add this to your booking logic
           );
 
       GlobalPopupService.showInfo(
@@ -117,7 +150,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                       });
                     },
                   ),
-                  const Text('For someone else'),
+                  const Text('For someone else / group'),
                 ],
               ),
               const SizedBox(height: 12),
@@ -130,6 +163,61 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                 const SizedBox(height: 12),
                 Text(
                     'Phone: ${currentUser?.userMetadata?['phone'] ?? 'Not Provided'}'),
+                const SizedBox(height: 12),
+                Text('Guests:', style: Theme.of(context).textTheme.titleMedium),
+                ..._guests.asMap().entries.map((entry) {
+                  final i = entry.key;
+                  final guest = entry.value;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: guest['name'],
+                              decoration: const InputDecoration(
+                                  labelText: 'Guest Name'),
+                              validator: (v) => v == null || v.isEmpty
+                                  ? 'Enter guest name'
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              controller: guest['email'],
+                              decoration: const InputDecoration(
+                                  labelText: 'Guest Email'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              controller: guest['phone'],
+                              decoration: const InputDecoration(
+                                  labelText: 'Guest Phone'),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.remove_circle,
+                                color: Colors.red),
+                            onPressed: () => _removeGuest(i),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  );
+                }),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Guest'),
+                    onPressed: _addGuest,
+                  ),
+                ),
                 const SizedBox(height: 12),
               ] else ...[
                 TextFormField(
@@ -153,6 +241,61 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                   decoration: const InputDecoration(labelText: 'Phone'),
                   validator: (v) =>
                       v == null || v.isEmpty ? 'Enter your phone' : null,
+                ),
+                const SizedBox(height: 12),
+                Text('Guests:', style: Theme.of(context).textTheme.titleMedium),
+                ..._guests.asMap().entries.map((entry) {
+                  final i = entry.key;
+                  final guest = entry.value;
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              controller: guest['name'],
+                              decoration: const InputDecoration(
+                                  labelText: 'Guest Name'),
+                              validator: (v) => v == null || v.isEmpty
+                                  ? 'Enter guest name'
+                                  : null,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              controller: guest['email'],
+                              decoration: const InputDecoration(
+                                  labelText: 'Guest Email'),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: TextFormField(
+                              controller: guest['phone'],
+                              decoration: const InputDecoration(
+                                  labelText: 'Guest Phone'),
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.remove_circle,
+                                color: Colors.red),
+                            onPressed: () => _removeGuest(i),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  );
+                }),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    icon: const Icon(Icons.add),
+                    label: const Text('Add Guest'),
+                    onPressed: _addGuest,
+                  ),
                 ),
                 const SizedBox(height: 12),
               ],
