@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/core/routing/app_router.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/widgets/review_widget.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
@@ -134,7 +136,9 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                       Tooltip(
                         message: 'Make a booking',
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            context.go('/make-booking/${range?.id ?? ''}');
+                          },
                           child: const Text('Book Now'),
                         ),
                       ),
