@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:gun_range_app/providers/repository_providers.dart';
 import '../constants/colors.dart';
 
-final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.system);
+final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);
 
 final themeModeTogglerProvider = Provider<AppTheme>((ref) => AppTheme());
 

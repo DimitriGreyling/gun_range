@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gun_range_app/core/constants/general_constants.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/core/routing/app_router.dart';
 import 'package:gun_range_app/data/models/range.dart';
-import 'package:gun_range_app/data/models/review.dart';
+import 'package:gun_range_app/presentation/widgets/review_widget.dart';
+import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class RangeDetailWeb extends ConsumerStatefulWidget {
@@ -54,7 +58,6 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
             ReviewsSection(
               rangeId: widget.rangeId ?? '',
               isLoading: rangeDetailState.isLoadingReviews,
-              // initialReviews: rangeDetailState.reviews,
             ),
           ],
         ),
@@ -72,7 +75,10 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
         enabled: isLoading,
         child: Container(
           height: 200,
-          color: Colors.grey[300],
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.grey[300],
+          ),
           child: const Center(child: Text('Picture Section Placeholder')),
         ),
       ),
@@ -80,6 +86,8 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
   }
 
   Widget _buildInfoSection({bool isLoading = false, Range? range}) {
+    final currentUser = ref.watch(authUserProvider).value;
+    
     return Skeletonizer(
       enabled: isLoading,
       child: Skeleton.leaf(
@@ -97,17 +105,93 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                   ),
                   Row(
                     children: [
-                      ElevatedButton(
-                        onPressed: () {},
-                        child: const Text('Book Now'),
+                      Tooltip(
+                        message: 'Share range',
+                        child: IconButton(
+                          onPressed: () {
+                            SharePlus.instance.share(
+                              ShareParams(
+                                title: 'Range Connect',
+                                subject: 'Check out this gun range',
+                                uri: Uri.parse('http://localhost:62377/ranges/${range?.id ?? ''}'),//TODO: make this generic to use actual link etc
+                              ),
+                            );
+                          },
+                          icon: const Icon(
+                            Icons.share,
+                            size: 30,
+                          ),
+                        ),
                       ),
                       const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {},
-                        child: const Text('Reviews'),
+                      Tooltip(
+                        message: 'Message us on WhatsApp',
+                        child: IconButton(
+                          onPressed: () {},
+                          icon: const Icon(
+                            FontAwesomeIcons.whatsapp,
+                            size: 30,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Tooltip(
+                        message: currentUser == null ? 'Please log in to make a booking' : 'Make a booking',
+                        child: ElevatedButton(
+                          onPressed: currentUser == null ? null : () {
+                            context.go('/make-booking/${range?.id ?? ''}', extra: range);
+                          },
+                          child: const Text('Book Now'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Tooltip(
+                        message: 'Add a review',
+                        child: ElevatedButton(
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStateProperty.all<Color>(
+                                Theme.of(context)
+                                    .colorScheme
+                                    .secondaryContainer),
+                            // foregroundColor: WidgetStateProperty.all<Color>(
+                            //     Theme.of(context).colorScheme.onSecondaryContainer),
+                            elevation: WidgetStateProperty.all<double>(0),
+                          ),
+                          onPressed: () {},
+                          child: const Text('Reviews',
+                              style: TextStyle(fontSize: 14)),
+                        ),
                       ),
                     ],
                   )
+                ],
+              ),
+            if (!isLoading)
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Location Address',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      // color: Theme.of(context).colorScheme.tertiaryContainer,
+                      // border: Border.all(
+                      //   color: Theme.of(context).colorScheme.tertiaryContainer,
+                      // ),
+                    ),
+                    child: Text(
+                      'Contact Number: ${range?.contactNumber ?? ''}',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onTertiaryContainer),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                 ],
               ),
             if (!isLoading) const SizedBox(height: 8),
@@ -132,10 +216,7 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                         ElevatedButton(
                           style: ButtonStyle(
                             backgroundColor: WidgetStateProperty.all<Color>(
-                                Theme.of(context)
-                                    .colorScheme
-                                    .secondaryContainer
-                                    .withOpacity(0.3)),
+                                Colors.transparent),
                             foregroundColor: WidgetStateProperty.all<Color>(
                                 Theme.of(context).colorScheme.onSurface),
                             elevation: WidgetStateProperty.all<double>(0),
@@ -185,188 +266,5 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
         }),
       );
     });
-  }
-}
-
-class ReviewsSection extends ConsumerStatefulWidget {
-  final String rangeId;
-  final bool isLoading;
-
-  const ReviewsSection({
-    super.key,
-    required this.rangeId,
-    required this.isLoading,
-    // initialReviews is no longer needed
-  });
-
-  @override
-  ConsumerState<ReviewsSection> createState() => _ReviewsSectionState();
-}
-
-class _ReviewsSectionState extends ConsumerState<ReviewsSection> {
-  final Set<int> _expandedReviews = {};
-  int _currentPage = 1;
-  bool _isLoadingMore = false;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _loadReviews();
-    });
-  }
-
-  Future<void> _loadReviews({int page = 1}) async {
-    setState(() {
-      _isLoadingMore = true;
-    });
-
-    final pagedItems = await ref.read(rangeDetailViewModelProvider.notifier).fetchReviews(
-      rangeId: widget.rangeId,
-      page: page,
-      pageSize: GeneralConstants.pageSize,
-    );
-
-    setState(() {
-      _isLoadingMore = false;
-      if (pagedItems != null) {
-        _currentPage = page;
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final pagedItems = ref.watch(rangeDetailViewModelProvider).reviews;
-    final reviews = pagedItems?.items ?? [];
-    final totalCount = pagedItems?.totalCount ?? 0;
-    final hasMore = pagedItems?.hasMore ?? false;
-    final int totalPages = (totalCount / GeneralConstants.pageSize).ceil().clamp(1, 9999);
-
-    if (widget.isLoading) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16.0),
-        child: CircularProgressIndicator(),
-      );
-    }
-    if (reviews.isEmpty) {
-      return const Padding(
-        padding: EdgeInsets.symmetric(vertical: 16.0),
-        child: Text('No reviews yet.'),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Reviews',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_left),
-                onPressed: _currentPage > 1 && !_isLoadingMore
-                    ? () => _loadReviews(page: _currentPage - 1)
-                    : null,
-              ),
-              Text('Page $_currentPage of $totalPages'),
-              IconButton(
-                icon: const Icon(Icons.arrow_right),
-                onPressed: (_currentPage < totalPages && !_isLoadingMore && hasMore)
-                    ? () => _loadReviews(page: _currentPage + 1)
-                    : null,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            height: 300,
-            child: ListView.builder(
-              itemCount: reviews.length,
-              itemBuilder: (context, index) {
-                final review = reviews[index];
-                final isExpanded = _expandedReviews.contains(index);
-                final reviewText = review?.description ?? '';
-                final showReadMore = reviewText.length > 100;
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: Card(
-                      elevation: 0,
-                      color:
-                          Theme.of(context).colorScheme.surfaceContainerHighest,
-                      child: Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(review?.title ?? ''),
-                                _buildRatingStars(review?.rating),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              reviewText,
-                              maxLines: isExpanded ? null : 2,
-                              overflow: isExpanded
-                                  ? TextOverflow.visible
-                                  : TextOverflow.ellipsis,
-                            ),
-                            if (showReadMore)
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
-                                children: [
-                                  TextButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        if (isExpanded) {
-                                          _expandedReviews.remove(index);
-                                        } else {
-                                          _expandedReviews.add(index);
-                                        }
-                                      });
-                                    },
-                                    child: Text(
-                                        isExpanded ? 'Read less' : 'Read more'),
-                                  ),
-                                ],
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRatingStars(int? rating) {
-    final stars = <Widget>[];
-    final filledStars = rating ?? 0;
-    const totalStars = GeneralConstants.ratingLimit;
-
-    for (var i = 0; i < filledStars; i++) {
-      stars.add(const Icon(Icons.star, color: Colors.amber, size: 16));
-    }
-    for (var i = filledStars; i < totalStars; i++) {
-      stars.add(const Icon(Icons.star_border, color: Colors.amber, size: 16));
-    }
-
-    return Row(children: stars);
   }
 }

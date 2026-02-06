@@ -2,10 +2,12 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/add_range/add_range_app_shell.dart';
 import 'package:gun_range_app/presentation/auth/login_app_shell.dart';
 import 'package:gun_range_app/presentation/home/home_app_shell.dart';
 import 'package:gun_range_app/presentation/home/home_spa_view.dart';
+import 'package:gun_range_app/presentation/make_booking/make_booking_app_shell.dart';
 import 'package:gun_range_app/presentation/range_detail.dart/range_detail_app_shell.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../presentation/ranges/range_list_screen.dart';
@@ -87,5 +89,16 @@ final appRouter = GoRouter(
         );
       },
     ),
+    GoRoute(
+        path: '/make-booking/:id',
+        builder: (context, state) {
+          final rangeId = state.pathParameters['id'];
+          final range = state.extra as Range?;
+          
+          return MakeBookingAppShell(
+            rangeId: rangeId,
+            range: range,
+          );
+        }),
   ],
 );

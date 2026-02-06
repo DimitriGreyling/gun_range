@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/paged_items.dart';
 import 'package:gun_range_app/data/models/range.dart';
-import 'package:gun_range_app/data/models/review.dart';
 import 'package:gun_range_app/data/repositories/range_repository.dart';
 import 'package:gun_range_app/data/repositories/review_repository.dart';
 

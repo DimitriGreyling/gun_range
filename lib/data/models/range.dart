@@ -6,6 +6,7 @@ class Range {
   double? longitude;
   Map<String, dynamic> facilities;
   bool? isActive;
+  String? contactNumber;
 
   bool nspIsFavorite = false;
   List<String> nspPhotoUrls = [];
@@ -20,6 +21,7 @@ class Range {
     this.isActive,
     this.nspIsFavorite = false,
     this.nspPhotoUrls = const [],
+    this.contactNumber,
   });
 
   factory Range.fromJson(Map<String, dynamic> json) => Range(
@@ -30,5 +32,6 @@ class Range {
         longitude: json['longitude'],
         facilities: json['facilities'] ?? {},
         isActive: json['is_active'] ?? true,
+        contactNumber: json['contact_number'],
       );
 }

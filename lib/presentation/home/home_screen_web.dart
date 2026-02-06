@@ -7,6 +7,7 @@ import 'package:gun_range_app/core/routing/app_router.dart';
 import 'package:gun_range_app/data/models/event.dart';
 import 'package:gun_range_app/data/models/favorite.dart';
 import 'package:gun_range_app/data/models/range.dart';
+import 'package:gun_range_app/presentation/widgets/invoice_widget.dart';
 import 'package:gun_range_app/presentation/widgets/loading_card_widget.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
@@ -116,6 +117,8 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     if (isAuthed) {
       currentUser = ref.read(rangeViewModelProvider.notifier).getCurrentUser();
     }
+
+    return InvoiceWidget();
 
     return Scaffold(
       body: Padding(
