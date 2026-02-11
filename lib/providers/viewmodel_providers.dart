@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/providers/favorite_provider.dart';
 import 'package:gun_range_app/providers/photo_provider.dart';
 import 'package:gun_range_app/providers/review_provider.dart';
+import 'package:gun_range_app/viewmodels/booking_config_vm.dart';
 import 'package:gun_range_app/viewmodels/range_detail_vm.dart';
 import '../viewmodels/auth_vm.dart';
 import '../viewmodels/range_vm.dart';
@@ -46,4 +47,10 @@ final rangeDetailViewModelProvider =
   final reviewRepository = ref.watch(reviewRepositoryProvider);
 
   return RangeDetailVm(rangeRepository, reviewRepository);
+});
+
+final bookingConfigViewModelProvider =
+    StateNotifierProvider<BookingConfigVm, BookingConfigState>((ref) {
+  final bookingConfigRepository = ref.watch(bookingConfigRepositoryProvider);
+  return BookingConfigVm(bookingConfigRepository);
 });

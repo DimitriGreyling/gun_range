@@ -10,6 +10,7 @@ class BookingConfigs {
   int? bufferMinutes;
   int? maxBookings;
   bool? isActive;
+  double? price;
 
   BookingConfigs({
     this.id,
@@ -21,6 +22,7 @@ class BookingConfigs {
     this.bufferMinutes,
     this.maxBookings,
     this.isActive,
+    this.price,
   });
 
   factory BookingConfigs.fromJson(Map<String, dynamic> json) {
@@ -34,6 +36,7 @@ class BookingConfigs {
       bufferMinutes: json['buffer_minutes'],
       maxBookings: json['max_bookings'],
       isActive: json['is_active'],
+      price: (json['price'] as num?)?.toDouble(),
     );
   }
 
@@ -48,6 +51,7 @@ class BookingConfigs {
       'buffer_minutes': bufferMinutes,
       'max_bookings': maxBookings,
       'is_active': isActive,
+      'price': price,
     };
   }
 

@@ -4,10 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/data/models/booking_guest.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
+import 'package:gun_range_app/presentation/widgets/booking_widget.dart';
 import 'package:gun_range_app/presentation/widgets/invoice_widget.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/make_booking_provider.dart';
 import 'package:gun_range_app/providers/repository_providers.dart';
+import 'package:gun_range_app/providers/viewmodel_providers.dart';
+import 'package:gun_range_app/viewmodels/make_booking_vm.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MakeBookingWeb extends ConsumerStatefulWidget {
   final String? rangeId;
@@ -31,6 +35,9 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
   final _dateController = TextEditingController();
   String _bookingFor = 'myself'; // 'myself' or 'someone'
   final List<Map<String, TextEditingController>> _guests = [];
+
+  int _currentStep = 0;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -168,295 +175,326 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       return const Center(child: Text('Error loading user'));
     }
 
+    if (currentUser == null) {
+      return const Center(child: Text('Please log in to make a booking'));
+    }
+
     //BOKKING STATE
     final makeBookingState = ref.watch(makeBookingProvider);
 
-    return makeBookingState.isLoading
-        ? const Center(child: CircularProgressIndicator())
-        : SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    Text('Make Booking for Range: ${widget.range?.name ?? ""}',
-                        style: Theme.of(context).textTheme.titleLarge),
-                    const SizedBox(height: 16),
-                    Row(
-                      children: [
-                        Radio<String>(
-                          value: 'myself',
-                          groupValue: _bookingFor,
-                          onChanged: makeBookingState.isLoading
-                              ? null
-                              : (value) {
-                                  setState(() {
-                                    _bookingFor = value!;
-                                  });
-                                },
-                        ),
-                        const Text('For myself'),
-                        Radio<String>(
-                          value: 'someone',
-                          groupValue: _bookingFor,
-                          onChanged: makeBookingState.isLoading
-                              ? null
-                              : (value) {
-                                  setState(() {
-                                    _bookingFor = value!;
-                                  });
-                                },
-                        ),
-                        const Text('For someone else / group'),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    if (_bookingFor == 'myself') ...[
-                      const Text('Booking for: '),
-                      const SizedBox(height: 12),
-                      Text(
-                          'Name: ${currentUser?.userMetadata?['full_name'] ?? ''}'),
-                      const SizedBox(height: 12),
-                      Text('Email: ${currentUser?.email ?? ''}'),
-                      const SizedBox(height: 12),
-                      Text(
-                          'Phone: ${currentUser?.userMetadata?['phone'] ?? 'Not Provided'}'),
-                      const SizedBox(height: 12),
-                      Text('Guests:',
-                          style: Theme.of(context).textTheme.titleMedium),
-                      ..._guests.asMap().entries.map((entry) {
-                        final i = entry.key;
-                        final guest = entry.value;
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    enabled: makeBookingState.isLoading
-                                        ? false
-                                        : true,
-                                    controller: guest['name'],
-                                    decoration: const InputDecoration(
-                                        labelText: 'Guest Name'),
-                                    validator: (v) => v == null || v.isEmpty
-                                        ? 'Enter guest name'
-                                        : null,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: TextFormField(
-                                    enabled: makeBookingState.isLoading
-                                        ? false
-                                        : true,
-                                    decoration: const InputDecoration(
-                                        labelText: 'Guest Email'),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: TextFormField(
-                                    enabled: makeBookingState.isLoading
-                                        ? false
-                                        : true,
-                                    controller: guest['phone'],
-                                    decoration: const InputDecoration(
-                                        labelText: 'Guest Phone'),
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.remove_circle,
-                                      color: Colors.red),
-                                  onPressed: makeBookingState.isLoading
-                                      ? null
-                                      : () => _removeGuest(i),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                          ],
-                        );
-                      }),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          icon: const Icon(Icons.add),
-                          label: const Text('Add Guest'),
-                          onPressed:
-                              makeBookingState.isLoading ? null : _addGuest,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                    ] else ...[
-                      TextFormField(
-                        enabled: makeBookingState.isLoading ? false : true,
-                        controller: _recipientNameController,
-                        decoration:
-                            const InputDecoration(labelText: 'Recipient Name'),
-                        validator: (v) => v == null || v.isEmpty
-                            ? 'Enter recipient name'
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        enabled: makeBookingState.isLoading ? false : true,
-                        controller: _recipientEmailController,
-                        decoration:
-                            const InputDecoration(labelText: 'Recipient Email'),
-                        validator: (v) => v == null || v.isEmpty
-                            ? 'Enter recipient email'
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        enabled: makeBookingState.isLoading ? false : true,
-                        controller: _phoneController,
-                        decoration: const InputDecoration(labelText: 'Phone'),
-                        validator: (v) =>
-                            v == null || v.isEmpty ? 'Enter your phone' : null,
-                      ),
-                      const SizedBox(height: 12),
-                      Text('Guests:',
-                          style: Theme.of(context).textTheme.titleMedium),
-                      ..._guests.asMap().entries.map((entry) {
-                        final i = entry.key;
-                        final guest = entry.value;
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: TextFormField(
-                                    enabled: makeBookingState.isLoading
-                                        ? false
-                                        : true,
-                                    controller: guest['name'],
-                                    decoration: const InputDecoration(
-                                        labelText: 'Guest Name'),
-                                    validator: (v) => v == null || v.isEmpty
-                                        ? 'Enter guest name'
-                                        : null,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: TextFormField(
-                                    enabled: makeBookingState.isLoading
-                                        ? false
-                                        : true,
-                                    controller: guest['email'],
-                                    decoration: const InputDecoration(
-                                        labelText: 'Guest Email'),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: TextFormField(
-                                    enabled: makeBookingState.isLoading
-                                        ? false
-                                        : true,
-                                    controller: guest['phone'],
-                                    decoration: const InputDecoration(
-                                        labelText: 'Guest Phone'),
-                                  ),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.remove_circle,
-                                      color: Colors.red),
-                                  onPressed: makeBookingState.isLoading
-                                      ? null
-                                      : () => _removeGuest(i),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                          ],
-                        );
-                      }),
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: TextButton.icon(
-                          icon: const Icon(Icons.add),
-                          label: const Text('Add Guest'),
-                          onPressed:
-                              makeBookingState.isLoading ? null : _addGuest,
+    return Stepper(
+      stepIconBuilder: (stepIndex, stepState) {
+        if (stepState == StepState.complete) {
+          return const Icon(Icons.check_circle, color: Colors.green);
+        } else if (stepState == StepState.error) {
+          return const Icon(Icons.error, color: Colors.red);
+        } else {
+          return CircleAvatar(
+            backgroundColor: stepState == StepState.editing
+                ? Theme.of(context).colorScheme.primary
+                : Colors.grey,
+            child: Text('${stepIndex + 1}'),
+          );
+        }
+      },
+      controller: _scrollController,
+      type: StepperType.horizontal,
+      currentStep: _currentStep,
+      onStepTapped: (step) => setState(() => _currentStep = step),
+      onStepContinue: () {
+        if (_currentStep < 2) {
+          setState(() => _currentStep += 1);
+        }
+      },
+      onStepCancel: () {
+        if (_currentStep > 0) {
+          setState(() => _currentStep -= 1);
+        }
+      },
+      controlsBuilder: (context, details) {
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            if (_currentStep > 0)
+              ElevatedButton(
+                onPressed: details.onStepCancel,
+                child: const Text('Back'),
+              ),
+            if (_currentStep < 1)
+              ElevatedButton(
+                onPressed: details.onStepContinue,
+                child: const Text('Next'),
+              ),
+            if (_currentStep == 1)
+              ElevatedButton(
+                onPressed: makeBookingState.isLoading ? null : _submit,
+                child: makeBookingState.isLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Book and Pay'),
+              ),
+          ],
+        );
+      },
+      steps: [
+        Step(
+          title: const Text('Guest'),
+          content: _buildGuestForm(
+              context: context,
+              makeBookingState: makeBookingState,
+              currentUser: currentUser!),
+        ),
+        Step(
+          title: const Text('Booking Slot'),
+          content: Column(
+            children: [
+              BookingWidget(
+                  rangeId: widget.rangeId ?? widget.range?.id ?? '',
+                  makeBookingState: makeBookingState),
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGuestForm(
+      {required BuildContext context,
+      required MakeBookingState makeBookingState,
+      required User currentUser}) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text('Make Booking for Range: ${widget.range?.name ?? ""}',
+              style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Radio<String>(
+                value: 'myself',
+                groupValue: _bookingFor,
+                onChanged: makeBookingState.isLoading
+                    ? null
+                    : (value) {
+                        setState(() {
+                          _bookingFor = value!;
+                        });
+                      },
+              ),
+              const Text('For myself'),
+              Radio<String>(
+                value: 'someone',
+                groupValue: _bookingFor,
+                onChanged: makeBookingState.isLoading
+                    ? null
+                    : (value) {
+                        setState(() {
+                          _bookingFor = value!;
+                        });
+                      },
+              ),
+              const Text('For someone else / group'),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (_bookingFor == 'myself') ...[
+            const Text('Booking for: '),
+            const SizedBox(height: 12),
+            Text('Name: ${currentUser?.userMetadata?['full_name'] ?? ''}'),
+            const SizedBox(height: 12),
+            Text('Email: ${currentUser?.email ?? ''}'),
+            const SizedBox(height: 12),
+            Text(
+                'Phone: ${currentUser?.userMetadata?['phone'] ?? 'Not Provided'}'),
+            const SizedBox(height: 12),
+            Text('Guests:', style: Theme.of(context).textTheme.titleMedium),
+            ..._guests.asMap().entries.map((entry) {
+              final i = entry.key;
+              final guest = entry.value;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          enabled: makeBookingState.isLoading ? false : true,
+                          controller: guest['name'],
+                          decoration:
+                              const InputDecoration(labelText: 'Guest Name'),
+                          validator: (v) => v == null || v.isEmpty
+                              ? 'Enter guest name'
+                              : null,
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextFormField(
+                          enabled: makeBookingState.isLoading ? false : true,
+                          decoration:
+                              const InputDecoration(labelText: 'Guest Email'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextFormField(
+                          enabled: makeBookingState.isLoading ? false : true,
+                          controller: guest['phone'],
+                          decoration:
+                              const InputDecoration(labelText: 'Guest Phone'),
+                        ),
+                      ),
+                      IconButton(
+                        icon:
+                            const Icon(Icons.remove_circle, color: Colors.red),
+                        onPressed: makeBookingState.isLoading
+                            ? null
+                            : () => _removeGuest(i),
+                      ),
                     ],
-                    TextFormField(
-                      readOnly: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Booking Date',
-                        hintText: 'Select a date',
-                        suffixIcon: Icon(Icons.calendar_today),
-                      ),
-                      controller: _dateController,
-                      onTap: makeBookingState.isLoading
-                          ? null
-                          : () async {
-                              FocusScope.of(context).requestFocus(
-                                  FocusNode()); // Prevents keyboard
-                              await _pickDate(context);
-                              setState(() {
-                                _dateController.text = _selectedDate == null
-                                    ? ''
-                                    : _selectedDate!
-                                        .toLocal()
-                                        .toString()
-                                        .split(' ')[0];
-                              });
-                            },
-                      validator: (v) => _selectedDate == null
-                          ? 'Please select a booking date'
-                          : null,
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        ElevatedButton(
-                          style: makeBookingState.isLoading
-                              ? ButtonStyle(
-                                  backgroundColor:
-                                      WidgetStateProperty.all<Color>(
-                                          Theme.of(context).disabledColor))
-                              : ButtonStyle(
-                                  backgroundColor: WidgetStateProperty.all<
-                                          Color>(
-                                      Theme.of(context).colorScheme.secondary)),
-                          onPressed: makeBookingState.isLoading
-                              ? null
-                              : () {
-                                  GlobalPopupService.showAction(
-                                      title: 'Cancel Booking',
-                                      message:
-                                          'Are you sure you want to cancel the booking?',
-                                      actionText: 'Yes, Cancel',
-                                      onAction: () {
-                                        context.go(
-                                            '/range-detail/${widget.rangeId ?? ''}');
-                                      });
-                                },
-                          child: const Text('Cancel'),
-                        ),
-                        ElevatedButton(
-                          onPressed:
-                              makeBookingState.isLoading ? null : _submit,
-                          child: const Text('Book and Pay'),
-                        ),
-                      ],
-                    )
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              );
+            }),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                icon: const Icon(Icons.add),
+                label: const Text('Add Guest'),
+                onPressed: makeBookingState.isLoading ? null : _addGuest,
               ),
             ),
-          );
+            const SizedBox(height: 12),
+          ] else ...[
+            TextFormField(
+              enabled: makeBookingState.isLoading ? false : true,
+              controller: _recipientNameController,
+              decoration: const InputDecoration(labelText: 'Recipient Name'),
+              validator: (v) =>
+                  v == null || v.isEmpty ? 'Enter recipient name' : null,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              enabled: makeBookingState.isLoading ? false : true,
+              controller: _recipientEmailController,
+              decoration: const InputDecoration(labelText: 'Recipient Email'),
+              validator: (v) =>
+                  v == null || v.isEmpty ? 'Enter recipient email' : null,
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              enabled: makeBookingState.isLoading ? false : true,
+              controller: _phoneController,
+              decoration: const InputDecoration(labelText: 'Phone'),
+              validator: (v) =>
+                  v == null || v.isEmpty ? 'Enter your phone' : null,
+            ),
+            const SizedBox(height: 12),
+            Text('Guests:', style: Theme.of(context).textTheme.titleMedium),
+            ..._guests.asMap().entries.map((entry) {
+              final i = entry.key;
+              final guest = entry.value;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          enabled: makeBookingState.isLoading ? false : true,
+                          controller: guest['name'],
+                          decoration:
+                              const InputDecoration(labelText: 'Guest Name'),
+                          validator: (v) => v == null || v.isEmpty
+                              ? 'Enter guest name'
+                              : null,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextFormField(
+                          enabled: makeBookingState.isLoading ? false : true,
+                          controller: guest['email'],
+                          decoration:
+                              const InputDecoration(labelText: 'Guest Email'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: TextFormField(
+                          enabled: makeBookingState.isLoading ? false : true,
+                          controller: guest['phone'],
+                          decoration:
+                              const InputDecoration(labelText: 'Guest Phone'),
+                        ),
+                      ),
+                      IconButton(
+                        icon:
+                            const Icon(Icons.remove_circle, color: Colors.red),
+                        onPressed: makeBookingState.isLoading
+                            ? null
+                            : () => _removeGuest(i),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              );
+            }),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                icon: const Icon(Icons.add),
+                label: const Text('Add Guest'),
+                onPressed: makeBookingState.isLoading ? null : _addGuest,
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          const SizedBox(height: 24),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //   children: [
+          //     ElevatedButton(
+          //       style: makeBookingState.isLoading
+          //           ? ButtonStyle(
+          //               backgroundColor: WidgetStateProperty.all<Color>(
+          //                   Theme.of(context).disabledColor))
+          //           : ButtonStyle(
+          //               backgroundColor: WidgetStateProperty.all<Color>(
+          //                   Theme.of(context).colorScheme.secondary)),
+          //       onPressed: makeBookingState.isLoading
+          //           ? null
+          //           : () {
+          //               GlobalPopupService.showAction(
+          //                   title: 'Cancel Booking',
+          //                   message:
+          //                       'Are you sure you want to cancel the booking?',
+          //                   actionText: 'Yes, Cancel',
+          //                   onAction: () {
+          //                     context
+          //                         .go('/range-detail/${widget.rangeId ?? ''}');
+          //                   });
+          //             },
+          //       child: const Text('Cancel'),
+          //     ),
+          //     ElevatedButton(
+          //       onPressed: makeBookingState.isLoading ? null : _submit,
+          //       child: const Text('Book and Pay'),
+          //     ),
+          //   ],
+          // )
+        ],
+      ),
+    );
   }
 }
