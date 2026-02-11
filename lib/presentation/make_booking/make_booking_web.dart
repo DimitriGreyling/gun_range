@@ -212,53 +212,68 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
         }
       },
       controlsBuilder: (context, details) {
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            if (_currentStep > 0)
-              ElevatedButton(
-                onPressed: details.onStepCancel,
-                child: const Text('Back'),
-              ),
-            if (_currentStep < 1)
-              ElevatedButton(
-                onPressed: details.onStepContinue,
-                child: const Text('Next'),
-              ),
-            if (_currentStep == 1)
-              ElevatedButton(
-                onPressed: makeBookingState.isLoading ? null : _submit,
-                child: makeBookingState.isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Book and Pay'),
-              ),
-          ],
+        return _buildCardForSteps(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('Please ensure you have filled in all required fields fields.'),
+              if(_currentStep == 0)
+               const Spacer(),
+              if (_currentStep > 0)
+                ElevatedButton(
+                  onPressed: details.onStepCancel,
+                  child: const Text('Back'),
+                ),
+
+              if (_currentStep < 1)
+                ElevatedButton(
+                  onPressed: details.onStepContinue,
+                  child: const Text('Next'),
+                ),
+              if (_currentStep == 1)
+                ElevatedButton(
+                  onPressed: makeBookingState.isLoading ? null : _submit,
+                  child: makeBookingState.isLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text('Book and Pay'),
+                ),
+            ],
+          ),
         );
       },
       steps: [
         Step(
           title: const Text('Guest'),
-          content: _buildGuestForm(
-              context: context,
-              makeBookingState: makeBookingState,
-              currentUser: currentUser!),
+          content: _buildCardForSteps(
+              child: _buildGuestForm(
+                  context: context,
+                  makeBookingState: makeBookingState,
+                  currentUser: currentUser)),
         ),
         Step(
           title: const Text('Booking Slot'),
-          content: Column(
-            children: [
-              BookingWidget(
-                  rangeId: widget.rangeId ?? widget.range?.id ?? '',
-                  makeBookingState: makeBookingState),
-              const SizedBox(height: 24),
-            ],
-          ),
+          content: _buildCardForSteps(
+              child: BookingWidget(
+            rangeId: widget.rangeId ?? widget.range?.id ?? '',
+            makeBookingState: makeBookingState,
+          )),
         ),
       ],
+    );
+  }
+
+  Widget _buildCardForSteps({Widget? child}) {
+    return Card(
+      elevation: 4,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(16),
+        child: child,
+      ),
     );
   }
 
