@@ -19,7 +19,6 @@ class BookingWidget extends ConsumerStatefulWidget {
 class _BookingWidgetState extends ConsumerState<BookingWidget> {
   DateTime? _selectedDate;
   String? _selectedTimeSlot;
-  bool _isBooking = false;
   final _dateController = TextEditingController();
 
   // New: Selected booking config (type)
@@ -51,48 +50,13 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
         .fetchBookingConfigs(widget.rangeId ?? '');
   }
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-    );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
-
-  Future<void> _bookSlot() async {
-    if (_selectedDate == null ||
-        _selectedTimeSlot == null ||
-        _selectedBookingConfig == null) return;
-    setState(() {
-      _isBooking = true;
-    });
-    // TODO: Implement your booking logic here, e.g. call a provider or API
-    await Future.delayed(const Duration(seconds: 1)); // Simulate booking
-    setState(() {
-      _isBooking = false;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Booked ${_selectedBookingConfig['name']} for ${_selectedDate!.toLocal()} at $_selectedTimeSlot',
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final bookingConfigState = ref.watch(bookingConfigViewModelProvider);
 
     // Assume bookingConfigState has a 'configs' property which is a List of configs
     final List<BookingConfigs> bookingConfigs =
-        bookingConfigState.bookingConfigs ?? [];
+        bookingConfigState.bookingConfigs;
 
     log('BookingWidget build: bookingConfigs length = ${bookingConfigs.length}');
 
@@ -120,21 +84,7 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
             });
           },
         ),
-        const SizedBox(height: 16),
-
-        Row(
-          children: [
-            Expanded(
-              child: Text(_selectedDate == null
-                  ? 'No date selected'
-                  : 'Date: ${_selectedDate!.toLocal().toString().split(' ')[0]}'),
-            ),
-            ElevatedButton(
-              onPressed: () => _selectDate(context),
-              child: const Text('Select Date'),
-            ),
-          ],
-        ),
+        
         const SizedBox(height: 16),
         DropdownButton<String>(
           value: _selectedTimeSlot,
