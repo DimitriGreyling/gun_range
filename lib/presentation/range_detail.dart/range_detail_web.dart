@@ -159,11 +159,9 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                                 Theme.of(context)
                                     .colorScheme
                                     .secondaryContainer),
-                            // foregroundColor: WidgetStateProperty.all<Color>(
-                            //     Theme.of(context).colorScheme.onSecondaryContainer),
                             elevation: WidgetStateProperty.all<double>(0),
                           ),
-                          onPressed: () {},
+                          onPressed: currentUser == null ? null : () {},
                           child: const Text('Reviews',
                               style: TextStyle(fontSize: 14)),
                         ),
