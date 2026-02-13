@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:http/http.dart' as http;
 
@@ -43,5 +45,15 @@ class AuthRepository {
     if (response.error != null) {
       throw Exception('Edge function call failed: ${response.error!.message}');
     }
+  }
+
+  Future<void> updateThemeMode({
+    required String currentUserId,
+    String themeMode = 'light',
+  }) async {
+    final response = await supabase
+        .from('profiles')
+        .update({'theme_mode': themeMode}).eq('id', currentUserId);
+    log('Updated theme mode for user $currentUserId to $themeMode: $response');
   }
 }

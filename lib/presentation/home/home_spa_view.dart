@@ -3,9 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/theme/theme_provider.dart';
+import 'package:gun_range_app/domain/services/errors_exception_service.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/presentation/widgets/controllers/expanded_collapsed_menu_controller.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
+import 'package:gun_range_app/providers/repository_providers.dart';
 import 'package:gun_range_app/providers/supabase_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 
@@ -33,6 +35,34 @@ class _HomeSPAViewState extends ConsumerState<HomeSPAView> {
     });
   }
 
+  Future<void> _changeAndHandleThemeModeChange() async {
+    try {
+      final isAuthed = ref.read(isAuthenticatedProvider);
+      if (isAuthed) {
+        final user = ref.read(authUserProvider).value;
+
+        if (user != null) {
+          final currentTheme =
+              user.appMetadata['theme_mode'] as String? ?? 'system';
+
+          final newTheme = currentTheme == 'light' || currentTheme == 'system'
+              ? 'dark'
+              : 'light';
+
+          await ref.read(authRepositoryProvider).updateThemeMode(
+                currentUserId: user.id,
+                themeMode: newTheme,
+              );
+        }
+      }
+
+      final themeToggler = ref.read(themeModeTogglerProvider);
+      themeToggler.toggleThemeMode(ref);
+    } catch (e) {
+      ErrorsExceptionService.handleException(e);
+    }
+  }
+
   Future<void> _handleAccountMenuSelection(String value) async {
     switch (value) {
       case 'profile':
@@ -53,8 +83,7 @@ class _HomeSPAViewState extends ConsumerState<HomeSPAView> {
         }
       case 'theme_mode':
         {
-          final themeToggler = ref.read(themeModeTogglerProvider);
-          themeToggler.toggleThemeMode(ref);
+          _changeAndHandleThemeModeChange();
           return;
         }
     }
