@@ -3,11 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/theme/theme_provider.dart';
+import 'package:gun_range_app/domain/services/errors_exception_service.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/presentation/widgets/controllers/expanded_collapsed_menu_controller.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
+import 'package:gun_range_app/providers/repository_providers.dart';
 import 'package:gun_range_app/providers/supabase_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeSPAView extends ConsumerStatefulWidget {
   final Widget child;
@@ -20,6 +23,7 @@ class HomeSPAView extends ConsumerStatefulWidget {
 
 class _HomeSPAViewState extends ConsumerState<HomeSPAView> {
   int _selectedIndex = 0;
+  User? _currentUser;
 
   static const List<Widget> _pages = <Widget>[
     Center(child: Text('Dashboard')),
@@ -27,10 +31,54 @@ class _HomeSPAViewState extends ConsumerState<HomeSPAView> {
     Center(child: Text('Profile')),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  Future<void> _fetchUserDetails() async {
+    final isAuthed = ref.read(isAuthenticatedProvider);
+
+    if (isAuthed) {
+      final user = ref.read(authUserProvider).value;
+      if (user != null) {
+        final themeToggler = ref.read(themeModeProvider);
+        // themeToggler.
+
+        setState(() {
+          _currentUser = user;
+        });
+      }
+    }
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  Future<void> _changeAndHandleThemeModeChange() async {
+    try {
+      if (_currentUser != null) {
+        final currentTheme =
+            _currentUser?.appMetadata['theme_mode'] as String? ?? 'system';
+
+        final newTheme = currentTheme == 'light' || currentTheme == 'system'
+            ? 'dark'
+            : 'light';
+
+        await ref.read(authRepositoryProvider).updateThemeMode(
+              currentUserId: _currentUser!.id,
+              themeMode: newTheme,
+            );
+      }
+
+      final themeToggler = ref.read(themeModeTogglerProvider);
+      themeToggler.toggleThemeMode(ref);
+    } catch (e) {
+      ErrorsExceptionService.handleException(e);
+    }
   }
 
   Future<void> _handleAccountMenuSelection(String value) async {
@@ -53,8 +101,7 @@ class _HomeSPAViewState extends ConsumerState<HomeSPAView> {
         }
       case 'theme_mode':
         {
-          final themeToggler = ref.read(themeModeTogglerProvider);
-          themeToggler.toggleThemeMode(ref);
+          _changeAndHandleThemeModeChange();
           return;
         }
     }

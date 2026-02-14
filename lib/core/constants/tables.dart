@@ -9,4 +9,6 @@ class Tables {
   static const String reviews = 'reviews';
   static const String bookingGuests = 'booking_guests';
   static const String invoices = 'invoices';
+  static const String bookingConfigs = 'booking_configs';
+  static const String bookingBlackouts = 'booking_blackouts';
 }

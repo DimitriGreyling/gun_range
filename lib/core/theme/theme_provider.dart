@@ -2,10 +2,20 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/repository_providers.dart';
 import '../constants/colors.dart';
 
-final themeModeProvider = StateProvider<ThemeMode>((ref) => ThemeMode.light);
+final themeModeProvider = StateProvider<ThemeMode>((ref) {
+  final repo = ref.watch(isAuthenticatedProvider);
+  
+  if(repo){
+    final profileRepo = ref.read(authUserProvider).value;
+    return themeModeFromDb(profileRepo?.appMetadata['theme_mode'] as String?);
+  }
+  
+  return ThemeMode.light;
+});
 
 final themeModeTogglerProvider = Provider<AppTheme>((ref) => AppTheme());
 

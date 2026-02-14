@@ -117,9 +117,7 @@ class _HomeScreenWebState extends ConsumerState<HomeScreenWeb> {
     if (isAuthed) {
       currentUser = ref.read(rangeViewModelProvider.notifier).getCurrentUser();
     }
-
-    return InvoiceWidget();
-
+  
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(16.0),

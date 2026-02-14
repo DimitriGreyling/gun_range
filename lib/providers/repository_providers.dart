@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/data/repositories/booking_blackout_repository.dart';
+import 'package:gun_range_app/data/repositories/booking_config_repository.dart';
 import 'package:gun_range_app/data/repositories/invoice_repository.dart';
 import 'package:gun_range_app/data/repositories/profile_repository.dart';
 import '../data/repositories/range_repository.dart';
@@ -35,4 +37,14 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
 final invoiceRepositoryProvider = Provider<InvoiceRepository>((ref) {
   final supabase = ref.watch(supabaseProvider);
   return InvoiceRepository(supabase);
+});
+
+final bookingConfigRepositoryProvider = Provider<BookingConfigRepository>((ref) {
+  final supabase = ref.watch(supabaseProvider);
+  return BookingConfigRepository(supabase);
+});
+
+final bookingBlackoutRepositoryProvider = Provider<BookingBlackoutRepository>((ref) {
+  final supabase = ref.watch(supabaseProvider);
+  return BookingBlackoutRepository(supabase);
 });

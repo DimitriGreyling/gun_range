@@ -87,7 +87,7 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
 
   Widget _buildInfoSection({bool isLoading = false, Range? range}) {
     final currentUser = ref.watch(authUserProvider).value;
-    
+
     return Skeletonizer(
       enabled: isLoading,
       child: Skeleton.leaf(
@@ -113,7 +113,8 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                               ShareParams(
                                 title: 'Range Connect',
                                 subject: 'Check out this gun range',
-                                uri: Uri.parse('http://localhost:62377/ranges/${range?.id ?? ''}'),//TODO: make this generic to use actual link etc
+                                uri: Uri.parse(
+                                    'http://localhost:62377/ranges/${range?.id ?? ''}'), //TODO: make this generic to use actual link etc
                               ),
                             );
                           },
@@ -136,11 +137,16 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                       ),
                       const SizedBox(width: 8),
                       Tooltip(
-                        message: currentUser == null ? 'Please log in to make a booking' : 'Make a booking',
+                        message: currentUser == null
+                            ? 'Please log in to make a booking'
+                            : 'Make a booking',
                         child: ElevatedButton(
-                          onPressed: currentUser == null ? null : () {
-                            context.go('/make-booking/${range?.id ?? ''}', extra: range);
-                          },
+                          onPressed: currentUser == null
+                              ? null
+                              : () {
+                                  context.go('/make-booking/${range?.id ?? ''}',
+                                      extra: range);
+                                },
                           child: const Text('Book Now'),
                         ),
                       ),
@@ -153,11 +159,9 @@ class _RangeDetailWebState extends ConsumerState<RangeDetailWeb> {
                                 Theme.of(context)
                                     .colorScheme
                                     .secondaryContainer),
-                            // foregroundColor: WidgetStateProperty.all<Color>(
-                            //     Theme.of(context).colorScheme.onSecondaryContainer),
                             elevation: WidgetStateProperty.all<double>(0),
                           ),
-                          onPressed: () {},
+                          onPressed: currentUser == null ? null : () {},
                           child: const Text('Reviews',
                               style: TextStyle(fontSize: 14)),
                         ),
