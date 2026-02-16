@@ -184,18 +184,19 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
     String? timeSlot,
     Function()? onTap,
     bool isSelected = false,
+    bool isDisabled = false,
   }) {
     return MouseRegion(
-      cursor: SystemMouseCursors.click,
+      cursor: isDisabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
       child: GestureDetector(
-          onTap: () => onTap?.call(),
+          onTap: isDisabled ? null : () => onTap?.call(),
           child: Stack(
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade100,
+                  color: isDisabled ? Colors.grey.shade300 : Colors.blue.shade100,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.blue, width: 1),
+                  border: Border.all(color: isDisabled ? Colors.grey : Colors.blue, width: 1),
                 ),
                 margin: const EdgeInsets.all(10),
                 padding: const EdgeInsets.all(10),
