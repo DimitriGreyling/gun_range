@@ -197,6 +197,9 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
     return Padding(
       padding: const EdgeInsets.only(left: 16, right: 16),
       child: PageView.builder(
+        padEnds: false,
+        pageSnapping: false,
+        physics: const NeverScrollableScrollPhysics(),
         itemCount: _stepContents.length,
         controller: _pageController,
         itemBuilder: (context, index) {
@@ -223,9 +226,10 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
           children: [
             // Your main content
             SingleChildScrollView(
-              child: child ?? const SizedBox.shrink(),
+              child: Padding(
+                  padding: const EdgeInsets.only(bottom: 80,right: 20), child: child),
             ),
-        
+
             // Buttons positioned at bottom
             Positioned(
               left: 0,
