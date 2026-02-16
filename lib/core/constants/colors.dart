@@ -16,6 +16,10 @@ class AppColors {
   static const accent = Color(0xFFCC9A33);
   static const accentForeground = Color(0xFF1C1E22);
 
+  //Tertiary
+  static const tertiary = Color(0xFF6B8A7B);
+  static const tertiaryForeground = Color(0xFFFFFFFF);
+
   // Background
   static const backgroundLight = Color(0xFFF2F2F3);
   static const backgroundDark = Color(0xFF1C1E22);

@@ -208,17 +208,31 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (index == 0)
-                    ElevatedButton(
-                        onPressed: () {}, child: const Text('Cancel')),
+                  ElevatedButton(
+                    onPressed: () {},
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.all<Color>(
+                          Theme.of(context).colorScheme.tertiary),
+                      foregroundColor: WidgetStateProperty.all<Color>(
+                          Theme.of(context).colorScheme.onSurface),
+                    ),
+                    child: const Text('Cancel'),
+                  ),
                   if (index > 0)
                     ElevatedButton(
-                        onPressed: () {
-                          _pageController.previousPage(
-                              duration: const Duration(milliseconds: 150),
-                              curve: Curves.easeInOut);
-                        },
-                        child: const Text('Back')),
+                      onPressed: () {
+                        _pageController.previousPage(
+                            duration: const Duration(milliseconds: 150),
+                            curve: Curves.easeInOut);
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStateProperty.all<Color>(
+                            Theme.of(context).colorScheme.secondary),
+                        foregroundColor: WidgetStateProperty.all<Color>(
+                            Theme.of(context).colorScheme.onSurface),
+                      ),
+                      child: const Text('Back'),
+                    ),
                   ElevatedButton(
                       onPressed: () {
                         if (index == _stepContents.length - 1) {

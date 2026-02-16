@@ -8,12 +8,12 @@ import '../constants/colors.dart';
 
 final themeModeProvider = StateProvider<ThemeMode>((ref) {
   final repo = ref.watch(isAuthenticatedProvider);
-  
-  if(repo){
+
+  if (repo) {
     final profileRepo = ref.read(authUserProvider).value;
     return themeModeFromDb(profileRepo?.appMetadata['theme_mode'] as String?);
   }
-  
+
   return ThemeMode.light;
 });
 
@@ -31,6 +31,8 @@ class AppTheme {
       onPrimary: AppColors.primaryForeground,
       secondary: AppColors.accent,
       onSecondary: AppColors.accentForeground,
+      tertiary: AppColors.tertiary,
+      onTertiary: AppColors.tertiaryForeground,
       surface: AppColors.cardLight,
       onSurface: AppColors.foregroundLight,
       error: Colors.red,
@@ -124,6 +126,8 @@ class AppTheme {
       onSurface: AppColors.foregroundDark,
       error: Colors.red,
       onError: Colors.white,
+      tertiary: AppColors.tertiary,
+      onTertiary: AppColors.tertiaryForeground,
     ),
     dividerColor: AppColors.borderDark,
     dividerTheme:
