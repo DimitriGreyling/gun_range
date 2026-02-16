@@ -36,10 +36,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
   final _dateController = TextEditingController();
   String _bookingFor = 'myself'; // 'myself' or 'someone'
   final List<Map<String, TextEditingController>> _guests = [];
-
-  int _currentStep = 0;
-  final ScrollController _scrollController = ScrollController();
   List<Widget> _stepContents = [];
+  final PageController _pageController = PageController();
 
   @override
   void initState() {
@@ -202,6 +200,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       padding: const EdgeInsets.only(left: 16, right: 16),
       child: PageView.builder(
         itemCount: _stepContents.length,
+        controller: _pageController,
         itemBuilder: (context, index) {
           return Column(
             children: [
@@ -213,8 +212,26 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                     ElevatedButton(
                         onPressed: () {}, child: const Text('Cancel')),
                   if (index > 0)
-                    ElevatedButton(onPressed: () {}, child: const Text('Back')),
-                  ElevatedButton(onPressed: () {}, child: const Text('Next'))
+                    ElevatedButton(
+                        onPressed: () {
+                          _pageController.previousPage(
+                              duration: const Duration(milliseconds: 150),
+                              curve: Curves.easeInOut);
+                        },
+                        child: const Text('Back')),
+                  ElevatedButton(
+                      onPressed: () {
+                        if (index == _stepContents.length - 1) {
+                          _submit();
+                        } else {
+                          _pageController.nextPage(
+                              duration: const Duration(milliseconds: 150),
+                              curve: Curves.easeInOut);
+                        }
+                      },
+                      child: Text(index == _stepContents.length - 1
+                          ? 'Finish'
+                          : 'Next'))
                 ],
               ),
             ],
@@ -253,44 +270,143 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
           Text('Please provide the following details to complete your booking.',
               style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: 16),
-          Row(
+          Column(
             children: [
-              Radio<String>(
-                value: 'myself',
-                groupValue: _bookingFor,
-                onChanged: makeBookingState.isLoading
-                    ? null
-                    : (value) {
-                        setState(() {
-                          _bookingFor = value!;
-                        });
-                      },
+              Tooltip(
+                message:
+                    'Select this option if you are booking for yourself. Your details will be used for the booking.',
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: makeBookingState.isLoading
+                        ? null
+                        : () {
+                            setState(() {
+                              _bookingFor = 'myself';
+                            });
+                          },
+                    child: Row(
+                      children: [
+                        Radio<String>(
+                          value: 'myself',
+                          groupValue: _bookingFor,
+                          onChanged: makeBookingState.isLoading
+                              ? null
+                              : (value) {
+                                  setState(() {
+                                    _bookingFor = value!;
+                                  });
+                                },
+                        ),
+                        const Text('For myself'),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-              const Text('For myself'),
-              Radio<String>(
-                value: 'someone',
-                groupValue: _bookingFor,
-                onChanged: makeBookingState.isLoading
-                    ? null
-                    : (value) {
-                        setState(() {
-                          _bookingFor = value!;
-                        });
-                      },
+              Tooltip(
+                message:
+                    'Select this option if you are booking for someone else or a group. You will need to provide their details.',
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: makeBookingState.isLoading
+                        ? null
+                        : () {
+                            setState(() {
+                              _bookingFor = 'someone';
+                            });
+                          },
+                    child: Row(
+                      children: [
+                        Radio<String>(
+                          value: 'someone',
+                          groupValue: _bookingFor,
+                          onChanged: makeBookingState.isLoading
+                              ? null
+                              : (value) {
+                                  setState(() {
+                                    _bookingFor = value!;
+                                  });
+                                },
+                        ),
+                        const Text('For someone else / group'),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-              const Text('For someone else / group'),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
           if (_bookingFor == 'myself') ...[
-            const Text('Booking for: '),
+            const Text(
+              'Booking for: ',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
             const SizedBox(height: 12),
-            Text('Name: ${currentUser.userMetadata?['full_name'] ?? ''}'),
+            Row(
+              children: [
+                const Text(
+                  'Name:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '${currentUser.userMetadata?['full_name'] ?? 'Not provided'}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
-            Text('Email: ${currentUser.email ?? ''}'),
+            Row(
+              children: [
+                const Text(
+                  'Email:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  currentUser.email ?? 'Not provided',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
-            Text(
-                'Phone: ${currentUser.userMetadata?['phone'] ?? 'Not Provided'}'),
+            Row(
+              children: [
+                const Text(
+                  'Phone:',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  currentUser.userMetadata?['phone'] ?? 'Not provided',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
