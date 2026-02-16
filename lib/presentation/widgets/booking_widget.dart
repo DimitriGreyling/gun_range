@@ -72,21 +72,45 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
         const SizedBox(height: 16),
 
         // Booking Type Dropdown
-        DropdownButton<BookingConfigs>(
-          value: _selectedBookingConfig,
-          hint: const Text('Select Booking Type'),
-          isExpanded: true,
+        DropdownButtonFormField(
           items: bookingConfigs.map((config) {
             return DropdownMenuItem<BookingConfigs>(
               value: config,
               child: Text(config.resourceType ?? 'Unknown'),
             );
           }).toList(),
+          hint: const Text('Range'),
+          isExpanded: true,
           onChanged: (value) {
             setState(() {
               _selectedBookingConfig = value;
             });
           },
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(
+                color: Colors.grey,
+                width: 1,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Colors.grey.shade300,
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Theme.of(context).primaryColor,
+                width: 2,
+              ),
+            ),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
         ),
 
         const SizedBox(height: 16),
@@ -116,40 +140,26 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
         ),
 
         const SizedBox(height: 16),
-        DropdownButtonFormField(
-          items: _timeSlots.map((slot) {
-            return DropdownMenuItem<String>(
-              value: slot,
-              child: Text(slot),
-            );
-          }).toList(),
-          hint: const Text('Select Time Slot'),
-          isExpanded: true,
-          onChanged: (value) {},
-          decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(
-                color: Colors.grey,
-                width: 1,
-              ),
+
+        //Timeslot selection UI will go here, for now we can just show a placeholder
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Available Time Slots',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            Row(
+              children: [
+                ..._timeSlots.map((slot) => _buildTimeSlotBlock(
+                    timeSlot: slot,
+                    onTap: () {
+                      setState(() {
+                        _selectedTimeSlot = slot;
+                      });
+                    },
+                    isSelected: _selectedTimeSlot == slot)),
+              ],
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Colors.grey.shade300,
-                width: 1,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).primaryColor,
-                width: 2,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          ),
+          ],
         ),
       ],
     );
@@ -168,5 +178,41 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
         _selectedDate = picked;
       });
     }
+  }
+
+  Widget _buildTimeSlotBlock({
+    String? timeSlot,
+    Function()? onTap,
+    bool isSelected = false,
+  }) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+          onTap: () => onTap?.call(),
+          child: Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade100,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue, width: 1),
+                ),
+                margin: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
+                child: Text(timeSlot ?? 'Time Slot'),
+              ),
+              if (isSelected)
+                const Positioned(
+                  right: 0,
+                  top: 0,
+                  child: CircleAvatar(
+                    radius: 10,
+                    backgroundColor: Colors.green,
+                    child: Icon(Icons.check, size: 12, color: Colors.white),
+                  ),
+                ),
+            ],
+          )),
+    );
   }
 }
