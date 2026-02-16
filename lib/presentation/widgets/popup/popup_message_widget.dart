@@ -132,8 +132,8 @@ class _PopupMessageWidgetState extends State<PopupMessageWidget>
               ),
             ],
             border: Border.all(
-              color: _getBorderColor().withOpacity(0.3),
-              width: 1,
+              color: _getBorderColor(),
+              width: 2,
             ),
           ),
           child: Row(
@@ -148,13 +148,32 @@ class _PopupMessageWidgetState extends State<PopupMessageWidget>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      widget.popup.title,
-                      style: TextStyle(
-                        color: widget.popup.textColor ?? _getTextColor(),
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          widget.popup.title,
+                          style: TextStyle(
+                            color: widget.popup.textColor ?? _getTextColor(),
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Spacer(),
+                        // Close button
+                        if (widget.popup.showCloseButton)
+                          IconButton(
+                            onPressed: _handleDismiss,
+                            icon: Icon(
+                              Icons.close,
+                              color: (widget.popup.textColor ?? _getTextColor())
+                                  .withOpacity(0.6),
+                              size: 18,
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                                minWidth: 24, minHeight: 24),
+                          ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -174,21 +193,6 @@ class _PopupMessageWidgetState extends State<PopupMessageWidget>
                   ],
                 ),
               ),
-
-              // Close button
-              if (widget.popup.showCloseButton)
-                IconButton(
-                  onPressed: _handleDismiss,
-                  icon: Icon(
-                    Icons.close,
-                    color: (widget.popup.textColor ?? _getTextColor())
-                        .withOpacity(0.6),
-                    size: 18,
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints:
-                      const BoxConstraints(minWidth: 24, minHeight: 24),
-                ),
             ],
           ),
         ),
@@ -204,18 +208,19 @@ class _PopupMessageWidgetState extends State<PopupMessageWidget>
       children: [
         // Secondary button (left side)
         if (widget.popup.secondaryActionText != null) ...[
-          OutlinedButton(
+          ElevatedButton(
+            style: ButtonStyle(
+              elevation: WidgetStateProperty.all(0),
+              backgroundColor: WidgetStateProperty.all(
+                Theme.of(context).colorScheme.secondary.withOpacity(0.8),
+              ),
+            ),
             onPressed: () {
               widget.popup.onSecondaryAction?.call();
               if (widget.popup.dismissOnSecondaryAction ?? true) {
                 _handleDismiss();
               }
             },
-            style: OutlinedButton.styleFrom(
-              foregroundColor: _getBorderColor(),
-              side: BorderSide(color: _getBorderColor()),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            ),
             child: Text(widget.popup.secondaryActionText!),
           ),
           const SizedBox(width: 8),
@@ -230,10 +235,11 @@ class _PopupMessageWidgetState extends State<PopupMessageWidget>
                 _handleDismiss();
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _getBorderColor(),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            style: ButtonStyle(
+              elevation: WidgetStateProperty.all(0),
+              backgroundColor: WidgetStateProperty.all(
+                _getBorderColor().withOpacity(0.8),
+              ),
             ),
             child: Text(widget.popup.actionText!),
           ),
@@ -273,14 +279,14 @@ class _PopupMessageWidgetState extends State<PopupMessageWidget>
   Color _getBackgroundColor() {
     switch (widget.popup.type) {
       case PopupType.success:
-        return Colors.green.shade50;
+        return Colors.green.shade50.withOpacity(0.7);
       case PopupType.warning:
-        return Colors.orange.shade50;
+        return Colors.orange.shade50.withOpacity(0.7);
       case PopupType.error:
-        return Colors.red.shade50;
+        return Colors.red.shade50.withOpacity(0.7);
       case PopupType.info:
       default:
-        return Colors.blue.shade50;
+        return Colors.blue.shade50.withOpacity(0.7);
     }
   }
 

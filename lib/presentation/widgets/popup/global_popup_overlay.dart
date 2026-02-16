@@ -41,6 +41,14 @@ class GlobalPopupOverlay extends ConsumerWidget {
                     ),
                   ),
                   ...activePopups.map((popup) {
+                    if (popup.onAction != null) {
+                      popup.secondaryActionText = 'Cancel';
+                      popup.onSecondaryAction = () {
+                        if (popup.dismissOnSecondaryAction == true) {
+                          popupNotifier.dismissPopup(popup.id);
+                        }
+                      };
+                    }
                     return _buildPositionedPopup(popup, popupNotifier, context);
                   }).toList(),
                 ],

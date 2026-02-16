@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/data/models/popup_position.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/data/models/booking_guest.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
@@ -38,6 +39,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
 
   int _currentStep = 0;
   final ScrollController _scrollController = ScrollController();
+  List<Widget> _stepContents = [];
 
   @override
   void initState() {
@@ -182,87 +184,43 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
     //BOKKING STATE
     final makeBookingState = ref.watch(makeBookingProvider);
 
-    return Stepper(
-      stepIconBuilder: (stepIndex, stepState) {
-        if (stepState == StepState.complete) {
-          return const Icon(Icons.check_circle, color: Colors.green);
-        } else if (stepState == StepState.error) {
-          return const Icon(Icons.error, color: Colors.red);
-        } else {
-          return CircleAvatar(
-            backgroundColor: stepState == StepState.editing
-                ? Theme.of(context).colorScheme.primary
-                : Colors.grey,
-            child: Text('${stepIndex + 1}'),
-          );
-        }
-      },
-      controller: _scrollController,
-      type: StepperType.horizontal,
-      currentStep: _currentStep,
-      onStepTapped: (step) => setState(() => _currentStep = step),
-      onStepContinue: () {
-        if (_currentStep < 2) {
-          setState(() => _currentStep += 1);
-        }
-      },
-      onStepCancel: () {
-        if (_currentStep > 0) {
-          setState(() => _currentStep -= 1);
-        }
-      },
-      controlsBuilder: (context, details) {
-        return _buildCardForSteps(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text('Please ensure you have filled in all required fields fields.'),
-              if(_currentStep == 0)
-               const Spacer(),
-              if (_currentStep > 0)
-                ElevatedButton(
-                  onPressed: details.onStepCancel,
-                  child: const Text('Back'),
-                ),
+    //Populate content for steps
+    _stepContents = [
+      _buildCardForSteps(
+          child: _buildGuestForm(
+              context: context,
+              makeBookingState: makeBookingState,
+              currentUser: currentUser)),
+      _buildCardForSteps(
+          child: BookingWidget(
+        rangeId: widget.rangeId ?? widget.range?.id ?? '',
+        makeBookingState: makeBookingState,
+      )),
+    ];
 
-              if (_currentStep < 1)
-                ElevatedButton(
-                  onPressed: details.onStepContinue,
-                  child: const Text('Next'),
-                ),
-              if (_currentStep == 1)
-                ElevatedButton(
-                  onPressed: makeBookingState.isLoading ? null : _submit,
-                  child: makeBookingState.isLoading
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Book and Pay'),
-                ),
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, right: 16),
+      child: PageView.builder(
+        itemCount: _stepContents.length,
+        itemBuilder: (context, index) {
+          return Column(
+            children: [
+              Expanded(child: _stepContents[index]),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (index == 0)
+                    ElevatedButton(
+                        onPressed: () {}, child: const Text('Cancel')),
+                  if (index > 0)
+                    ElevatedButton(onPressed: () {}, child: const Text('Back')),
+                  ElevatedButton(onPressed: () {}, child: const Text('Next'))
+                ],
+              ),
             ],
-          ),
-        );
-      },
-      steps: [
-        Step(
-          title: const Text('Guest'),
-          content: _buildCardForSteps(
-              child: _buildGuestForm(
-                  context: context,
-                  makeBookingState: makeBookingState,
-                  currentUser: currentUser)),
-        ),
-        Step(
-          title: const Text('Booking Slot'),
-          content: _buildCardForSteps(
-              child: BookingWidget(
-            rangeId: widget.rangeId ?? widget.range?.id ?? '',
-            makeBookingState: makeBookingState,
-          )),
-        ),
-      ],
+          );
+        },
+      ),
     );
   }
 
@@ -272,7 +230,9 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16),
-        child: child,
+        child: SingleChildScrollView(
+          child: child,
+        ),
       ),
     );
   }
@@ -289,6 +249,9 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
         children: [
           Text('Make Booking for Range: ${widget.range?.name ?? ""}',
               style: Theme.of(context).textTheme.titleLarge),
+          const SizedBox(height: 8),
+          Text('Please provide the following details to complete your booking.',
+              style: Theme.of(context).textTheme.bodyMedium),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -322,14 +285,54 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
           if (_bookingFor == 'myself') ...[
             const Text('Booking for: '),
             const SizedBox(height: 12),
-            Text('Name: ${currentUser?.userMetadata?['full_name'] ?? ''}'),
+            Text('Name: ${currentUser.userMetadata?['full_name'] ?? ''}'),
             const SizedBox(height: 12),
-            Text('Email: ${currentUser?.email ?? ''}'),
+            Text('Email: ${currentUser.email ?? ''}'),
             const SizedBox(height: 12),
             Text(
-                'Phone: ${currentUser?.userMetadata?['phone'] ?? 'Not Provided'}'),
+                'Phone: ${currentUser.userMetadata?['phone'] ?? 'Not Provided'}'),
             const SizedBox(height: 12),
-            Text('Guests:', style: Theme.of(context).textTheme.titleMedium),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Guests:', style: Theme.of(context).textTheme.titleMedium),
+                if (_guests.isNotEmpty && !makeBookingState.isLoading)
+                  TextButton.icon(
+                      style: ButtonStyle(
+                        backgroundColor: makeBookingState.isLoading
+                            ? WidgetStateProperty.all<Color>(Theme.of(context)
+                                .disabledColor
+                                .withOpacity(0.1))
+                            : WidgetStateProperty.all<Color>(Theme.of(context)
+                                .colorScheme
+                                .error
+                                .withOpacity(0.1)),
+                        foregroundColor: makeBookingState.isLoading
+                            ? WidgetStateProperty.all<Color>(Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.38))
+                            : WidgetStateProperty.all<Color>(
+                                Theme.of(context).colorScheme.onError),
+                      ),
+                      onPressed: () {
+                        GlobalPopupService.showAction(
+                          title: 'Remove all guests',
+                          message: 'Are you sure you want to remove all guests',
+                          actionText: 'Remove',
+                          type: PopupType.custom,
+                          onAction: () {
+                            setState(() {
+                              _guests.clear();
+                            });
+                          },
+                        );
+                      },
+                      label: const Text('Clear All'),
+                      icon: const Icon(Icons.clear)),
+              ],
+            ),
+            const SizedBox(height: 16),
             ..._guests.asMap().entries.map((entry) {
               final i = entry.key;
               final guest = entry.value;
@@ -379,10 +382,27 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                 ],
               );
             }),
+            const SizedBox(
+              height: 12,
+            ),
             Align(
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
                 icon: const Icon(Icons.add),
+                style: ButtonStyle(
+                  backgroundColor: makeBookingState.isLoading
+                      ? WidgetStateProperty.all<Color>(
+                          Theme.of(context).disabledColor)
+                      : WidgetStateProperty.all<Color>(
+                          Theme.of(context).colorScheme.primary),
+                  foregroundColor: makeBookingState.isLoading
+                      ? WidgetStateProperty.all<Color>(Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withOpacity(0.38))
+                      : WidgetStateProperty.all<Color>(
+                          Theme.of(context).colorScheme.onPrimary),
+                ),
                 label: const Text('Add Guest'),
                 onPressed: makeBookingState.isLoading ? null : _addGuest,
               ),

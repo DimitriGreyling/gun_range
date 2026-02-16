@@ -19,25 +19,25 @@ enum PopupPosition {
 }
 
 class PopupMessage {
-  final String id;
-  final String title;
-  final String message;
-  final PopupType type;
-  final PopupPosition position;
-  final Duration duration;
-  final bool isDismissible;
-  final bool showCloseButton;
-  final String? actionText;
-  final String? secondaryActionText;
-  final VoidCallback? onAction;
-  final VoidCallback? onSecondaryAction;
-  final bool? dismissOnSecondaryAction;
-  final VoidCallback? onDismiss;
-  final bool? dismissOnAction;
-  final Widget? customIcon;
-  final Color? backgroundColor;
-  final Color? textColor;
-  final Widget? customContent;
+  String id;
+  String title;
+  String message;
+  PopupType type;
+  PopupPosition position;
+  Duration duration;
+  bool isDismissible;
+  bool showCloseButton;
+  String? actionText;
+  String? secondaryActionText;
+  VoidCallback? onAction;
+  VoidCallback? onSecondaryAction;
+  bool? dismissOnSecondaryAction;
+  VoidCallback? onDismiss;
+  bool? dismissOnAction;
+  Widget? customIcon;
+  Color? backgroundColor;
+  Color? textColor;
+  Widget? customContent;
 
   PopupMessage({
     String? id,
