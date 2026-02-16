@@ -21,6 +21,10 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
   String? _selectedTimeSlot;
   final _dateController = TextEditingController();
 
+  ValueNotifier<bool> isBookingTypeSelected = ValueNotifier<bool>(false);
+  ValueNotifier<bool> isTimeSelected = ValueNotifier<bool>(false);
+  ValueNotifier<bool> isDateSelected = ValueNotifier<bool>(false);
+
   // New: Selected booking config (type)
   dynamic _selectedBookingConfig;
 
@@ -84,25 +88,9 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
             });
           },
         ),
-        
+
         const SizedBox(height: 16),
-        DropdownButton<String>(
-          value: _selectedTimeSlot,
-          hint: const Text('Select Time Slot'),
-          isExpanded: true,
-          items: _timeSlots.map((slot) {
-            return DropdownMenuItem<String>(
-              value: slot,
-              child: Text(slot),
-            );
-          }).toList(),
-          onChanged: (value) {
-            setState(() {
-              _selectedTimeSlot = value;
-            });
-          },
-        ),
-        const SizedBox(height: 24),
+
         TextFormField(
           readOnly: true,
           decoration: const InputDecoration(
@@ -125,6 +113,43 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
                 },
           validator: (v) =>
               _selectedDate == null ? 'Please select a booking date' : null,
+        ),
+
+        const SizedBox(height: 16),
+        DropdownButtonFormField(
+          items: _timeSlots.map((slot) {
+            return DropdownMenuItem<String>(
+              value: slot,
+              child: Text(slot),
+            );
+          }).toList(),
+          hint: const Text('Select Time Slot'),
+          isExpanded: true,
+          onChanged: (value) {},
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(
+                color: Colors.grey,
+                width: 1,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Colors.grey.shade300,
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Theme.of(context).primaryColor,
+                width: 2,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
         ),
       ],
     );

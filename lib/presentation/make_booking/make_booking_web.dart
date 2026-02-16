@@ -12,6 +12,7 @@ import 'package:gun_range_app/providers/make_booking_provider.dart';
 import 'package:gun_range_app/providers/repository_providers.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:gun_range_app/viewmodels/make_booking_vm.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MakeBookingWeb extends ConsumerStatefulWidget {
@@ -38,11 +39,13 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
   final List<Map<String, TextEditingController>> _guests = [];
   List<Widget> _stepContents = [];
   final PageController _pageController = PageController();
+  int _currentPageIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _loadRangeDetailsIfNotExists();
+    _loadSavedPage();
   }
 
   @override
@@ -72,6 +75,28 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
     });
   }
 
+  // Save the current page to SharedPreferences
+  Future<void> _saveCurrentPage(int pageIndex) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('booking_current_page', pageIndex);
+  }
+
+  // Load the saved page from SharedPreferences
+  Future<void> _loadSavedPage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedPage = prefs.getInt('booking_current_page') ?? 0;
+    setState(() {
+      _currentPageIndex = savedPage;
+    });
+
+    // Jump to the saved page once the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_pageController.hasClients) {
+        _pageController.jumpToPage(_currentPageIndex);
+      }
+    });
+  }
+
   void _removeGuest(int index) {
     setState(() {
       _guests[index]['name']?.dispose();
@@ -94,22 +119,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       }
     }
   }
-
-  Future<void> _pickDate(BuildContext context) async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: now,
-      firstDate: now,
-      lastDate: now.add(const Duration(days: 365)),
-    );
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-      });
-    }
-  }
-
+  
   Future<void> _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
       await _loadRangeDetailsIfNotExists();
@@ -197,11 +207,18 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
     return Padding(
       padding: const EdgeInsets.only(left: 16, right: 16),
       child: PageView.builder(
+        restorationId: 'booking_steps_pageview',
         padEnds: false,
         pageSnapping: false,
         physics: const NeverScrollableScrollPhysics(),
         itemCount: _stepContents.length,
         controller: _pageController,
+        onPageChanged: (value) {
+          setState(() {
+            _currentPageIndex = value;
+          });
+          _saveCurrentPage(value);
+        },
         itemBuilder: (context, index) {
           return Column(
             children: [
@@ -256,7 +273,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                               Theme.of(context).colorScheme.secondary),
                           foregroundColor: WidgetStateProperty.all<Color>(
                               Theme.of(context).colorScheme.onTertiary),
-                          minimumSize: WidgetStateProperty.all(const Size(120, 50)),
+                          minimumSize:
+                              WidgetStateProperty.all(const Size(120, 50)),
                         ),
                         child: const Text('Back'),
                       ),
@@ -271,8 +289,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          minimumSize: const Size(120, 50)
-                        ),
+                            minimumSize: const Size(120, 50)),
                         child: Text(index == _stepContents.length - 1
                             ? 'Finish'
                             : 'Next'))
