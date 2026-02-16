@@ -184,16 +184,14 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
 
     //Populate content for steps
     _stepContents = [
-      _buildCardForSteps(
-          child: _buildGuestForm(
-              context: context,
-              makeBookingState: makeBookingState,
-              currentUser: currentUser)),
-      _buildCardForSteps(
-          child: BookingWidget(
+      _buildGuestForm(
+          context: context,
+          makeBookingState: makeBookingState,
+          currentUser: currentUser),
+      BookingWidget(
         rangeId: widget.rangeId ?? widget.range?.id ?? '',
         makeBookingState: makeBookingState,
-      )),
+      ),
     ];
 
     return Padding(
@@ -204,49 +202,9 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
         itemBuilder: (context, index) {
           return Column(
             children: [
-              Expanded(child: _stepContents[index]),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all<Color>(
-                          Theme.of(context).colorScheme.tertiary),
-                      foregroundColor: WidgetStateProperty.all<Color>(
-                          Theme.of(context).colorScheme.onTertiary),
-                    ),
-                    child: const Text('Cancel'),
-                  ),
-                  if (index > 0)
-                    ElevatedButton(
-                      onPressed: () {
-                        _pageController.previousPage(
-                            duration: const Duration(milliseconds: 150),
-                            curve: Curves.easeInOut);
-                      },
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all<Color>(
-                            Theme.of(context).colorScheme.secondary),
-                        foregroundColor: WidgetStateProperty.all<Color>(
-                            Theme.of(context).colorScheme.onSurface),
-                      ),
-                      child: const Text('Back'),
-                    ),
-                  ElevatedButton(
-                      onPressed: () {
-                        if (index == _stepContents.length - 1) {
-                          _submit();
-                        } else {
-                          _pageController.nextPage(
-                              duration: const Duration(milliseconds: 150),
-                              curve: Curves.easeInOut);
-                        }
-                      },
-                      child: Text(index == _stepContents.length - 1
-                          ? 'Finish'
-                          : 'Next'))
-                ],
+              Expanded(
+                child: _buildCardForSteps(
+                    child: _stepContents[index], index: index),
               ),
             ],
           );
@@ -255,14 +213,64 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
     );
   }
 
-  Widget _buildCardForSteps({Widget? child}) {
+  Widget _buildCardForSteps({Widget? child, int index = 0}) {
     return Card(
       elevation: 4,
       child: Container(
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: child,
+        child: Stack(
+          children: [
+            // Your main content
+            SingleChildScrollView(
+              child: child ?? const SizedBox.shrink(),
+            ),
+        
+            // Buttons positioned at bottom
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                color: Theme.of(context).scaffoldBackgroundColor,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (index == 0) const Spacer(),
+                    if (index > 0)
+                      ElevatedButton(
+                        onPressed: () {
+                          _pageController.previousPage(
+                              duration: const Duration(milliseconds: 150),
+                              curve: Curves.easeInOut);
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStateProperty.all<Color>(
+                              Theme.of(context).colorScheme.secondary),
+                          foregroundColor: WidgetStateProperty.all<Color>(
+                              Theme.of(context).colorScheme.onSurface),
+                        ),
+                        child: const Text('Back'),
+                      ),
+                    ElevatedButton(
+                        onPressed: () {
+                          if (index == _stepContents.length - 1) {
+                            _submit();
+                          } else {
+                            _pageController.nextPage(
+                                duration: const Duration(milliseconds: 150),
+                                curve: Curves.easeInOut);
+                          }
+                        },
+                        child: Text(index == _stepContents.length - 1
+                            ? 'Finish'
+                            : 'Next'))
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -433,9 +441,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                             ? WidgetStateProperty.all<Color>(Theme.of(context)
                                 .disabledColor
                                 .withOpacity(0.5))
-                            : WidgetStateProperty.all<Color>(Theme.of(context)
-                                .colorScheme
-                                .error),
+                            : WidgetStateProperty.all<Color>(
+                                Theme.of(context).colorScheme.error),
                         foregroundColor: makeBookingState.isLoading
                             ? WidgetStateProperty.all<Color>(Theme.of(context)
                                 .colorScheme
