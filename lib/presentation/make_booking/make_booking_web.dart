@@ -255,7 +255,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                           backgroundColor: WidgetStateProperty.all<Color>(
                               Theme.of(context).colorScheme.secondary),
                           foregroundColor: WidgetStateProperty.all<Color>(
-                              Theme.of(context).colorScheme.onSurface),
+                              Theme.of(context).colorScheme.onTertiary),
+                          minimumSize: WidgetStateProperty.all(const Size(120, 50)),
                         ),
                         child: const Text('Back'),
                       ),
@@ -269,6 +270,9 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                                 curve: Curves.easeInOut);
                           }
                         },
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(120, 50)
+                        ),
                         child: Text(index == _stepContents.length - 1
                             ? 'Finish'
                             : 'Next'))
