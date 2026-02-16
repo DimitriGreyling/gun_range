@@ -15,47 +15,18 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class HomeSPAView extends ConsumerStatefulWidget {
   final Widget child;
 
-  const HomeSPAView({Key? key, required this.child}) : super(key: key);
+  const HomeSPAView({super.key, required this.child});
 
   @override
-  _HomeSPAViewState createState() => _HomeSPAViewState();
+  HomeSPAViewState createState() => HomeSPAViewState();
 }
 
-class _HomeSPAViewState extends ConsumerState<HomeSPAView> {
-  int _selectedIndex = 0;
+class HomeSPAViewState extends ConsumerState<HomeSPAView> {
   User? _currentUser;
-
-  static const List<Widget> _pages = <Widget>[
-    Center(child: Text('Dashboard')),
-    Center(child: Text('Bookings')),
-    Center(child: Text('Profile')),
-  ];
 
   @override
   void initState() {
     super.initState();
-  }
-
-  Future<void> _fetchUserDetails() async {
-    final isAuthed = ref.read(isAuthenticatedProvider);
-
-    if (isAuthed) {
-      final user = ref.read(authUserProvider).value;
-      if (user != null) {
-        final themeToggler = ref.read(themeModeProvider);
-        // themeToggler.
-
-        setState(() {
-          _currentUser = user;
-        });
-      }
-    }
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
   }
 
   Future<void> _changeAndHandleThemeModeChange() async {
@@ -126,9 +97,6 @@ class _HomeSPAViewState extends ConsumerState<HomeSPAView> {
     //MENU
     final menuExpanded = ref.watch(menuExpandedProvider);
     final menuWidth = menuExpanded ? 280.0 : 80.0;
-
-    //Ranges and Events would be fetched from ViewModels
-    final rangeState = ref.watch(rangeViewModelProvider);
 
     //Get user authentication state
     final isAuthed = ref.watch(isAuthenticatedProvider);
@@ -243,17 +211,6 @@ class _HomeSPAViewState extends ConsumerState<HomeSPAView> {
                               ),
                             ),
                           ),
-                          // const SizedBox(width: 12),
-                          // Text(
-                          //   user?.email ?? 'Account',
-                          //   style: Theme.of(context)
-                          //       .textTheme
-                          //       .bodyLarge
-                          //       ?.copyWith(
-                          //         color:
-                          //             Theme.of(context).colorScheme.onPrimary,
-                          //       ),
-                          // ),
                         ],
                       ),
                     if (!isAuthed)

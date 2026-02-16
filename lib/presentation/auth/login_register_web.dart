@@ -52,8 +52,6 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
     _confirmPasswordController.dispose();
     _firstNameController.dispose();
     _lastNameController.dispose();
-    _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
