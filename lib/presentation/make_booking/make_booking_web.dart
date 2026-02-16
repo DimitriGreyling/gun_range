@@ -214,7 +214,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                       backgroundColor: WidgetStateProperty.all<Color>(
                           Theme.of(context).colorScheme.tertiary),
                       foregroundColor: WidgetStateProperty.all<Color>(
-                          Theme.of(context).colorScheme.onSurface),
+                          Theme.of(context).colorScheme.onTertiary),
                     ),
                     child: const Text('Cancel'),
                   ),
@@ -432,11 +432,10 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                         backgroundColor: makeBookingState.isLoading
                             ? WidgetStateProperty.all<Color>(Theme.of(context)
                                 .disabledColor
-                                .withOpacity(0.1))
+                                .withOpacity(0.5))
                             : WidgetStateProperty.all<Color>(Theme.of(context)
                                 .colorScheme
-                                .error
-                                .withOpacity(0.1)),
+                                .error),
                         foregroundColor: makeBookingState.isLoading
                             ? WidgetStateProperty.all<Color>(Theme.of(context)
                                 .colorScheme
