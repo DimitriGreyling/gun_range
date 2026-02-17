@@ -11,13 +11,11 @@ import 'package:gun_range_app/viewmodels/make_booking_vm.dart';
 class BookingWidget extends ConsumerStatefulWidget {
   final String? rangeId;
   final MakeBookingState makeBookingState;
-  final Booking? createdBooking;
 
   const BookingWidget({
     super.key,
     this.rangeId,
     required this.makeBookingState,
-    this.createdBooking,
   });
 
   @override
@@ -52,6 +50,7 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.makeBookingState.bookingDetails = widget.makeBookingState.bookingDetails ?? Booking();
       _loadBookingConfigs();
     });
   }
@@ -92,7 +91,7 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
           onChanged: (value) {
             setState(() {
               _selectedBookingConfig = value;
-              widget.createdBooking?.eventId =
+              widget.makeBookingState.bookingDetails?.eventId =
                   value?.id; // Set eventId in booking model
             });
           },
@@ -143,7 +142,7 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
                     _dateController.text = _selectedDate == null
                         ? ''
                         : _selectedDate!.toLocal().toString().split(' ')[0];
-                    widget.createdBooking?.bookingDate =
+                    widget.makeBookingState.bookingDetails?.bookingDate =
                         _selectedDate; // Set date in booking model
                   });
                 },
@@ -167,9 +166,9 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
                       setState(() {
                         _selectedTimeSlot = slot;
                       });
-                    final selectedDate = widget.createdBooking?.bookingDate ?? DateTime.now();
-                    widget.createdBooking?.startTime = DateTime(selectedDate.year, selectedDate.month, selectedDate.day, int.parse(slot.split(':')[0]) + (slot.contains('PM') ? 12 : 0), 0);
-                    widget.createdBooking?.endTime = widget.createdBooking!.startTime!.add(const Duration(hours: 1));
+                    final selectedDate = widget.makeBookingState.bookingDetails?.bookingDate ?? DateTime.now();
+                    widget.makeBookingState.bookingDetails?.startTime = DateTime(selectedDate.year, selectedDate.month, selectedDate.day, int.parse(slot.split(':')[0]) + (slot.contains('PM') ? 12 : 0), 0);
+                    widget.makeBookingState.bookingDetails?.endTime = widget.makeBookingState.bookingDetails!.startTime!.add(const Duration(hours: 1));
                     },
                     isSelected: _selectedTimeSlot == slot)),
               ],

@@ -49,8 +49,8 @@ class MakeBookingState {
   final DateTime? selectedDate;
   final int currentPageIndex;
   final List<BookingGuestData> guests;
-  final Booking? createdBooking;
   final String? errorMessage;
+  Booking? bookingDetails;
 
   // Form controllers
   final TextEditingController nameController;
@@ -69,7 +69,7 @@ class MakeBookingState {
     this.selectedDate,
     this.currentPageIndex = 0,
     this.guests = const [],
-    this.createdBooking,
+    this.bookingDetails,
     this.errorMessage,
     required this.nameController,
     required this.emailController,
@@ -88,7 +88,6 @@ class MakeBookingState {
     DateTime? selectedDate,
     int? currentPageIndex,
     List<BookingGuestData>? guests,
-    Booking? createdBooking,
     String? errorMessage,
     TextEditingController? nameController,
     TextEditingController? emailController,
@@ -97,6 +96,7 @@ class MakeBookingState {
     TextEditingController? recipientNameController,
     TextEditingController? recipientEmailController,
     TextEditingController? dateController,
+    Booking? bookingDetails,
   }) {
     return MakeBookingState(
       rangeId: rangeId ?? this.rangeId,
@@ -106,7 +106,6 @@ class MakeBookingState {
       selectedDate: selectedDate ?? this.selectedDate,
       currentPageIndex: currentPageIndex ?? this.currentPageIndex,
       guests: guests ?? this.guests,
-      createdBooking: createdBooking ?? this.createdBooking,
       errorMessage: errorMessage ?? this.errorMessage,
       nameController: nameController ?? this.nameController,
       emailController: emailController ?? this.emailController,
@@ -115,6 +114,7 @@ class MakeBookingState {
       recipientNameController: recipientNameController ?? this.recipientNameController,
       recipientEmailController: recipientEmailController ?? this.recipientEmailController,
       dateController: dateController ?? this.dateController,
+      bookingDetails: bookingDetails ?? this.bookingDetails,
     );
   }
 }
@@ -162,11 +162,13 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
   }
 
   // Initialize with range data
-  void initialize(String? rangeId, Range? range) {
+  Future<void> initialize(String? rangeId, Range? range) async {
     state = state.copyWith(
       rangeId: rangeId,
       range: range,
+      bookingDetails: state.bookingDetails ?? Booking(), // Ensure bookingDetails is initialized
     );
+    await _loadSavedPage();
     if (range == null && rangeId != null) {
       _loadRangeDetails(rangeId);
     }
@@ -376,7 +378,7 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
       }
 
       // Update state with created booking
-      state = state.copyWith(createdBooking: bookingResponse);
+      state = state.copyWith(bookingDetails: bookingResponse);
 
       // Add guests to the booking
       if (bookingGuest != null && bookingGuest.isNotEmpty) {

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/popup_position.dart';
@@ -27,14 +29,16 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize ViewModel after the first frame
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(makeBookingProvider.notifier).initialize(widget.rangeId, widget.range);
-      
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref
+          .read(makeBookingProvider.notifier)
+          .initialize(widget.rangeId, widget.range);
+
       // Jump to saved page
       final currentPage = ref.read(makeBookingProvider).currentPageIndex;
-      if (_pageController.hasClients) {
+      if (_pageController.hasClients && currentPage > 0) {
         _pageController.jumpToPage(currentPage);
       }
     });
@@ -53,7 +57,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
     if (authUserAsync.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    
+
     if (authUserAsync.hasError) {
       return const Center(child: Text('Error loading user'));
     }
@@ -82,7 +86,6 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       BookingWidget(
         rangeId: widget.rangeId ?? makeBookingState.range?.id ?? '',
         makeBookingState: makeBookingState,
-        createdBooking: makeBookingState.createdBooking,
       ),
       _buildReviewStep(makeBookingState),
     ];
@@ -117,23 +120,27 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
   }
 
   Widget _buildReviewStep(MakeBookingState state) {
-    return Column(
-      children: [
-        const Text(
-          'Review Your Booking',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        const Text('Please review your booking details before confirming.'),
-        const SizedBox(height: 16),
-        Text('Range: ${state.range?.name ?? 'Not set'}'),
-        Text('Booked date: ${state.selectedDate?.toString().split(' ')[0] ?? 'Not set'}'),
-        Text('Number of guests: ${state.guests.length}'),
-        if (state.createdBooking != null) ...[
-          Text('Booking ID: ${state.createdBooking!.id ?? 'Not set'}'),
-          Text('Status: ${state.createdBooking!.status ?? 'Not set'}'),
+    log('Building review step with booking details: ${state.bookingDetails}, range: ${state.range}, selectedDate: ${state.selectedDate}, guests: ${state.guests.length}');
+    return Container(
+      width: double.infinity,
+      child: Column(
+        children: [
+          const Text(
+            'Review Your Booking',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          // const SizedBox(height: 16),
+          // const Text('Please review your booking details before confirming.'),
+          // const SizedBox(height: 16),
+          // Text('Range: ${state.range?.name ?? 'Not set'}'),
+          // Text('Booked date: ${state.bookingDetails?.bookingDate?.toString().split(' ')[0] ?? 'Not set'}'),
+          // Text('Number of guests: ${state.guests.length}'),
+          // if (state.bookingDetails != null) ...[
+          //   Text('Booking ID: ${state.bookingDetails!.id ?? 'Not set'}'),
+          //   Text('Status: ${state.bookingDetails!.status ?? 'Not set'}'),
+          // ],
         ],
-      ],
+      ),
     );
   }
 
@@ -164,7 +171,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
               bottom: 0,
               child: Container(
                 padding: const EdgeInsets.all(16),
-                color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5),
+                color:
+                    Theme.of(context).scaffoldBackgroundColor.withOpacity(0.5),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -186,7 +194,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                           foregroundColor: WidgetStateProperty.all<Color>(
                             Theme.of(context).colorScheme.onTertiary,
                           ),
-                          minimumSize: WidgetStateProperty.all(const Size(120, 50)),
+                          minimumSize:
+                              WidgetStateProperty.all(const Size(120, 50)),
                         ),
                         child: const Text('Back'),
                       ),
@@ -196,7 +205,9 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                           : () {
                               if (index == _stepContents.length - 1) {
                                 // Submit booking through ViewModel
-                                ref.read(makeBookingProvider.notifier).submitBooking();
+                                ref
+                                    .read(makeBookingProvider.notifier)
+                                    .submitBooking();
                               } else {
                                 _pageController.nextPage(
                                   duration: const Duration(milliseconds: 150),
@@ -207,14 +218,17 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(120, 50),
                       ),
-                      child: makeBookingState.isLoading && index == _stepContents.length - 1
+                      child: makeBookingState.isLoading &&
+                              index == _stepContents.length - 1
                           ? const SizedBox(
                               width: 20,
                               height: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                           : Text(
-                              index == _stepContents.length - 1 ? 'Finish' : 'Next',
+                              index == _stepContents.length - 1
+                                  ? 'Finish'
+                                  : 'Next',
                             ),
                     )
                   ],
@@ -256,7 +270,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                 value: 'myself',
                 currentValue: makeBookingState.bookingFor,
                 title: 'For myself',
-                tooltip: 'Select this option if you are booking for yourself. Your details will be used for the booking.',
+                tooltip:
+                    'Select this option if you are booking for yourself. Your details will be used for the booking.',
                 isEnabled: !makeBookingState.isLoading,
                 onChanged: (value) {
                   ref.read(makeBookingProvider.notifier).setBookingFor(value!);
@@ -266,7 +281,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                 value: 'someone',
                 currentValue: makeBookingState.bookingFor,
                 title: 'For someone else / group',
-                tooltip: 'Select this option if you are booking for someone else or a group. You will need to provide their details.',
+                tooltip:
+                    'Select this option if you are booking for someone else or a group. You will need to provide their details.',
                 isEnabled: !makeBookingState.isLoading,
                 onChanged: (value) {
                   ref.read(makeBookingProvider.notifier).setBookingFor(value!);
@@ -364,14 +380,16 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
           enabled: !state.isLoading,
           controller: state.recipientNameController,
           decoration: const InputDecoration(labelText: 'Recipient Name'),
-          validator: (v) => v == null || v.isEmpty ? 'Enter recipient name' : null,
+          validator: (v) =>
+              v == null || v.isEmpty ? 'Enter recipient name' : null,
         ),
         const SizedBox(height: 12),
         TextFormField(
           enabled: !state.isLoading,
           controller: state.recipientEmailController,
           decoration: const InputDecoration(labelText: 'Recipient Email'),
-          validator: (v) => v == null || v.isEmpty ? 'Enter recipient email' : null,
+          validator: (v) =>
+              v == null || v.isEmpty ? 'Enter recipient email' : null,
         ),
         const SizedBox(height: 12),
         TextFormField(
@@ -454,8 +472,10 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                     child: TextFormField(
                       enabled: !state.isLoading,
                       controller: guest.nameController,
-                      decoration: const InputDecoration(labelText: 'Guest Name'),
-                      validator: (v) => v == null || v.isEmpty ? 'Enter guest name' : null,
+                      decoration:
+                          const InputDecoration(labelText: 'Guest Name'),
+                      validator: (v) =>
+                          v == null || v.isEmpty ? 'Enter guest name' : null,
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -463,7 +483,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                     child: TextFormField(
                       enabled: !state.isLoading,
                       controller: guest.emailController,
-                      decoration: const InputDecoration(labelText: 'Guest Email'),
+                      decoration:
+                          const InputDecoration(labelText: 'Guest Email'),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -471,14 +492,17 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                     child: TextFormField(
                       enabled: !state.isLoading,
                       controller: guest.phoneController,
-                      decoration: const InputDecoration(labelText: 'Guest Phone'),
+                      decoration:
+                          const InputDecoration(labelText: 'Guest Phone'),
                     ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.remove_circle, color: Colors.red),
                     onPressed: state.isLoading
                         ? null
-                        : () => ref.read(makeBookingProvider.notifier).removeGuest(i),
+                        : () => ref
+                            .read(makeBookingProvider.notifier)
+                            .removeGuest(i),
                   ),
                 ],
               ),
@@ -488,7 +512,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
         }),
 
         const SizedBox(height: 12),
-        
+
         // Add guest button
         Align(
           alignment: Alignment.centerLeft,
@@ -496,7 +520,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
             icon: const Icon(Icons.add),
             style: ButtonStyle(
               backgroundColor: WidgetStateProperty.all<Color>(
-                state.isLoading 
+                state.isLoading
                     ? Theme.of(context).disabledColor
                     : Theme.of(context).colorScheme.primary,
               ),
@@ -507,8 +531,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
               ),
             ),
             label: const Text('Add Guest'),
-            onPressed: state.isLoading 
-                ? null 
+            onPressed: state.isLoading
+                ? null
                 : () => ref.read(makeBookingProvider.notifier).addGuest(),
           ),
         ),
