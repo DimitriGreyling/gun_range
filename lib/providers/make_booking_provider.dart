@@ -9,6 +9,12 @@ final makeBookingProvider =
   final bookingRepository = ref.watch(bookingRepositoryProvider);
   final authUser = ref.watch(authUserProvider).value!;
   final bookingGuestRepository = ref.watch(bookingGuestProvider);
+  final rangeRepository = ref.watch(rangeRepositoryProvider);
   
-  return MakeBookingVm(bookingRepository, authUser, bookingGuestRepository);
+  return MakeBookingVm(
+    bookingRepository, 
+    bookingGuestRepository, 
+    rangeRepository,
+    authUser,
+  );
 });
