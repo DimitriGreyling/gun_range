@@ -10,13 +10,15 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class MakeBookingState {
   final String? rangeId;
   final bool isLoading;
+  final List<BookingGuest> bookingGuests;
 
-  MakeBookingState({this.rangeId, this.isLoading = false});
+  MakeBookingState({this.rangeId, this.isLoading = false, this.bookingGuests = const []});
 
-  MakeBookingState copyWith({String? rangeId, bool? isLoading}) {
+  MakeBookingState copyWith({String? rangeId, bool? isLoading, List<BookingGuest>? bookingGuests}) {
     return MakeBookingState(
       rangeId: rangeId ?? this.rangeId,
       isLoading: isLoading ?? this.isLoading,
+      bookingGuests: bookingGuests ?? this.bookingGuests,
     );
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 class Booking {
   String? id;
   String? bookedBy;
@@ -5,6 +7,9 @@ class Booking {
   String? rangeId;
   String? status;
   String? paymentStatus;
+  DateTime? bookingDate;
+  DateTime? startTime;
+  DateTime? endTime;
 
   Booking({
     this.id,
@@ -13,6 +18,9 @@ class Booking {
     this.rangeId,
     this.status,
     this.paymentStatus,
+    this.bookingDate,
+    this.startTime,
+    this.endTime,
   });
 
   factory Booking.fromJson(Map<String, dynamic> json) => Booking(
@@ -22,6 +30,9 @@ class Booking {
         rangeId: json['range_id'],
         status: json['status'],
         paymentStatus: json['payment_status'],
+        bookingDate: json['booking_date'] != null ? DateTime.parse(json['booking_date']) : null,
+        startTime: json['start_time'] != null ? DateTime.parse(json['start_time']) : null,
+        endTime: json['end_time'] != null ? DateTime.parse(json['end_time']) : null,
       );
 
   Map<String, dynamic> toJson() => {
@@ -30,5 +41,8 @@ class Booking {
         'range_id': rangeId,
         'status': status,
         'payment_status': paymentStatus,
+        'booking_date': bookingDate?.toIso8601String(),
+        'start_time': startTime?.toIso8601String(),
+        'end_time': endTime?.toIso8601String(),
       };
 }

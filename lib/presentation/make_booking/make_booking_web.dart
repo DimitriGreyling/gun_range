@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/data/models/booking.dart';
 import 'package:gun_range_app/data/models/popup_position.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/data/models/booking_guest.dart';
@@ -40,6 +41,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
   List<Widget> _stepContents = [];
   final PageController _pageController = PageController();
   int _currentPageIndex = 0;
+  Booking? _createdBooking = Booking();
 
   @override
   void initState() {
@@ -119,7 +121,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       }
     }
   }
-  
+
   Future<void> _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
       await _loadRangeDetailsIfNotExists();
@@ -201,7 +203,9 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       BookingWidget(
         rangeId: widget.rangeId ?? widget.range?.id ?? '',
         makeBookingState: makeBookingState,
+        createdBooking: _createdBooking,
       ),
+      _buildReviewStep(),
     ];
 
     return Padding(
@@ -230,6 +234,21 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildReviewStep() {
+    return Column(
+      children: [
+        const Text('Review Your Booking',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+       Text('Please review your booking details before confirming.'),
+       const SizedBox(height: 16),
+       Text('VenueId: ${_createdBooking?.eventId ?? 'Not set'}'),
+       Text('Booked date: ${_createdBooking?.bookingDate ?? 'Not set'}'),
+        Text('Start time: ${_createdBooking?.startTime ?? 'Not set'}'),
+      ],
     );
   }
 

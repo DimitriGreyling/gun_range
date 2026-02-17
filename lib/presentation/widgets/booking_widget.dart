@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/data/models/booking.dart';
 import 'package:gun_range_app/data/models/booking_configs.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:gun_range_app/viewmodels/make_booking_vm.dart';
@@ -9,8 +11,14 @@ import 'package:gun_range_app/viewmodels/make_booking_vm.dart';
 class BookingWidget extends ConsumerStatefulWidget {
   final String? rangeId;
   final MakeBookingState makeBookingState;
-  const BookingWidget(
-      {super.key, this.rangeId, required this.makeBookingState});
+  final Booking? createdBooking;
+
+  const BookingWidget({
+    super.key,
+    this.rangeId,
+    required this.makeBookingState,
+    this.createdBooking,
+  });
 
   @override
   ConsumerState<BookingWidget> createState() => _BookingWidgetState();
@@ -84,6 +92,8 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
           onChanged: (value) {
             setState(() {
               _selectedBookingConfig = value;
+              widget.createdBooking?.eventId =
+                  value?.id; // Set eventId in booking model
             });
           },
           decoration: InputDecoration(
@@ -133,6 +143,8 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
                     _dateController.text = _selectedDate == null
                         ? ''
                         : _selectedDate!.toLocal().toString().split(' ')[0];
+                    widget.createdBooking?.bookingDate =
+                        _selectedDate; // Set date in booking model
                   });
                 },
           validator: (v) =>
@@ -155,6 +167,9 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
                       setState(() {
                         _selectedTimeSlot = slot;
                       });
+                    final selectedDate = widget.createdBooking?.bookingDate ?? DateTime.now();
+                    widget.createdBooking?.startTime = DateTime(selectedDate.year, selectedDate.month, selectedDate.day, int.parse(slot.split(':')[0]) + (slot.contains('PM') ? 12 : 0), 0);
+                    widget.createdBooking?.endTime = widget.createdBooking!.startTime!.add(const Duration(hours: 1));
                     },
                     isSelected: _selectedTimeSlot == slot)),
               ],
@@ -187,16 +202,19 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
     bool isDisabled = false,
   }) {
     return MouseRegion(
-      cursor: isDisabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+      cursor:
+          isDisabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
       child: GestureDetector(
           onTap: isDisabled ? null : () => onTap?.call(),
           child: Stack(
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: isDisabled ? Colors.grey.shade300 : Colors.blue.shade100,
+                  color:
+                      isDisabled ? Colors.grey.shade300 : Colors.blue.shade100,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: isDisabled ? Colors.grey : Colors.blue, width: 1),
+                  border: Border.all(
+                      color: isDisabled ? Colors.grey : Colors.blue, width: 1),
                 ),
                 margin: const EdgeInsets.all(10),
                 padding: const EdgeInsets.all(10),

@@ -157,7 +157,7 @@ class _HomeScreenDesktopState extends ConsumerState<HomeScreenDesktop> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('RangeConnect',
+                    Text('Range Connect',
                         style: Theme.of(context).textTheme.headlineMedium),
                     const Spacer(),
                     if (isAuthed)

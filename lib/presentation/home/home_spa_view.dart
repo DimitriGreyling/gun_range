@@ -150,7 +150,7 @@ class HomeSPAViewState extends ConsumerState<HomeSPAView> {
                       'assets/logo/logo_bigger.svg',
                       height: 60,
                     ),
-                    Text('RangeConnect',
+                    Text('Range Connect',
                         style: Theme.of(context).textTheme.headlineMedium),
                     const Spacer(),
                     if (isAuthed)
