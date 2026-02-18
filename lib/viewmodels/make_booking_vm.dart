@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/booking.dart';
@@ -161,16 +163,221 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
     super.dispose();
   }
 
+  // Save all form state to SharedPreferences
+  Future<void> _saveAllFormState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Save basic booking details
+      await prefs.setString('booking_for', state.bookingFor);
+      await prefs.setInt('current_page_index', state.currentPageIndex);
+      
+      // Save booking details
+      final bookingDetails = state.bookingDetails;
+      if (bookingDetails != null) {
+        await prefs.setString('booking_event_id', bookingDetails.eventId ?? '');
+        if (bookingDetails.bookingDate != null) {
+          await prefs.setString('booking_date', bookingDetails.bookingDate!.toIso8601String());
+        }
+        if (bookingDetails.startTime != null) {
+          await prefs.setString('booking_start_time', bookingDetails.startTime!.toIso8601String());
+        }
+        if (bookingDetails.endTime != null) {
+          await prefs.setString('booking_end_time', bookingDetails.endTime!.toIso8601String());
+        }
+      }
+      
+      // Save form controllers text
+      await prefs.setString('name_controller', state.nameController.text);
+      await prefs.setString('email_controller', state.emailController.text);
+      await prefs.setString('phone_controller', state.phoneController.text);
+      await prefs.setString('notes_controller', state.notesController.text);
+      await prefs.setString('recipient_name_controller', state.recipientNameController.text);
+      await prefs.setString('recipient_email_controller', state.recipientEmailController.text);
+      await prefs.setString('date_controller', state.dateController.text);
+      
+      // Save guests data
+      await prefs.setInt('guests_count', state.guests.length);
+      for (int i = 0; i < state.guests.length; i++) {
+        final guest = state.guests[i];
+        await prefs.setString('guest_${i}_name', guest.nameController.text);
+        await prefs.setString('guest_${i}_email', guest.emailController.text);
+        await prefs.setString('guest_${i}_phone', guest.phoneController.text);
+      }
+      
+      // Save range info
+      if (state.rangeId != null) {
+        await prefs.setString('range_id', state.rangeId!);
+      }
+      if (state.range != null) {
+        await prefs.setString('range_name', state.range?.name ?? '');
+        // Add other range fields as needed
+      }
+      
+      log('All form state saved successfully');
+    } catch (e) {
+      log('Error saving form state: $e');
+    }
+  }
+
+  // Load all form state from SharedPreferences
+  Future<void> _loadAllFormState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Load basic settings
+      final savedBookingFor = prefs.getString('booking_for') ?? 'myself';
+      final savedPageIndex = prefs.getInt('current_page_index') ?? 0;
+      final savedRangeId = prefs.getString('range_id');
+      
+      // Load booking details
+      final eventId = prefs.getString('booking_event_id');
+      final bookingDateStr = prefs.getString('booking_date');
+      final startTimeStr = prefs.getString('booking_start_time');
+      final endTimeStr = prefs.getString('booking_end_time');
+      
+      Booking? booking;
+      if (eventId != null || bookingDateStr != null || startTimeStr != null) {
+        booking = Booking();
+        
+        if (eventId != null && eventId.isNotEmpty) {
+          booking.eventId = eventId;
+        }
+        
+        if (bookingDateStr != null) {
+          booking.bookingDate = DateTime.parse(bookingDateStr);
+        }
+        
+        if (startTimeStr != null) {
+          booking.startTime = DateTime.parse(startTimeStr);
+        }
+        
+        if (endTimeStr != null) {
+          booking.endTime = DateTime.parse(endTimeStr);
+        }
+      }
+      
+      // Load form controller texts
+      final nameText = prefs.getString('name_controller') ?? '';
+      final emailText = prefs.getString('email_controller') ?? '';
+      final phoneText = prefs.getString('phone_controller') ?? '';
+      final notesText = prefs.getString('notes_controller') ?? '';
+      final recipientNameText = prefs.getString('recipient_name_controller') ?? '';
+      final recipientEmailText = prefs.getString('recipient_email_controller') ?? '';
+      final dateText = prefs.getString('date_controller') ?? '';
+      
+      // Set controller texts
+      state.nameController.text = nameText;
+      state.emailController.text = emailText;
+      state.phoneController.text = phoneText;
+      state.notesController.text = notesText;
+      state.recipientNameController.text = recipientNameText;
+      state.recipientEmailController.text = recipientEmailText;
+      state.dateController.text = dateText;
+      
+      // Load guests
+      final guestsCount = prefs.getInt('guests_count') ?? 0;
+      final List<BookingGuestData> restoredGuests = [];
+      
+      for (int i = 0; i < guestsCount; i++) {
+        final guestName = prefs.getString('guest_${i}_name') ?? '';
+        final guestEmail = prefs.getString('guest_${i}_email') ?? '';
+        final guestPhone = prefs.getString('guest_${i}_phone') ?? '';
+        
+        final guestData = BookingGuestData(
+          nameController: TextEditingController(text: guestName),
+          emailController: TextEditingController(text: guestEmail),
+          phoneController: TextEditingController(text: guestPhone),
+        );
+        
+        restoredGuests.add(guestData);
+      }
+      
+      // Update state with restored data
+      state = state.copyWith(
+        bookingFor: savedBookingFor,
+        currentPageIndex: savedPageIndex,
+        bookingDetails: booking ?? state.bookingDetails,
+        guests: restoredGuests,
+        rangeId: savedRangeId ?? state.rangeId,
+      );
+      
+      log('All form state loaded successfully');
+      log('Restored booking for: $savedBookingFor');
+      log('Restored page index: $savedPageIndex');
+      log('Restored guests count: $guestsCount');
+      
+    } catch (e) {
+      log('Error loading form state: $e');
+    }
+  }
+
+  // Clear all saved form state
+  Future<void> _clearAllSavedFormState() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Remove all booking-related keys
+      final keys = prefs.getKeys();
+      final bookingKeys = keys.where((key) => 
+        key.startsWith('booking_') || 
+        key.startsWith('guest_') ||
+        key.contains('controller') ||
+        key == 'current_page_index' ||
+        key == 'range_id' ||
+        key == 'range_name' ||
+        key == 'guests_count'
+      ).toList();
+      
+      for (String key in bookingKeys) {
+        await prefs.remove(key);
+      }
+      
+      log('All saved form state cleared');
+    } catch (e) {
+      log('Error clearing form state: $e');
+    }
+  }
+
   // Initialize with range data
   Future<void> initialize(String? rangeId, Range? range) async {
     state = state.copyWith(
       rangeId: rangeId,
       range: range,
-      // bookingDetails: state.bookingDetails ?? Booking(), // Ensure bookingDetails is initialized
     );
-    await _loadSavedPage();
-    if (range == null && rangeId != null) {
-      _loadRangeDetails(rangeId);
+    
+    // Load all saved state first
+    await _loadAllFormState();
+    
+    // Initialize booking details if still null
+    if (state.bookingDetails == null) {
+      state = state.copyWith(bookingDetails: Booking());
+    }
+    
+    // Add listeners to form controllers for auto-save
+    _addFormControllerListeners();
+    
+    // Load range details if needed
+    if (range == null && (rangeId != null || state.rangeId != null)) {
+      _loadRangeDetails(rangeId ?? state.rangeId!);
+    }
+  }
+
+  // Add form controller listeners for auto-save
+  void _addFormControllerListeners() {
+    state.nameController.addListener(_saveAllFormState);
+    state.emailController.addListener(_saveAllFormState);
+    state.phoneController.addListener(_saveAllFormState);
+    state.notesController.addListener(_saveAllFormState);
+    state.recipientNameController.addListener(_saveAllFormState);
+    state.recipientEmailController.addListener(_saveAllFormState);
+    state.dateController.addListener(_saveAllFormState);
+    
+    // Add listeners to existing guests
+    for (final guest in state.guests) {
+      guest.nameController.addListener(_saveAllFormState);
+      guest.emailController.addListener(_saveAllFormState);
+      guest.phoneController.addListener(_saveAllFormState);
     }
   }
 
@@ -191,15 +398,67 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
     }
   }
 
+  // Initialize booking details if null
+  void initializeBookingDetails() {
+    if (state.bookingDetails == null) {
+      state = state.copyWith(bookingDetails: Booking());
+    }
+  }
+
+  // Update booking date
+  void updateBookingDate(DateTime date) {
+    final updatedBooking = state.bookingDetails?.copyWith(bookingDate: date) ?? Booking(bookingDate: date);
+    state = state.copyWith(
+      selectedDate: date,
+      bookingDetails: updatedBooking,
+    );
+    _saveAllFormState();
+  }
+
+  // Update booking event ID
+  void updateBookingEventId(String? eventId) {
+    final updatedBooking = state.bookingDetails?.copyWith(eventId: eventId) ?? Booking(eventId: eventId);
+    state = state.copyWith(bookingDetails: updatedBooking);
+    _saveAllFormState();
+  }
+
+  // Update booking time
+  void updateBookingTime(String timeSlot) {
+    final selectedDate = state.bookingDetails?.bookingDate ?? DateTime.now();
+    final slotHour = int.parse(timeSlot.split(':')[0]) + (timeSlot.contains('PM') && !timeSlot.startsWith('12') ? 12 : 0);
+    
+    final startTime = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+      slotHour,
+      0,
+    );
+    final endTime = startTime.add(const Duration(hours: 1));
+    
+    final updatedBooking = state.bookingDetails?.copyWith(
+      startTime: startTime,
+      endTime: endTime,
+    ) ?? Booking(
+      startTime: startTime,
+      endTime: endTime,
+      bookingDate: selectedDate,
+    );
+    
+    state = state.copyWith(bookingDetails: updatedBooking);
+    _saveAllFormState();
+  }
+
   // Set booking type (myself/someone else)
   void setBookingFor(String value) {
     state = state.copyWith(bookingFor: value);
+    _saveAllFormState();
   }
 
   // Set selected date
   void setSelectedDate(DateTime date) {
     state = state.copyWith(selectedDate: date);
-    state.dateController.text = date.toLocal().toString().split(' ')[0];
+    _saveAllFormState();
   }
 
   // Add a new guest
@@ -210,8 +469,13 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
       phoneController: TextEditingController(),
     );
     
-    final updatedGuests = [...state.guests, newGuest];
-    state = state.copyWith(guests: updatedGuests);
+    // Add listeners to guest controllers for auto-save
+    newGuest.nameController.addListener(_saveAllFormState);
+    newGuest.emailController.addListener(_saveAllFormState);
+    newGuest.phoneController.addListener(_saveAllFormState);
+    
+    state = state.copyWith(guests: [...state.guests, newGuest]);
+    _saveAllFormState();
   }
 
   // Remove a guest by index
@@ -223,6 +487,7 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
       final updatedGuests = [...state.guests];
       updatedGuests.removeAt(index);
       state = state.copyWith(guests: updatedGuests);
+      _saveAllFormState();
     }
   }
 
@@ -232,12 +497,14 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
       guest.dispose();
     }
     state = state.copyWith(guests: []);
+    _saveAllFormState();
   }
 
   // Navigate to page
   void setCurrentPage(int pageIndex) {
     state = state.copyWith(currentPageIndex: pageIndex);
     _saveCurrentPage(pageIndex);
+    _saveAllFormState();
   }
 
   // Save current page to SharedPreferences
@@ -278,128 +545,137 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
     }
   }
 
-  // Submit booking
-  Future<void> submitBooking() async {
-    if (!validateForm()) {
-      state = state.copyWith(errorMessage: 'Please fill in all required fields');
-      return;
+  // Call this when booking is completed or user wants to start fresh
+  void clearBookingSession() {
+    _clearAllSavedFormState();
+    
+    // Reset all controllers
+    state.nameController.clear();
+    state.emailController.clear();
+    state.phoneController.clear();
+    state.notesController.clear();
+    state.recipientNameController.clear();
+    state.recipientEmailController.clear();
+    state.dateController.clear();
+    
+    // Clear guests
+    for (final guest in state.guests) {
+      guest.dispose();
     }
+    
+    // Reset state
+    state = state.copyWith(
+      bookingFor: 'myself',
+      currentPageIndex: 0,
+      guests: [],
+      bookingDetails: Booking(),
+      selectedDate: null,
+    );
+  }
 
-    if (state.selectedDate == null) {
-      state = state.copyWith(errorMessage: 'Please select a booking date');
-      return;
-    }
-
-    if (state.range == null) {
-      state = state.copyWith(errorMessage: 'Range information not available');
-      return;
-    }
-
-    state = state.copyWith(isLoading: true, errorMessage: null);
-
+  // Original makeBooking method (updated)
+  Future<void> makeBooking({
+    required String rangeId,
+    required DateTime bookingDate,
+    required DateTime startTime,
+    required DateTime endTime,
+    String? notes,
+    String? eventId,
+    List<BookingGuest> guests = const [],
+  }) async {
     try {
-      final name = state.bookingFor == 'myself'
-          ? _authUser.userMetadata != null ? _authUser.userMetadata!['full_name'] : _authUser.email ?? ''
-          : state.recipientNameController.text;
-      final email = state.bookingFor == 'myself'
-          ? _authUser.email ?? ''
-          : state.recipientEmailController.text;
-      final phone = state.bookingFor == 'myself'
-          ? _authUser.userMetadata != null ? _authUser.userMetadata!['phone'] : ''
-          : state.phoneController.text;
+      state = state.copyWith(isLoading: true, errorMessage: null);
 
-      // Build BookingGuest list
-      final List<BookingGuest> bookingGuests = [];
+      // // Prepare booking data
+      // final booking = Booking(
+      //   rangeId: rangeId,
+      //   userId: _authUser.id,
+      //   bookingDate: bookingDate,
+      //   startTime: startTime,
+      //   endTime: endTime,
+      //   status: 'pending',
+      //   notes: notes,
+      //   eventId: eventId,
+      // );
 
-      // Add main booker or recipient
-      bookingGuests.add(
-        BookingGuest(
-          name: name,
-          email: email,
-          phone: phone,
-          isPrimary: true,
-        ),
+      // // Create booking
+      // final createdBooking = await _bookingRepository.createBooking(booking);
+
+      // if (createdBooking != null && guests.isNotEmpty) {
+      //   // Add guests if any
+      //   await _bookingGuestRepository.addGuestsToBooking(
+      //     createdBooking.id!,
+      //     guests,
+      //   );
+      // }
+
+      // state = state.copyWith(
+      //   isLoading: false,
+      //   bookingDetails: createdBooking,
+      // );
+
+      // // Clear session after successful booking
+      // clearBookingSession();
+
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: 'Failed to create booking: ${e.toString()}',
       );
+      
+      ErrorsExceptionService.handleException(
+        e.toString(),
+        // location: 'MakeBookingVm.makeBooking',
+      );
+    }
+  }
 
-      // Add additional guests
-      for (final guest in state.guests) {
-        if (guest.nameController.text.trim().isNotEmpty) {
-          bookingGuests.add(
-            BookingGuest(
-              name: guest.nameController.text,
-              email: guest.emailController.text,
-              phone: guest.phoneController.text,
-              isPrimary: false,
-            ),
-          );
-        }
+  // Create booking with current state
+  Future<void> createBookingFromCurrentState() async {
+    try {
+      if (state.bookingDetails == null ||
+          state.bookingDetails!.startTime == null ||
+          state.bookingDetails!.endTime == null ||
+          state.bookingDetails!.bookingDate == null) {
+        state = state.copyWith(
+          errorMessage: 'Please complete all required booking details',
+        );
+        return;
       }
 
-      await makeBooking(
-        range: state.range!,
-        date: state.selectedDate!,
-        bookingGuest: bookingGuests,
-      );
+      state = state.copyWith(isLoading: true, errorMessage: null);
 
-      GlobalPopupService.showInfo(
-        title: 'Booking Submitted',
-        message:
-            'Thank you, $name! Your booking for ${state.range?.name ?? ''} on ${state.selectedDate!.toLocal().toString().split(' ')[0]} has been submitted.',
+      // Convert guest data to BookingGuest objects
+      final List<BookingGuest> bookingGuests = state.guests
+          .where((guest) => guest.nameController.text.trim().isNotEmpty)
+          .map((guest) => BookingGuest(
+                name: guest.nameController.text.trim(),
+                email: guest.emailController.text.trim().isNotEmpty
+                    ? guest.emailController.text.trim()
+                    : null,
+                phone: guest.phoneController.text.trim().isNotEmpty
+                    ? guest.phoneController.text.trim()
+                    : null,
+              ))
+          .toList();
+
+      await makeBooking(
+        rangeId: state.rangeId ?? state.range?.id ?? '',
+        bookingDate: state.bookingDetails!.bookingDate!,
+        startTime: state.bookingDetails!.startTime!,
+        endTime: state.bookingDetails!.endTime!,
+        notes: state.notesController.text.trim().isNotEmpty
+            ? state.notesController.text.trim()
+            : null,
+        eventId: state.bookingDetails!.eventId,
+        guests: bookingGuests,
       );
 
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        errorMessage: 'Failed to submit booking: $e',
+        errorMessage: 'Failed to create booking: ${e.toString()}',
       );
-    }
-  }
-
-  // Original makeBooking method (updated)
-  Future<void> makeBooking({
-    required Range range,
-    required DateTime date,
-    List<BookingGuest>? bookingGuest,
-  }) async {
-    try {
-      // Create a Booking object
-      final booking = Booking(
-        bookedBy: _authUser.id,
-        rangeId: range.id!,
-        status: 'pending',
-        paymentStatus: 'unpaid',
-      );
-
-      // Call the repository to create the booking
-      final bookingResponse = await _bookingRepository.createBooking(booking);
-
-      if (bookingResponse.id == null) {
-        throw Exception('Booking cannot be found or created');
-      }
-
-      // Update state with created booking
-      state = state.copyWith(bookingDetails: bookingResponse);
-
-      // Add guests to the booking
-      if (bookingGuest != null && bookingGuest.isNotEmpty) {
-        bookingGuest.removeWhere(
-          (guest) => (guest.name == null || guest.name!.isEmpty) && 
-                    (guest.email == null || guest.email!.isEmpty)
-        );
-
-        for (var guest in bookingGuest) {
-          await _bookingGuestRepository.addGuestToBooking(
-            bookingId: bookingResponse.id!,
-            guest: guest,
-          );
-        }
-      }
-
-      state = state.copyWith(isLoading: false);
-    } catch (e) {
-      ErrorsExceptionService.handleException(e);
-      state = state.copyWith(isLoading: false);
-      rethrow;
     }
   }
 }

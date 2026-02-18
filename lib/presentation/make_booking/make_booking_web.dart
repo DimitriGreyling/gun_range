@@ -204,9 +204,9 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                           : () {
                               if (index == _stepContents.length - 1) {
                                 // Submit booking through ViewModel
-                                ref
-                                    .read(makeBookingProvider.notifier)
-                                    .submitBooking();
+                                // ref
+                                    // .read(makeBookingProvider.notifier)
+                                    // .submitBooking();
                               } else {
                                 _pageController.nextPage(
                                   duration: const Duration(milliseconds: 150),

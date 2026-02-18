@@ -3,9 +3,10 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/data/models/booking.dart';
 import 'package:gun_range_app/data/models/booking_configs.dart';
-import 'package:gun_range_app/providers/make_booking_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
+import 'package:gun_range_app/providers/make_booking_provider.dart';
 import 'package:gun_range_app/viewmodels/make_booking_vm.dart';
 
 class BookingWidget extends ConsumerStatefulWidget {
@@ -21,17 +22,7 @@ class BookingWidget extends ConsumerStatefulWidget {
 }
 
 class _BookingWidgetState extends ConsumerState<BookingWidget> {
-  DateTime? _selectedDate;
-  String? _selectedTimeSlot;
   final _dateController = TextEditingController();
-
-  ValueNotifier<bool> isBookingTypeSelected = ValueNotifier<bool>(false);
-  ValueNotifier<bool> isTimeSelected = ValueNotifier<bool>(false);
-  ValueNotifier<bool> isDateSelected = ValueNotifier<bool>(false);
-
-  // New: Selected booking config (type)
-  dynamic _selectedBookingConfig;
-  MakeBookingState get makeBookingState => ref.watch(makeBookingProvider);
 
   final List<String> _timeSlots = [
     '09:00 AM',
@@ -49,32 +40,48 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _dateController.text =
-          makeBookingState.bookingDetails?.bookingDate != null
-              ? makeBookingState.bookingDetails!.bookingDate!
-                  .toLocal()
-                  .toString()
-                  .split(' ')[0]
-              : '';
-      _loadBookingConfigs();
+      _initializeWidget();
     });
+  }
+
+  Future<void> _initializeWidget() async {
+    // Load booking configs
+    await _loadBookingConfigs();
+    
+    // Initialize booking details if needed - this will load from persistence
+    ref.read(makeBookingProvider.notifier).initializeBookingDetails();
+    
+    // Update date controller with current booking date
+    _updateDateController();
+  }
+
+  void _updateDateController() {
+    final makeBookingState = ref.read(makeBookingProvider);
+    final bookingDate = makeBookingState.bookingDetails?.bookingDate;
+    if (bookingDate != null) {
+      _dateController.text = bookingDate.toLocal().toString().split(' ')[0];
+    }
   }
 
   Future<void> _loadBookingConfigs() async {
     await ref
-        .watch(bookingConfigViewModelProvider.notifier)
+        .read(bookingConfigViewModelProvider.notifier)
         .fetchBookingConfigs(widget.rangeId ?? '');
   }
 
   @override
   Widget build(BuildContext context) {
+    final makeBookingState = ref.watch(makeBookingProvider);
     final bookingConfigState = ref.watch(bookingConfigViewModelProvider);
 
-    // Assume bookingConfigState has a 'configs' property which is a List of configs
-    final List<BookingConfigs> bookingConfigs =
-        bookingConfigState.bookingConfigs;
+    // Listen for state changes and update UI accordingly
+    ref.listen<MakeBookingState>(makeBookingProvider, (previous, current) {
+      if (current.bookingDetails?.bookingDate != previous?.bookingDetails?.bookingDate) {
+        _updateDateController();
+      }
+    });
 
-    log('BookingWidget build: bookingConfigs length = ${bookingConfigs.length}');
+    final List<BookingConfigs> bookingConfigs = bookingConfigState.bookingConfigs;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,7 +90,7 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const SizedBox(height: 16),
 
-        // Booking Type Dropdown
+        // Booking Type Dropdown - automatically persisted
         DropdownButtonFormField<BookingConfigs?>(
           items: bookingConfigs.map((config) {
             return DropdownMenuItem<BookingConfigs>(
@@ -92,54 +99,41 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
             );
           }).toList(),
           value: makeBookingState.bookingDetails?.eventId != null
-              ? bookingConfigs.firstWhere(
+              ? bookingConfigs.cast<BookingConfigs?>().firstWhere(
                   (config) =>
-                      config.id == makeBookingState.bookingDetails?.eventId,
-                  orElse: () => bookingConfigs.isNotEmpty
-                      ? bookingConfigs[0]
-                      : null as BookingConfigs,
+                      config?.id.toString() ==
+                      makeBookingState.bookingDetails?.eventId,
+                  orElse: () => null,
                 )
               : null,
           hint: const Text('Range'),
           isExpanded: true,
           onChanged: (value) {
-            setState(() {
-              _selectedBookingConfig = value;
-              makeBookingState.bookingDetails?.eventId =
-                  (value as BookingConfigs)
-                      .id
-                      ?.toString(); // Set eventId in booking model
-            });
+            if (value != null) {
+              // This automatically triggers persistence
+              ref.read(makeBookingProvider.notifier).updateBookingEventId(value.id?.toString());
+            }
           },
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: const BorderSide(
-                color: Colors.grey,
-                width: 1,
-              ),
+              borderSide: const BorderSide(color: Colors.grey, width: 1),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Colors.grey.shade300,
-                width: 1,
-              ),
+              borderSide: BorderSide(color: Colors.grey.shade300, width: 1),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).primaryColor,
-                width: 2,
-              ),
+              borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
             ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
         ),
 
         const SizedBox(height: 16),
 
+        // Date picker - automatically persisted
         TextFormField(
           readOnly: true,
           decoration: const InputDecoration(
@@ -151,24 +145,18 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
           onTap: makeBookingState.isLoading
               ? null
               : () async {
-                  FocusScope.of(context)
-                      .requestFocus(FocusNode()); // Prevents keyboard
+                  FocusScope.of(context).requestFocus(FocusNode());
                   await _pickDate(context);
-                  setState(() {
-                    _dateController.text = _selectedDate == null
-                        ? ''
-                        : _selectedDate!.toLocal().toString().split(' ')[0];
-                    makeBookingState.bookingDetails?.bookingDate =
-                        _selectedDate; // Set date in booking model
-                  });
                 },
           validator: (v) =>
-              _selectedDate == null ? 'Please select a booking date' : null,
+              makeBookingState.bookingDetails?.bookingDate == null 
+                  ? 'Please select a booking date' 
+                  : null,
         ),
 
         const SizedBox(height: 16),
 
-        //Timeslot selection UI will go here, for now we can just show a placeholder
+        // Time slots - automatically persisted
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -179,31 +167,10 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
                 ..._timeSlots.map((slot) => _buildTimeSlotBlock(
                       timeSlot: slot,
                       onTap: () {
-                        setState(() {
-                          _selectedTimeSlot = slot;
-                        });
-                        final selectedDate =
-                            makeBookingState.bookingDetails?.bookingDate ??
-                                DateTime.now();
-                        makeBookingState.bookingDetails?.startTime = DateTime(
-                            selectedDate.year,
-                            selectedDate.month,
-                            selectedDate.day,
-                            int.parse(slot.split(':')[0]) +
-                                (slot.contains('PM') ? 12 : 0),
-                            0);
-                        makeBookingState.bookingDetails?.endTime =
-                            makeBookingState.bookingDetails!.startTime!
-                                .add(const Duration(hours: 1));
+                        // This automatically triggers persistence
+                        ref.read(makeBookingProvider.notifier).updateBookingTime(slot);
                       },
-                      isSelected: _selectedTimeSlot != null
-                          ? _selectedTimeSlot == slot
-                          : makeBookingState.bookingDetails?.startTime !=
-                                  null &&
-                              makeBookingState
-                                      .bookingDetails?.startTime!.hour ==
-                                  int.parse(slot.split(':')[0]) +
-                                      (slot.contains('PM') ? 12 : 0),
+                      isSelected: _isTimeSlotSelected(slot, makeBookingState),
                     )),
               ],
             ),
@@ -211,6 +178,13 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
         ),
       ],
     );
+  }
+
+  bool _isTimeSlotSelected(String slot, MakeBookingState state) {
+    if (state.bookingDetails?.startTime == null) return false;
+    
+    final slotHour = int.parse(slot.split(':')[0]) + (slot.contains('PM') && !slot.startsWith('12') ? 12 : 0);
+    return state.bookingDetails!.startTime!.hour == slotHour;
   }
 
   Future<void> _pickDate(BuildContext context) async {
@@ -222,9 +196,8 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
       lastDate: now.add(const Duration(days: 365)),
     );
     if (picked != null) {
-      setState(() {
-        _selectedDate = picked;
-      });
+      // This automatically triggers persistence
+      ref.read(makeBookingProvider.notifier).updateBookingDate(picked);
     }
   }
 
@@ -235,23 +208,31 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
     bool isDisabled = false,
   }) {
     return MouseRegion(
-      cursor:
-          isDisabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+      cursor: isDisabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
       child: GestureDetector(
           onTap: isDisabled ? null : () => onTap?.call(),
           child: Stack(
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color:
-                      isDisabled ? Colors.grey.shade300 : Colors.blue.shade100,
+                  color: isSelected 
+                      ? Colors.blue.shade200 
+                      : (isDisabled ? Colors.grey.shade300 : Colors.blue.shade100),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                      color: isDisabled ? Colors.grey : Colors.blue, width: 1),
+                      color: isSelected 
+                          ? Colors.blue.shade600 
+                          : (isDisabled ? Colors.grey : Colors.blue), 
+                      width: isSelected ? 2 : 1),
                 ),
                 margin: const EdgeInsets.all(10),
                 padding: const EdgeInsets.all(10),
-                child: Text(timeSlot ?? 'Time Slot'),
+                child: Text(
+                  timeSlot ?? 'Time Slot',
+                  style: TextStyle(
+                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
               ),
               if (isSelected)
                 const Positioned(
@@ -266,5 +247,11 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
             ],
           )),
     );
+  }
+
+  @override
+  void dispose() {
+    _dateController.dispose();
+    super.dispose();
   }
 }
