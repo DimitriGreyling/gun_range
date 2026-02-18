@@ -3,19 +3,17 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gun_range_app/data/models/booking.dart';
 import 'package:gun_range_app/data/models/booking_configs.dart';
+import 'package:gun_range_app/providers/make_booking_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:gun_range_app/viewmodels/make_booking_vm.dart';
 
 class BookingWidget extends ConsumerStatefulWidget {
   final String? rangeId;
-  final MakeBookingState makeBookingState;
 
   const BookingWidget({
     super.key,
     this.rangeId,
-    required this.makeBookingState,
   });
 
   @override
@@ -33,6 +31,7 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
 
   // New: Selected booking config (type)
   dynamic _selectedBookingConfig;
+  MakeBookingState get makeBookingState => ref.watch(makeBookingProvider);
 
   final List<String> _timeSlots = [
     '09:00 AM',
@@ -50,7 +49,13 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      widget.makeBookingState.bookingDetails = widget.makeBookingState.bookingDetails ?? Booking();
+      _dateController.text =
+          makeBookingState.bookingDetails?.bookingDate != null
+              ? makeBookingState.bookingDetails!.bookingDate!
+                  .toLocal()
+                  .toString()
+                  .split(' ')[0]
+              : '';
       _loadBookingConfigs();
     });
   }
@@ -79,20 +84,31 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
         const SizedBox(height: 16),
 
         // Booking Type Dropdown
-        DropdownButtonFormField(
+        DropdownButtonFormField<BookingConfigs?>(
           items: bookingConfigs.map((config) {
             return DropdownMenuItem<BookingConfigs>(
               value: config,
               child: Text(config.resourceType ?? 'Unknown'),
             );
           }).toList(),
+          value: makeBookingState.bookingDetails?.eventId != null
+              ? bookingConfigs.firstWhere(
+                  (config) =>
+                      config.id == makeBookingState.bookingDetails?.eventId,
+                  orElse: () => bookingConfigs.isNotEmpty
+                      ? bookingConfigs[0]
+                      : null as BookingConfigs,
+                )
+              : null,
           hint: const Text('Range'),
           isExpanded: true,
           onChanged: (value) {
             setState(() {
               _selectedBookingConfig = value;
-              widget.makeBookingState.bookingDetails?.eventId =
-                  value?.id; // Set eventId in booking model
+              makeBookingState.bookingDetails?.eventId =
+                  (value as BookingConfigs)
+                      .id
+                      ?.toString(); // Set eventId in booking model
             });
           },
           decoration: InputDecoration(
@@ -132,7 +148,7 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
             suffixIcon: Icon(Icons.calendar_today),
           ),
           controller: _dateController,
-          onTap: widget.makeBookingState.isLoading
+          onTap: makeBookingState.isLoading
               ? null
               : () async {
                   FocusScope.of(context)
@@ -142,7 +158,7 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
                     _dateController.text = _selectedDate == null
                         ? ''
                         : _selectedDate!.toLocal().toString().split(' ')[0];
-                    widget.makeBookingState.bookingDetails?.bookingDate =
+                    makeBookingState.bookingDetails?.bookingDate =
                         _selectedDate; // Set date in booking model
                   });
                 },
@@ -161,16 +177,34 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
             Row(
               children: [
                 ..._timeSlots.map((slot) => _buildTimeSlotBlock(
-                    timeSlot: slot,
-                    onTap: () {
-                      setState(() {
-                        _selectedTimeSlot = slot;
-                      });
-                    final selectedDate = widget.makeBookingState.bookingDetails?.bookingDate ?? DateTime.now();
-                    widget.makeBookingState.bookingDetails?.startTime = DateTime(selectedDate.year, selectedDate.month, selectedDate.day, int.parse(slot.split(':')[0]) + (slot.contains('PM') ? 12 : 0), 0);
-                    widget.makeBookingState.bookingDetails?.endTime = widget.makeBookingState.bookingDetails!.startTime!.add(const Duration(hours: 1));
-                    },
-                    isSelected: _selectedTimeSlot == slot)),
+                      timeSlot: slot,
+                      onTap: () {
+                        setState(() {
+                          _selectedTimeSlot = slot;
+                        });
+                        final selectedDate =
+                            makeBookingState.bookingDetails?.bookingDate ??
+                                DateTime.now();
+                        makeBookingState.bookingDetails?.startTime = DateTime(
+                            selectedDate.year,
+                            selectedDate.month,
+                            selectedDate.day,
+                            int.parse(slot.split(':')[0]) +
+                                (slot.contains('PM') ? 12 : 0),
+                            0);
+                        makeBookingState.bookingDetails?.endTime =
+                            makeBookingState.bookingDetails!.startTime!
+                                .add(const Duration(hours: 1));
+                      },
+                      isSelected: _selectedTimeSlot != null
+                          ? _selectedTimeSlot == slot
+                          : makeBookingState.bookingDetails?.startTime !=
+                                  null &&
+                              makeBookingState
+                                      .bookingDetails?.startTime!.hour ==
+                                  int.parse(slot.split(':')[0]) +
+                                      (slot.contains('PM') ? 12 : 0),
+                    )),
               ],
             ),
           ],

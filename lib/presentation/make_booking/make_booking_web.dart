@@ -85,7 +85,6 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       ),
       BookingWidget(
         rangeId: widget.rangeId ?? makeBookingState.range?.id ?? '',
-        makeBookingState: makeBookingState,
       ),
       _buildReviewStep(makeBookingState),
     ];

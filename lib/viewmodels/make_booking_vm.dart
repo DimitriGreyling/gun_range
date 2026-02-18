@@ -166,7 +166,7 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
     state = state.copyWith(
       rangeId: rangeId,
       range: range,
-      bookingDetails: state.bookingDetails ?? Booking(), // Ensure bookingDetails is initialized
+      // bookingDetails: state.bookingDetails ?? Booking(), // Ensure bookingDetails is initialized
     );
     await _loadSavedPage();
     if (range == null && rangeId != null) {
