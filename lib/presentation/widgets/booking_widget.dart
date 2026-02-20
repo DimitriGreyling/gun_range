@@ -215,9 +215,6 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
             children: [
               Container(
                 decoration: BoxDecoration(
-                  color: isSelected 
-                      ? Colors.blue.shade200 
-                      : (isDisabled ? Colors.grey.shade300 : Colors.blue.shade100),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                       color: isSelected 
@@ -231,6 +228,7 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
                   timeSlot ?? 'Time Slot',
                   style: TextStyle(
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isDisabled ? Colors.grey : Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ),

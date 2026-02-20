@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/popup_position.dart';
 import 'package:gun_range_app/data/models/range.dart';
+import 'package:gun_range_app/data/repositories/booking_config_repository.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/presentation/widgets/booking_widget.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/make_booking_provider.dart';
+import 'package:gun_range_app/providers/viewmodel_providers.dart';
+import 'package:gun_range_app/viewmodels/booking_config_vm.dart';
 import 'package:gun_range_app/viewmodels/make_booking_vm.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -25,6 +28,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
   final _formKey = GlobalKey<FormState>();
   final PageController _pageController = PageController();
   List<Widget> _stepContents = [];
+  bool showGuestList = false;
 
   @override
   void initState() {
@@ -52,6 +56,9 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
 
     // Watch booking state
     final makeBookingState = ref.watch(makeBookingProvider);
+
+    //Watch booking configs state
+    final bookingConfigsAsync = ref.watch(bookingConfigViewModelProvider);
 
     // Handle loading and error states
     if (authUserAsync.isLoading) {
@@ -86,7 +93,10 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       BookingWidget(
         rangeId: widget.rangeId ?? makeBookingState.range?.id ?? '',
       ),
-      _buildReviewStep(makeBookingState),
+      _buildReviewStep(
+        bookingConfigRepository: bookingConfigsAsync,
+        makeBookingState: makeBookingState,
+      ),
     ];
 
     return Padding(
@@ -118,28 +128,173 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
     );
   }
 
-  Widget _buildReviewStep(MakeBookingState state) {
-    log('Building review step with booking details: ${state.bookingDetails}, range: ${state.range}, selectedDate: ${state.selectedDate}, guests: ${state.guests.length}');
-    return Container(
+  Widget _buildReviewStep(
+      {required MakeBookingState makeBookingState,
+      required BookingConfigState bookingConfigRepository}) {
+    final shootingRange = bookingConfigRepository.bookingConfigs
+        .where((element) =>
+            element.id.toString() == makeBookingState.bookingDetails?.eventId)
+        .firstOrNull;
+    final rangeName = makeBookingState.range?.name ?? 'Not set';
+    final startTime = makeBookingState.bookingDetails?.startTime != null
+        ? makeBookingState.bookingDetails!.startTime!
+            .toLocal()
+            .toString()
+            .split(' ')[1]
+            .substring(0, 5)
+        : 'Not set';
+    final endTime = makeBookingState.bookingDetails?.endTime != null
+        ? makeBookingState.bookingDetails!.endTime!
+            .toLocal()
+            .toString()
+            .split(' ')[1]
+            .substring(0, 5)
+        : 'Not set';
+    final timeSlot = makeBookingState.bookingDetails?.startTime != null &&
+            makeBookingState.bookingDetails?.endTime != null
+        ? '${int.parse(startTime.split(':')[0]) > 12 ? '${int.parse(startTime.split(':')[0]) - 12}:${startTime.split(':')[1]} pm' : '$startTime am'} - ${int.parse(endTime.split(':')[0]) > 12 ? '${int.parse(endTime.split(':')[0]) - 12}:${endTime.split(':')[1]} pm' : '$endTime am'}'
+        : null;
+    final bookingDate = makeBookingState.bookingDetails?.bookingDate != null
+        ? makeBookingState.bookingDetails!.bookingDate!
+            .toLocal()
+            .toString()
+            .split(' ')[0]
+        : 'Not set';
+    return SizedBox(
       width: double.infinity,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Review Your Booking',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          // const SizedBox(height: 16),
-          // const Text('Please review your booking details before confirming.'),
-          // const SizedBox(height: 16),
-          // Text('Range: ${state.range?.name ?? 'Not set'}'),
-          // Text('Booked date: ${state.bookingDetails?.bookingDate?.toString().split(' ')[0] ?? 'Not set'}'),
-          // Text('Number of guests: ${state.guests.length}'),
-          // if (state.bookingDetails != null) ...[
-          //   Text('Booking ID: ${state.bookingDetails!.id ?? 'Not set'}'),
-          //   Text('Status: ${state.bookingDetails!.status ?? 'Not set'}'),
-          // ],
+          const SizedBox(height: 16),
+          const Text('Please review your booking details before confirming.'),
+          const SizedBox(height: 16),
+          _buildInfoBlock(
+            label: 'Range Name',
+            value: rangeName,
+          ),
+          _buildInfoBlock(
+            label: 'Shooting Range',
+            value: shootingRange?.resourceType ?? 'Not set',
+          ),
+          _buildInfoBlock(
+            label: 'Booked date',
+            value: bookingDate,
+          ),
+          _buildInfoBlock(
+            label: 'Time slot',
+            value: timeSlot ?? 'Not set',
+          ),
+          _buildInfoBlock(
+            label: 'Number of guests',
+            value: makeBookingState.guests.length.toString(),
+            showGuests: true,
+            makeBookingState: makeBookingState,
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildInfoBlock(
+      {MakeBookingState? makeBookingState,
+      required String label,
+      String? value,
+      bool? showGuests = false}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+            if (showGuests == true)
+              Tooltip(
+                message: 'View Guest Details',
+                child: IconButton(
+                  onPressed: () {
+                    setState(() {
+                      showGuestList = !showGuestList;
+                    });
+                  },
+                  icon: Icon(
+                    showGuestList == false
+                        ? Icons.visibility
+                        : Icons.visibility_off,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.6),
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            Text(value ?? 'Not set'),
+            const SizedBox(
+              height: 12,
+            ),
+          ],
+        ),
+        const SizedBox(
+          height: 12,
+        ),
+        if (showGuestList && makeBookingState != null)
+          Table(
+            border: TableBorder.all(color: Colors.grey),
+            columnWidths: const {
+              0: FlexColumnWidth(1),
+              1: FlexColumnWidth(1),
+              2: FlexColumnWidth(1),
+            },
+            children: [
+              const TableRow(children: [
+                Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Text(
+                    'Name',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Text(
+                    'Email',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Text(
+                    'Phone',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ]),
+              ...makeBookingState.guests.map((guest) {
+                return TableRow(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(guest.nameController.text),
+                    ),
+                    Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(guest.emailController.text)),
+                    Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(guest.phoneController.text)),
+                  ],
+                );
+              }),
+            ],
+          ),
+      ],
     );
   }
 
@@ -205,8 +360,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                               if (index == _stepContents.length - 1) {
                                 // Submit booking through ViewModel
                                 // ref
-                                    // .read(makeBookingProvider.notifier)
-                                    // .submitBooking();
+                                // .read(makeBookingProvider.notifier)
+                                // .submitBooking();
                               } else {
                                 _pageController.nextPage(
                                   duration: const Duration(milliseconds: 150),
