@@ -378,7 +378,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
           obscure: !showPassword,
           controller: _passwordController,
           focusNode: _passwordFocusNode,
-          suffix: _buildSufficBuilder(),
+          suffix: _buildSuffixBuilder(),
           validator: (v) {
             final value = v ?? '';
             if (value.isEmpty) return 'Password is required';
@@ -391,7 +391,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
     );
   }
 
-  Builder _buildSufficBuilder() {
+  Builder _buildSuffixBuilder() {
     return Builder(
       builder: (context) {
         final iconColor =
@@ -479,7 +479,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                 obscure: !showPassword,
                 controller: _passwordController,
                 focusNode: _passwordFocusNode,
-                suffix: _buildSufficBuilder(),
+                suffix: _buildSuffixBuilder(),
                 validator: (v) {
                   final value = v ?? '';
                   if (value.isEmpty) return 'Password is required';
@@ -498,7 +498,7 @@ class _LoginRegisterScreenState extends ConsumerState<LoginRegisterScreen> {
                 obscure: !showPassword,
                 controller: _confirmPasswordController,
                 focusNode: _confirmPasswordFocusNode,
-                suffix: _buildSufficBuilder(),
+                suffix: _buildSuffixBuilder(),
                 validator: (v) {
                   final value = v ?? '';
                   if (value.isEmpty) return 'Please confirm your password';
