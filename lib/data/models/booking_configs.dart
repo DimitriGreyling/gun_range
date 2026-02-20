@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 
 class BookingConfigs {
@@ -54,6 +56,9 @@ class BookingConfigs {
       'price': price,
     };
   }
+
+  @override
+  String toString() => jsonEncode(toJson());
 
   static TimeOfDay? _parseTimeOfDay(String? time) {
     if (time == null) return null;

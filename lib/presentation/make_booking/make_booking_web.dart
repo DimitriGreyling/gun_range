@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/data/models/booking_configs.dart';
 import 'package:gun_range_app/data/models/popup_position.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/data/repositories/booking_config_repository.dart';
@@ -93,10 +94,22 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
       BookingWidget(
         rangeId: widget.rangeId ?? makeBookingState.range?.id ?? '',
       ),
-      _buildReviewStep(
-        bookingConfigRepository: bookingConfigsAsync,
-        makeBookingState: makeBookingState,
-      ),
+      FutureBuilder(
+        future: _buildReviewStep(
+          bookingConfigState: bookingConfigsAsync,
+          makeBookingState: makeBookingState,
+        ),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting ||
+              snapshot.data == null) {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+
+          return snapshot.data as Widget;
+        },
+      )
     ];
 
     return Padding(
@@ -128,13 +141,28 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
     );
   }
 
-  Widget _buildReviewStep(
+  Future<Widget> _buildReviewStep(
       {required MakeBookingState makeBookingState,
-      required BookingConfigState bookingConfigRepository}) {
-    final shootingRange = bookingConfigRepository.bookingConfigs
-        .where((element) =>
-            element.id.toString() == makeBookingState.bookingDetails?.eventId)
-        .firstOrNull;
+      required BookingConfigState bookingConfigState}) async {
+    List<BookingConfigs>? configs;
+
+    if (bookingConfigState.bookingConfigs.isEmpty) {
+      configs = await ref
+          .read(bookingConfigViewModelProvider.notifier)
+          .getBookingConfigsInPreference();
+    }
+
+    final shootingRange = bookingConfigState.bookingConfigs.isEmpty
+        ? configs!
+            .where((element) =>
+                element.id.toString() ==
+                makeBookingState.bookingDetails?.eventId)
+            .firstOrNull
+        : bookingConfigState.bookingConfigs
+            .where((element) =>
+                element.id.toString() ==
+                makeBookingState.bookingDetails?.eventId)
+            .firstOrNull;
     final rangeName = makeBookingState.range?.name ?? 'Not set';
     final startTime = makeBookingState.bookingDetails?.startTime != null
         ? makeBookingState.bookingDetails!.startTime!
@@ -214,19 +242,22 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
               Tooltip(
                 message: 'View Guest Details',
                 child: IconButton(
-                  onPressed: () {
-                    setState(() {
-                      showGuestList = !showGuestList;
-                    });
-                  },
+                  onPressed: makeBookingState != null &&
+                          makeBookingState.guests.isNotEmpty
+                      ? () {
+                          setState(() {
+                            showGuestList = !showGuestList;
+                          });
+                        }
+                      : null,
                   icon: Icon(
                     showGuestList == false
                         ? Icons.visibility
                         : Icons.visibility_off,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withOpacity(0.6),
+                    color: makeBookingState != null &&
+                            makeBookingState.guests.isNotEmpty
+                        ? Theme.of(context).colorScheme.primary.withOpacity(0.6)
+                        : Theme.of(context).disabledColor,
                   ),
                 ),
               ),

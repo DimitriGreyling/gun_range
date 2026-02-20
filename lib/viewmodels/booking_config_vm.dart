@@ -1,7 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/booking_configs.dart';
 import 'package:gun_range_app/data/repositories/booking_config_repository.dart';
 import 'package:gun_range_app/domain/services/errors_exception_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BookingConfigState {
   final bool isLoadingBookingConfigs;
@@ -34,11 +37,46 @@ class BookingConfigVm extends StateNotifier<BookingConfigState> {
     try {
       final bookingConfigs =
           await _bookingConfigRepository.getBookingConfigsByRangeId(rangeId);
+      _setBookingConfigsInPreference(configs: bookingConfigs);
       state = state.copyWith(
           isLoadingBookingConfigs: false, bookingConfigs: bookingConfigs);
     } catch (e) {
       state = state.copyWith(isLoadingBookingConfigs: false);
       ErrorsExceptionService.handleException(e);
+    }
+  }
+
+  Future<void> _setBookingConfigsInPreference({
+    required List<BookingConfigs> configs,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setStringList(
+          'BOOKING_CONFIGS', configs.map((c) => c.toString()).toList());
+    } catch (e) {
+      ErrorsExceptionService.handleException(e);
+    }
+  }
+
+  Future<List<BookingConfigs>> getBookingConfigsInPreference() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final configsString = prefs.getStringList('BOOKING_CONFIGS') as List?;
+
+      if(configsString == null || configsString.isEmpty){
+        return [];
+      }
+
+      final mappedValues = configsString.map((val) {
+        return BookingConfigs.fromJson(
+          jsonDecode(val)
+        );
+      });
+
+      return mappedValues.toList();
+    } catch (e) {
+      ErrorsExceptionService.handleException(e);
+      return [];
     }
   }
 }
