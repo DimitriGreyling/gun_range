@@ -30,9 +30,14 @@ class Booking {
         rangeId: json['range_id'],
         status: json['status'],
         paymentStatus: json['payment_status'],
-        bookedDate: json['booked_date'] != null ? DateTime.parse(json['booked_date']) : null,
-        startTime: json['start_time'] != null ? DateTime.parse(json['start_time']) : null,
-        endTime: json['end_time'] != null ? DateTime.parse(json['end_time']) : null,
+        bookedDate: json['booked_date'] != null
+            ? _parseDateTime(['booked_date'])
+            : null,
+        startTime: json['start_time'] != null
+            ?_parseDateTime(['start_time'])
+            : null,
+        endTime:
+            json['end_time'] != null ? _parseDateTime(['end_time']) : null,
       );
 
   Map<String, dynamic> toJson() => {
@@ -46,13 +51,48 @@ class Booking {
         'end_time': endTime != null ? _extractTimeOnly(endTime!) : null,
       };
 
-    // Extract time-only string from DateTime for PostgreSQL time column
-  String _extractTimeOnly(DateTime dateTime) {
-    return '${dateTime.hour.toString().padLeft(2, '0')}:'
-           '${dateTime.minute.toString().padLeft(2, '0')}:'
-           '${dateTime.second.toString().padLeft(2, '0')}';
+  // Safe date parsing with error handling
+  static DateTime? _parseDateTime(dynamic value) {
+    if (value == null) return null;
+
+    try {
+      final stringValue = value.toString();
+      print('Parsing datetime: "$stringValue"'); // Debug log
+
+      // Handle empty strings
+      if (stringValue.isEmpty || stringValue == 'null') {
+        return null;
+      }
+
+      // Handle different date/time formats
+      if (stringValue.contains('T')) {
+        // ISO format: "2026-02-20T18:00:00.000Z" or "2026-02-20T18:00:00"
+        return DateTime.parse(stringValue);
+      } else if (stringValue.contains('-') &&
+          stringValue.split('-').length == 3) {
+        // Date only format: "2026-02-20"
+        return DateTime.parse(stringValue);
+      } else if (stringValue.contains(':') && !stringValue.contains('-')) {
+        // Time only format: "18:00:00" - can't parse without date context
+        print(
+            'Warning: Time-only format detected, cannot parse without date: $stringValue');
+        return null;
+      } else {
+        print('Unknown date format: $stringValue');
+        return null;
+      }
+    } catch (e) {
+      print('Error parsing datetime "$value": $e');
+      return null;
+    }
   }
 
+  // Extract time-only string from DateTime for PostgreSQL time column
+  String _extractTimeOnly(DateTime dateTime) {
+    return '${dateTime.hour.toString().padLeft(2, '0')}:'
+        '${dateTime.minute.toString().padLeft(2, '0')}:'
+        '${dateTime.second.toString().padLeft(2, '0')}';
+  }
 
   Booking copyWith({
     String? id,

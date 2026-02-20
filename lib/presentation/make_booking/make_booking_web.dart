@@ -122,6 +122,7 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
         itemCount: _stepContents.length,
         controller: _pageController,
         onPageChanged: (value) {
+          makeBookingState.errorMessage = null;
           ref.read(makeBookingProvider.notifier).setCurrentPage(value);
         },
         itemBuilder: (context, index) {

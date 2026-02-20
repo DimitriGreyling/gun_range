@@ -51,7 +51,7 @@ class MakeBookingState {
   final DateTime? selectedDate;
   final int currentPageIndex;
   final List<BookingGuestData> guests;
-  final String? errorMessage;
+  String? errorMessage;
   Booking? bookingDetails;
 
   // Form controllers
@@ -421,6 +421,7 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
     state = state.copyWith(
       selectedDate: date,
       bookingDetails: updatedBooking,
+      errorMessage: null,
     );
     _saveAllFormState();
   }
@@ -429,7 +430,10 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
   void updateBookingEventId(String? eventId) {
     final updatedBooking = state.bookingDetails?.copyWith(eventId: eventId) ??
         Booking(eventId: eventId);
-    state = state.copyWith(bookingDetails: updatedBooking);
+    state = state.copyWith(
+      bookingDetails: updatedBooking,
+      errorMessage: null,
+    );
     _saveAllFormState();
   }
 
@@ -458,19 +462,22 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
           bookedDate: selectedDate,
         );
 
-    state = state.copyWith(bookingDetails: updatedBooking);
+    state = state.copyWith(
+      bookingDetails: updatedBooking,
+      errorMessage: null,
+    );
     _saveAllFormState();
   }
 
   // Set booking type (myself/someone else)
   void setBookingFor(String value) {
-    state = state.copyWith(bookingFor: value);
+    state = state.copyWith(bookingFor: value, errorMessage: null,);
     _saveAllFormState();
   }
 
   // Set selected date
   void setSelectedDate(DateTime date) {
-    state = state.copyWith(selectedDate: date);
+    state = state.copyWith(selectedDate: date, errorMessage: null,);
     _saveAllFormState();
   }
 
@@ -487,7 +494,7 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
     newGuest.emailController.addListener(_saveAllFormState);
     newGuest.phoneController.addListener(_saveAllFormState);
 
-    state = state.copyWith(guests: [...state.guests, newGuest]);
+    state = state.copyWith(guests: [...state.guests, newGuest], errorMessage: null,);
     _saveAllFormState();
   }
 
@@ -499,7 +506,7 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
 
       final updatedGuests = [...state.guests];
       updatedGuests.removeAt(index);
-      state = state.copyWith(guests: updatedGuests);
+      state = state.copyWith(guests: updatedGuests, errorMessage: null,);
       _saveAllFormState();
     }
   }
@@ -509,13 +516,13 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
     for (final guest in state.guests) {
       guest.dispose();
     }
-    state = state.copyWith(guests: []);
+    state = state.copyWith(guests: [], errorMessage: null,);
     _saveAllFormState();
   }
 
   // Navigate to page
   void setCurrentPage(int pageIndex) {
-    state = state.copyWith(currentPageIndex: pageIndex);
+    state = state.copyWith(currentPageIndex: pageIndex, errorMessage: null);
     _saveCurrentPage(pageIndex);
     _saveAllFormState();
   }
