@@ -7,7 +7,7 @@ class Booking {
   String? rangeId;
   String? status;
   String? paymentStatus;
-  DateTime? bookingDate;
+  DateTime? bookedDate;
   DateTime? startTime;
   DateTime? endTime;
 
@@ -18,7 +18,7 @@ class Booking {
     this.rangeId,
     this.status,
     this.paymentStatus,
-    this.bookingDate,
+    this.bookedDate,
     this.startTime,
     this.endTime,
   });
@@ -30,7 +30,7 @@ class Booking {
         rangeId: json['range_id'],
         status: json['status'],
         paymentStatus: json['payment_status'],
-        bookingDate: json['booking_date'] != null ? DateTime.parse(json['booking_date']) : null,
+        bookedDate: json['booked_date'] != null ? DateTime.parse(json['booked_date']) : null,
         startTime: json['start_time'] != null ? DateTime.parse(json['start_time']) : null,
         endTime: json['end_time'] != null ? DateTime.parse(json['end_time']) : null,
       );
@@ -41,10 +41,18 @@ class Booking {
         'range_id': rangeId,
         'status': status,
         'payment_status': paymentStatus,
-        'booking_date': bookingDate?.toIso8601String(),
-        'start_time': startTime?.toIso8601String(),
-        'end_time': endTime?.toIso8601String(),
+        'booked_date': bookedDate?.toIso8601String().split('T')[0],
+        'start_time': startTime != null ? _extractTimeOnly(startTime!) : null,
+        'end_time': endTime != null ? _extractTimeOnly(endTime!) : null,
       };
+
+    // Extract time-only string from DateTime for PostgreSQL time column
+  String _extractTimeOnly(DateTime dateTime) {
+    return '${dateTime.hour.toString().padLeft(2, '0')}:'
+           '${dateTime.minute.toString().padLeft(2, '0')}:'
+           '${dateTime.second.toString().padLeft(2, '0')}';
+  }
+
 
   Booking copyWith({
     String? id,
@@ -64,7 +72,7 @@ class Booking {
       rangeId: rangeId ?? this.rangeId,
       status: status ?? this.status,
       paymentStatus: paymentStatus ?? this.paymentStatus,
-      bookingDate: bookingDate ?? this.bookingDate,
+      bookedDate: bookingDate ?? this.bookedDate,
       startTime: startTime ?? this.startTime,
       endTime: endTime ?? this.endTime,
     );

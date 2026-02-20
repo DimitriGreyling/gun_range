@@ -57,7 +57,7 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
 
   void _updateDateController() {
     final makeBookingState = ref.read(makeBookingProvider);
-    final bookingDate = makeBookingState.bookingDetails?.bookingDate;
+    final bookingDate = makeBookingState.bookingDetails?.bookedDate;
     if (bookingDate != null) {
       _dateController.text = bookingDate.toLocal().toString().split(' ')[0];
     }
@@ -76,7 +76,7 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
 
     // Listen for state changes and update UI accordingly
     ref.listen<MakeBookingState>(makeBookingProvider, (previous, current) {
-      if (current.bookingDetails?.bookingDate != previous?.bookingDetails?.bookingDate) {
+      if (current.bookingDetails?.bookedDate != previous?.bookingDetails?.bookedDate) {
         _updateDateController();
       }
     });
@@ -149,7 +149,7 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
                   await _pickDate(context);
                 },
           validator: (v) =>
-              makeBookingState.bookingDetails?.bookingDate == null 
+              makeBookingState.bookingDetails?.bookedDate == null 
                   ? 'Please select a booking date' 
                   : null,
         ),

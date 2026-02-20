@@ -182,8 +182,8 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
             makeBookingState.bookingDetails?.endTime != null
         ? '${int.parse(startTime.split(':')[0]) > 12 ? '${int.parse(startTime.split(':')[0]) - 12}:${startTime.split(':')[1]} pm' : '$startTime am'} - ${int.parse(endTime.split(':')[0]) > 12 ? '${int.parse(endTime.split(':')[0]) - 12}:${endTime.split(':')[1]} pm' : '$endTime am'}'
         : null;
-    final bookingDate = makeBookingState.bookingDetails?.bookingDate != null
-        ? makeBookingState.bookingDetails!.bookingDate!
+    final bookingDate = makeBookingState.bookingDetails?.bookedDate != null
+        ? makeBookingState.bookingDetails!.bookedDate!
             .toLocal()
             .toString()
             .split(' ')[0]
@@ -390,9 +390,9 @@ class _MakeBookingWebState extends ConsumerState<MakeBookingWeb> {
                           : () {
                               if (index == _stepContents.length - 1) {
                                 // Submit booking through ViewModel
-                                // ref
-                                // .read(makeBookingProvider.notifier)
-                                // .submitBooking();
+                                ref
+                                .read(makeBookingProvider.notifier)
+                                .createBookingFromCurrentState();
                               } else {
                                 _pageController.nextPage(
                                   duration: const Duration(milliseconds: 150),
