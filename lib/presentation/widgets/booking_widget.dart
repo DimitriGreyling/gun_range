@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/booking.dart';
 import 'package:gun_range_app/data/models/booking_configs.dart';
+import 'package:gun_range_app/data/models/booking_state.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:gun_range_app/providers/make_booking_provider.dart';
 import 'package:gun_range_app/viewmodels/make_booking_vm.dart';

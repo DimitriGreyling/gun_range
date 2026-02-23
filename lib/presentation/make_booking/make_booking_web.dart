@@ -3,16 +3,15 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/booking_configs.dart';
+import 'package:gun_range_app/data/models/booking_state.dart';
 import 'package:gun_range_app/data/models/popup_position.dart';
 import 'package:gun_range_app/data/models/range.dart';
-import 'package:gun_range_app/data/repositories/booking_config_repository.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/presentation/widgets/booking_widget.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/make_booking_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:gun_range_app/viewmodels/booking_config_vm.dart';
-import 'package:gun_range_app/viewmodels/make_booking_vm.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MakeBookingWeb extends ConsumerStatefulWidget {
