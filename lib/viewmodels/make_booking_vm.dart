@@ -118,6 +118,18 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
     }
   }
 
+  Future<String?> getCurrentEventId() async {
+    final prefs = await SharedPreferences.getInstance();
+    try {
+      final value = prefs.getString('booking_event_id');
+
+      return value;
+    } catch (error) {
+      ErrorsExceptionService.handleException(error);
+      return null;
+    }
+  }
+
   // Load all form state from SharedPreferences
   Future<void> _loadAllFormState() async {
     try {
@@ -362,13 +374,19 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
 
   // Set booking type (myself/someone else)
   void setBookingFor(String value) {
-    state = state.copyWith(bookingFor: value, errorMessage: null,);
+    state = state.copyWith(
+      bookingFor: value,
+      errorMessage: null,
+    );
     _saveAllFormState();
   }
 
   // Set selected date
   void setSelectedDate(DateTime date) {
-    state = state.copyWith(selectedDate: date, errorMessage: null,);
+    state = state.copyWith(
+      selectedDate: date,
+      errorMessage: null,
+    );
     _saveAllFormState();
   }
 
@@ -385,7 +403,10 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
     newGuest.emailController.addListener(_saveAllFormState);
     newGuest.phoneController.addListener(_saveAllFormState);
 
-    state = state.copyWith(guests: [...state.guests, newGuest], errorMessage: null,);
+    state = state.copyWith(
+      guests: [...state.guests, newGuest],
+      errorMessage: null,
+    );
     _saveAllFormState();
   }
 
@@ -397,7 +418,10 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
 
       final updatedGuests = [...state.guests];
       updatedGuests.removeAt(index);
-      state = state.copyWith(guests: updatedGuests, errorMessage: null,);
+      state = state.copyWith(
+        guests: updatedGuests,
+        errorMessage: null,
+      );
       _saveAllFormState();
     }
   }
@@ -407,7 +431,10 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
     for (final guest in state.guests) {
       guest.dispose();
     }
-    state = state.copyWith(guests: [], errorMessage: null,);
+    state = state.copyWith(
+      guests: [],
+      errorMessage: null,
+    );
     _saveAllFormState();
   }
 

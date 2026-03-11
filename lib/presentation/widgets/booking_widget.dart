@@ -25,17 +25,18 @@ class BookingWidget extends ConsumerStatefulWidget {
 class _BookingWidgetState extends ConsumerState<BookingWidget> {
   final _dateController = TextEditingController();
 
-  final List<String> _timeSlots = [
-    '09:00 AM',
-    '10:00 AM',
-    '11:00 AM',
-    '12:00 PM',
-    '01:00 PM',
-    '02:00 PM',
-    '03:00 PM',
-    '04:00 PM',
-    '05:00 PM',
-  ];
+  // final List<String> _timeSlots = [
+  //   '08:00 AM',
+  //   '09:00 AM',
+  //   '10:00 AM',
+  //   '11:00 AM',
+  //   '12:00 PM',
+  //   '01:00 PM',
+  //   '02:00 PM',
+  //   '03:00 PM',
+  //   '04:00 PM',
+  //   '05:00 PM',
+  // ];
 
   @override
   void initState() {
@@ -48,10 +49,10 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
   Future<void> _initializeWidget() async {
     // Load booking configs
     await _loadBookingConfigs();
-    
+
     // Initialize booking details if needed - this will load from persistence
     ref.read(makeBookingProvider.notifier).initializeBookingDetails();
-    
+
     // Update date controller with current booking date
     _updateDateController();
   }
@@ -77,12 +78,14 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
 
     // Listen for state changes and update UI accordingly
     ref.listen<MakeBookingState>(makeBookingProvider, (previous, current) {
-      if (current.bookingDetails?.bookedDate != previous?.bookingDetails?.bookedDate) {
+      if (current.bookingDetails?.bookedDate !=
+          previous?.bookingDetails?.bookedDate) {
         _updateDateController();
       }
     });
 
-    final List<BookingConfigs> bookingConfigs = bookingConfigState.bookingConfigs;
+    final List<BookingConfigs> bookingConfigs =
+        bookingConfigState.bookingConfigs;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -101,18 +104,20 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
           }).toList(),
           value: makeBookingState.bookingDetails?.eventId != null
               ? bookingConfigs.cast<BookingConfigs?>().firstWhere(
-                  (config) =>
-                      config?.id.toString() ==
-                      makeBookingState.bookingDetails?.eventId,
-                  orElse: () => null,
-                )
+                    (config) =>
+                        config?.id.toString() ==
+                        makeBookingState.bookingDetails?.eventId,
+                    orElse: () => null,
+                  )
               : null,
           hint: const Text('Range'),
           isExpanded: true,
           onChanged: (value) {
             if (value != null) {
               // This automatically triggers persistence
-              ref.read(makeBookingProvider.notifier).updateBookingEventId(value.id?.toString());
+              ref
+                  .read(makeBookingProvider.notifier)
+                  .updateBookingEventId(value.id?.toString());
             }
           },
           decoration: InputDecoration(
@@ -126,9 +131,11 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: Theme.of(context).primaryColor, width: 2),
+              borderSide:
+                  BorderSide(color: Theme.of(context).primaryColor, width: 2),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           ),
         ),
 
@@ -149,42 +156,61 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
                   FocusScope.of(context).requestFocus(FocusNode());
                   await _pickDate(context);
                 },
-          validator: (v) =>
-              makeBookingState.bookingDetails?.bookedDate == null 
-                  ? 'Please select a booking date' 
-                  : null,
+          validator: (v) => makeBookingState.bookingDetails?.bookedDate == null
+              ? 'Please select a booking date'
+              : null,
         ),
 
         const SizedBox(height: 16),
 
         // Time slots - automatically persisted
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Available Time Slots',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            Row(
+        FutureBuilder(
+          future: ref.read(makeBookingProvider.notifier).getCurrentEventId(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const CircularProgressIndicator();
+            }
+
+            final selectedEvent = bookingConfigs
+                .where((x) => x.id == snapshot.data)
+                .firstOrNull;
+            final slots = selectedEvent?.timeSlots ?? [];
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ..._timeSlots.map((slot) => _buildTimeSlotBlock(
-                      timeSlot: slot,
-                      onTap: () {
-                        // This automatically triggers persistence
-                        ref.read(makeBookingProvider.notifier).updateBookingTime(slot);
-                      },
-                      isSelected: _isTimeSlotSelected(slot, makeBookingState),
-                    )),
+                const Text('Available Time Slots',
+                    style:
+                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                Row(
+                  children: selectedEvent != null && slots.isNotEmpty
+                      ? slots.map((slot) {
+                          return _buildTimeSlotBlock(
+                            timeSlot: slot,
+                            onTap: () {
+                              //  This automatically triggers persistence
+                              ref
+                                  .read(makeBookingProvider.notifier)
+                                  .updateBookingTime(slot);
+                            },
+                            isSelected:
+                                _isTimeSlotSelected(slot, makeBookingState),
+                          );
+                        }).toList()
+                      : [],
+                ),
               ],
-            ),
-          ],
-        ),
+            );
+          },
+        )
       ],
     );
   }
 
   bool _isTimeSlotSelected(String slot, MakeBookingState state) {
     if (state.bookingDetails?.startTime == null) return false;
-    
-    final slotHour = int.parse(slot.split(':')[0]) + (slot.contains('PM') && !slot.startsWith('12') ? 12 : 0);
+
+    final slotHour = int.parse(slot.split(':')[0]) +
+        (slot.contains('PM') && !slot.startsWith('12') ? 12 : 0);
     return state.bookingDetails!.startTime!.hour == slotHour;
   }
 
@@ -209,7 +235,8 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
     bool isDisabled = false,
   }) {
     return MouseRegion(
-      cursor: isDisabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
+      cursor:
+          isDisabled ? SystemMouseCursors.forbidden : SystemMouseCursors.click,
       child: GestureDetector(
           onTap: isDisabled ? null : () => onTap?.call(),
           child: Stack(
@@ -218,9 +245,9 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                      color: isSelected 
-                          ? Colors.blue.shade600 
-                          : (isDisabled ? Colors.grey : Colors.blue), 
+                      color: isSelected
+                          ? Colors.blue.shade600
+                          : (isDisabled ? Colors.grey : Colors.blue),
                       width: isSelected ? 2 : 1),
                 ),
                 margin: const EdgeInsets.all(10),
@@ -228,8 +255,11 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
                 child: Text(
                   timeSlot ?? 'Time Slot',
                   style: TextStyle(
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                    color: isDisabled ? Colors.grey : Theme.of(context).colorScheme.onSurface,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
+                    color: isDisabled
+                        ? Colors.grey
+                        : Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
               ),

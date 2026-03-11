@@ -14,6 +14,8 @@ class BookingConfigs {
   bool? isActive;
   double? price;
 
+  List<String>? timeSlots;
+
   BookingConfigs({
     this.id,
     this.resourceType,
@@ -25,6 +27,7 @@ class BookingConfigs {
     this.maxBookings,
     this.isActive,
     this.price,
+    this.timeSlots,
   });
 
   factory BookingConfigs.fromJson(Map<String, dynamic> json) {
@@ -32,7 +35,7 @@ class BookingConfigs {
       id: json['id'],
       resourceType: json['resource_type'],
       resourceId: json['resource_id'],
-      slotDuration: json['slot_duration'],
+      slotDuration: json['slot_duration_minutes'],
       openingTime: _parseTimeOfDay(json['opening_time']),
       closingTime: _parseTimeOfDay(json['closing_time']),
       bufferMinutes: json['buffer_minutes'],
@@ -63,7 +66,7 @@ class BookingConfigs {
   static TimeOfDay? _parseTimeOfDay(String? time) {
     if (time == null) return null;
     final parts = time.split(':');
-    if (parts.length != 2) return null;
+    if (parts.length != 3) return null;
     final hour = int.tryParse(parts[0]);
     final minute = int.tryParse(parts[1]);
     if (hour == null || minute == null) return null;
