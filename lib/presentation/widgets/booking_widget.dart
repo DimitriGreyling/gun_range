@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/booking.dart';
 import 'package:gun_range_app/data/models/booking_configs.dart';
@@ -171,34 +172,42 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
               return const CircularProgressIndicator();
             }
 
-            final selectedEvent = bookingConfigs
-                .where((x) => x.id == snapshot.data)
-                .firstOrNull;
+            final selectedEvent =
+                bookingConfigs.where((x) => x.id == snapshot.data).firstOrNull;
             final slots = selectedEvent?.timeSlots ?? [];
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Available Time Slots',
-                    style:
-                        TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                Row(
-                  children: selectedEvent != null && slots.isNotEmpty
-                      ? slots.map((slot) {
-                          return _buildTimeSlotBlock(
-                            timeSlot: slot,
-                            onTap: () {
-                              //  This automatically triggers persistence
-                              ref
-                                  .read(makeBookingProvider.notifier)
-                                  .updateBookingTime(slot);
-                            },
-                            isSelected:
-                                _isTimeSlotSelected(slot, makeBookingState),
-                          );
-                        }).toList()
-                      : [],
+            return Scrollbar(
+              thumbVisibility: true,
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('Available Time Slots',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
+                      Row(
+                        children: selectedEvent != null && slots.isNotEmpty
+                            ? slots.map((slot) {
+                                return _buildTimeSlotBlock(
+                                  timeSlot: slot,
+                                  onTap: () {
+                                    //  This automatically triggers persistence
+                                    ref
+                                        .read(makeBookingProvider.notifier)
+                                        .updateBookingTime(slot);
+                                  },
+                                  isSelected:
+                                      _isTimeSlotSelected(slot, makeBookingState),
+                                );
+                              }).toList()
+                            : [],
+                      ),
+                    ],
+                  ),
                 ),
-              ],
+              ),
             );
           },
         )
