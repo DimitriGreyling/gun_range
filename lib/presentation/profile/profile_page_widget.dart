@@ -328,7 +328,7 @@ class _ProfilePageWidgetState extends ConsumerState<ProfilePageWidget> {
                             ),
                           ),
                           TextSpan(
-                            text: 'OPERATOR 041',
+                            text: user?.userMetadata != null && user?.userMetadata?['full_name'] != null ? user?.userMetadata!['full_name'] : 'UNKNOWN',
                             style: theme.textTheme.displayLarge?.copyWith(
                               fontSize: constraints.maxWidth >= 900 ? 72 : 50,
                               fontWeight: FontWeight.w900,
@@ -351,11 +351,11 @@ class _ProfilePageWidgetState extends ConsumerState<ProfilePageWidget> {
                 ),
               ),
             ),
-            if (stacked) const SizedBox(height: 28),
-            Expanded(
-              flex: stacked ? 0 : 4,
-              child: _buildMemberCard(theme: theme, user: user),
-            ),
+            // if (stacked) const SizedBox(height: 28),
+            // Expanded(
+            //   flex: stacked ? 0 : 4,
+            //   child: _buildMemberCard(theme: theme, user: user),
+            // ),
           ],
         );
       },
@@ -402,119 +402,119 @@ class _ProfilePageWidgetState extends ConsumerState<ProfilePageWidget> {
     );
   }
 
-  Widget _buildMemberCard({required ThemeData theme, User? user}) {
-    final scheme = theme.colorScheme;
+  // Widget _buildMemberCard({required ThemeData theme, User? user}) {
+  //   final scheme = theme.colorScheme;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            scheme.primary,
-            scheme.primaryContainer,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: scheme.primaryContainer.withOpacity(0.24),
-            blurRadius: 36,
-            offset: const Offset(0, 18),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(1),
-        child: Container(
-          padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(13),
-            border: Border.all(
-              color: scheme.outlineVariant.withOpacity(0.12),
-            ),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: scheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: scheme.primary.withOpacity(0.20),
-                      ),
-                    ),
-                    clipBehavior: Clip.antiAlias,
-                    child: Image.network(
-                      _memberImageUrl,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  const Spacer(),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'VIP TIER',
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          color: scheme.primary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'EXP 12/25',
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: scheme.outlineVariant,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.6,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              const SizedBox(height: 36),
-              _detailBlock(
-                theme,
-                label: 'Member Name',
-                value: user?.userMetadata != null && user?.userMetadata?['full_name'] != null ? user?.userMetadata!['full_name'] : 'UNKNOWN',
-                useHeadline: true,
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: _detailBlock(
-                      theme,
-                      label: 'Assigned ID',
-                      value: 'ST-88902-X',
-                    ),
-                  ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: _detailBlock(
-                      theme,
-                      label: 'Classification',
-                      value: 'MARKSMAN L2',
-                      alignEnd: true,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  //   return DecoratedBox(
+  //     decoration: BoxDecoration(
+  //       gradient: LinearGradient(
+  //         begin: Alignment.topCenter,
+  //         end: Alignment.bottomCenter,
+  //         colors: [
+  //           scheme.primary,
+  //           scheme.primaryContainer,
+  //         ],
+  //       ),
+  //       borderRadius: BorderRadius.circular(14),
+  //       boxShadow: [
+  //         BoxShadow(
+  //           color: scheme.primaryContainer.withOpacity(0.24),
+  //           blurRadius: 36,
+  //           offset: const Offset(0, 18),
+  //         ),
+  //       ],
+  //     ),
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(1),
+  //       child: Container(
+  //         padding: const EdgeInsets.all(28),
+  //         decoration: BoxDecoration(
+  //           color: scheme.surfaceContainer,
+  //           borderRadius: BorderRadius.circular(13),
+  //           border: Border.all(
+  //             color: scheme.outlineVariant.withOpacity(0.12),
+  //           ),
+  //         ),
+  //         child: Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             Row(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Container(
+  //                   width: 64,
+  //                   height: 64,
+  //                   decoration: BoxDecoration(
+  //                     color: scheme.surfaceContainerHighest,
+  //                     borderRadius: BorderRadius.circular(10),
+  //                     border: Border.all(
+  //                       color: scheme.primary.withOpacity(0.20),
+  //                     ),
+  //                   ),
+  //                   clipBehavior: Clip.antiAlias,
+  //                   child: Image.network(
+  //                     _memberImageUrl,
+  //                     fit: BoxFit.cover,
+  //                   ),
+  //                 ),
+  //                 const Spacer(),
+  //                 Column(
+  //                   crossAxisAlignment: CrossAxisAlignment.end,
+  //                   children: [
+  //                     Text(
+  //                       'VIP TIER',
+  //                       style: theme.textTheme.titleLarge?.copyWith(
+  //                         color: scheme.primary,
+  //                         fontWeight: FontWeight.w800,
+  //                       ),
+  //                     ),
+  //                     const SizedBox(height: 4),
+  //                     Text(
+  //                       'EXP 12/25',
+  //                       style: theme.textTheme.labelMedium?.copyWith(
+  //                         color: scheme.outlineVariant,
+  //                         fontWeight: FontWeight.w900,
+  //                         letterSpacing: 1.6,
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ],
+  //             ),
+  //             const SizedBox(height: 36),
+  //             _detailBlock(
+  //               theme,
+  //               label: 'Member Name',
+  //               value: user?.userMetadata != null && user?.userMetadata?['full_name'] != null ? user?.userMetadata!['full_name'] : 'UNKNOWN',
+  //               useHeadline: true,
+  //             ),
+  //             const SizedBox(height: 20),
+  //             Row(
+  //               children: [
+  //                 Expanded(
+  //                   child: _detailBlock(
+  //                     theme,
+  //                     label: 'Assigned ID',
+  //                     value: 'ST-88902-X',
+  //                   ),
+  //                 ),
+  //                 const SizedBox(width: 20),
+  //                 Expanded(
+  //                   child: _detailBlock(
+  //                     theme,
+  //                     label: 'Classification',
+  //                     value: 'MARKSMAN L2',
+  //                     alignEnd: true,
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _detailBlock(
     ThemeData theme, {
