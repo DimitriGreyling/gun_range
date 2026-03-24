@@ -82,21 +82,10 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                     spacing: 12,
                     runSpacing: 12,
                     children: [
-                      ElevatedButton(
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStatePropertyAll<Color>(
-                            theme.colorScheme.secondary,
-                          ),
-                        ),
+                      GradientButton(
+                        label: 'LOGIN',
                         onPressed: () {},
-                        child: Text(
-                          'LOGIN',
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.0,
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
+                        tone: GradientButtonTone.tertiary,
                       ),
                       GradientButton(
                         label: 'BOOK NOW',
