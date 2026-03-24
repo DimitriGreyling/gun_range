@@ -10,6 +10,7 @@ import 'package:gun_range_app/presentation/home/home_spa_view.dart';
 import 'package:gun_range_app/presentation/make_booking/make_booking_app_shell.dart';
 import 'package:gun_range_app/presentation/make_booking/make_booking_v2.dart';
 import 'package:gun_range_app/presentation/range_detail.dart/range_detail_app_shell.dart';
+import 'package:gun_range_app/presentation/ranges/ranges_screen_v2.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../presentation/ranges/range_list_screen.dart';
 import '../../presentation/events/event_list_screen.dart';
@@ -59,8 +60,9 @@ final appRouter = GoRouter(
       builder: (context, state) => const LoginAppShell(),
     ),
     GoRoute(
+      name:'ranges',
       path: '/ranges',
-      builder: (context, state) => const RangeListScreen(),
+      builder: (context, state) => const RangesScreenV2(),
     ),
     GoRoute(
       path: '/events',

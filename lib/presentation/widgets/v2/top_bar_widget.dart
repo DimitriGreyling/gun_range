@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/data/models/v2/top_bar_item.dart';
 import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
+import 'package:gun_range_app/providers/viewmodel_providers.dart';
 
 class TopBarWidget extends ConsumerStatefulWidget {
   const TopBarWidget({super.key});
@@ -10,6 +13,40 @@ class TopBarWidget extends ConsumerStatefulWidget {
 }
 
 class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
+  final List<TopBarItem> topBarItems = [
+    const TopBarItem(
+      destination: TopBarDestination.home,
+      label: 'HOME',
+      routeName: 'home',
+      path: '/home',
+    ),
+    const TopBarItem(
+      destination: TopBarDestination.ranges,
+      label: 'RANGES',
+      routeName: 'ranges',
+      path: '/ranges',
+    ),
+  ];
+
+  TopBarDestination _destinationFromLocation(String location) {
+    if (location == '/home' || location == '/') {
+      return TopBarDestination.home;
+    }
+    if (location.startsWith('/ranges')) {
+      return TopBarDestination.ranges;
+    }
+    if (location.startsWith('/events')) {
+      return TopBarDestination.events;
+    }
+    if (location.startsWith('/membership')) {
+      return TopBarDestination.membership;
+    }
+    if (location.startsWith('/login')) {
+      return TopBarDestination.login;
+    }
+    return TopBarDestination.unknown;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -20,6 +57,10 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
         : width >= 1024
             ? 32.0
             : 20.0;
+            
+    final topBarState = ref.watch(topBarViewModelProvider);
+    final location = GoRouterState.of(context).matchedLocation;
+    final activeDestination = _destinationFromLocation(location);
 
     return Container(
       decoration: BoxDecoration(
@@ -70,10 +111,28 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                         spacing: 20,
                         runSpacing: 8,
                         children: [
-                          _navItem(theme, 'HOME', active: true),
-                          _navItem(theme, 'RANGES'),
-                          _navItem(theme, 'EVENTS'),
-                          _navItem(theme, 'MEMBERSHIP'),
+                          // _navItem(theme, 'HOME', active: true, callBack: () {
+                          //   context.goNamed('home');
+                          // }),
+                          // _navItem(theme, 'RANGES', callBack: () {
+                          //   context.goNamed('ranges');
+                          // }),
+                          // _navItem(theme, 'EVENTS'),
+                          // _navItem(theme, 'MEMBERSHIP'),
+
+                          _navItem(
+                            theme,
+                            'HOME',
+                            active: activeDestination == TopBarDestination.home,
+                            callBack: () => context.goNamed('home'),
+                          ),
+                          _navItem(
+                            theme,
+                            'RANGES',
+                            active:
+                                activeDestination == TopBarDestination.ranges,
+                            callBack: () => context.goNamed('ranges'),
+                          ),
                         ],
                       ),
                     ],
@@ -106,27 +165,36 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
     ThemeData theme,
     String label, {
     bool active = false,
+    VoidCallback? callBack,
   }) {
     final scheme = theme.colorScheme;
 
-    return Container(
-      padding: const EdgeInsets.only(bottom: 4),
-      decoration: active
-          ? BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: scheme.primaryContainer,
-                  width: 2,
-                ),
-              ),
-            )
-          : null,
-      child: Text(
-        label,
-        style: theme.textTheme.labelMedium?.copyWith(
-          color: active ? scheme.primary : scheme.onSurfaceVariant,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 1.0,
+    return MouseRegion(
+      cursor: MouseCursor.defer,
+      child: InkWell(
+        onTap: () {
+          callBack?.call();
+        },
+        child: Container(
+          padding: const EdgeInsets.only(bottom: 4),
+          decoration: active
+              ? BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      color: scheme.primaryContainer,
+                      width: 2,
+                    ),
+                  ),
+                )
+              : null,
+          child: Text(
+            label,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: active ? scheme.primary : scheme.onSurfaceVariant,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.0,
+            ),
+          ),
         ),
       ),
     );
