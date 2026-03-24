@@ -176,7 +176,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
               vertical: 40,
             ),
             child: Container(
-              constraints: const BoxConstraints(minHeight: 760),
+              constraints: const BoxConstraints(minHeight: 400),
               decoration: BoxDecoration(
                 color: scheme.surfaceContainerLowest,
                 borderRadius: BorderRadius.circular(24),
