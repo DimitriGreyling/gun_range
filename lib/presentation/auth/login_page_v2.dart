@@ -225,44 +225,49 @@ class _LoginPageV2State extends ConsumerState<LoginPageV2> {
                                   ),
                                 ),
                                 const SizedBox(height: 14),
-                                Row(
-                                  children: [
-                                    Transform.scale(
-                                      scale: 1.05,
-                                      child: Checkbox(
-                                        value: _rememberTerminal,
-                                        onChanged: authState.isLoading
-                                            ? null
-                                            : (value) {
-                                                setState(() {
-                                                  _rememberTerminal =
-                                                      value ?? false;
-                                                });
-                                              },
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        'Remember this terminal',
-                                        style: theme.textTheme.bodyMedium
-                                            ?.copyWith(
-                                          color: scheme.onSurfaceVariant,
+                                InkWell(
+                                  onTap: authState.isLoading
+                                      ? null
+                                      : () {
+                                          setState(() {
+                                            _rememberTerminal =
+                                                !_rememberTerminal;
+                                          });
+                                        },
+                                  child: Row(
+                                    children: [
+                                      Transform.scale(
+                                        scale: 1.05,
+                                        child: Checkbox(
+                                          value: _rememberTerminal,
+                                          onChanged: authState.isLoading
+                                              ? null
+                                              : (value) {},
                                         ),
                                       ),
-                                    ),
-                                    TextButton(
-                                      onPressed:
-                                          authState.isLoading ? null : () {},
-                                      child: Text(
-                                        'Forgot Key?',
-                                        style: theme.textTheme.labelMedium
-                                            ?.copyWith(
-                                          color: scheme.primary,
-                                          fontWeight: FontWeight.w900,
+                                      Expanded(
+                                        child: Text(
+                                          'Remember this terminal',
+                                          style: theme.textTheme.bodyMedium
+                                              ?.copyWith(
+                                            color: scheme.onSurfaceVariant,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                      TextButton(
+                                        onPressed:
+                                            authState.isLoading ? null : () {},
+                                        child: Text(
+                                          'Forgot Password?',
+                                          style: theme.textTheme.labelMedium
+                                              ?.copyWith(
+                                            color: scheme.primary,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                                 const SizedBox(height: 18),
                                 SizedBox(
@@ -279,6 +284,27 @@ class _LoginPageV2State extends ConsumerState<LoginPageV2> {
                                         large: true,
                                         onPressed: () =>
                                             _submitLogin(context, authVm),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 18),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: IgnorePointer(
+                                    ignoring: authState.isLoading,
+                                    child: Opacity(
+                                      opacity: authState.isLoading ? 0.75 : 1,
+                                      child: GradientButton(
+                                        tone: GradientButtonTone.secondary,
+                                        label: authState.isLoading
+                                            ? 'AUTHENTICATING...'
+                                            : 'Home',
+                                        icon: Icons.door_back_door_outlined,
+                                        large: true,
+                                        onPressed: () {
+                                          context.goNamed('home');
+                                        }
                                       ),
                                     ),
                                   ),
@@ -331,19 +357,19 @@ class _LoginPageV2State extends ConsumerState<LoginPageV2> {
                                         },
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: _SocialButton(
-                                        label: 'Apple',
-                                        enabled: false,
-                                        leading: Icon(
-                                          Icons.branding_watermark_outlined,
-                                          color: scheme.onSurface,
-                                          size: 18,
-                                        ),
-                                        onTap: () {},
-                                      ),
-                                    ),
+                                    // const SizedBox(width: 12),
+                                    // Expanded(
+                                    //   child: _SocialButton(
+                                    //     label: 'Apple',
+                                    //     enabled: false,
+                                    //     leading: Icon(
+                                    //       Icons.branding_watermark_outlined,
+                                    //       color: scheme.onSurface,
+                                    //       size: 18,
+                                    //     ),
+                                    //     onTap: () {},
+                                    //   ),
+                                    // ),
                                   ],
                                 ),
                               ],

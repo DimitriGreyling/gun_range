@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/presentation/auth/login_page_v2.dart';
 import 'package:gun_range_app/presentation/home/home_screen_web_2.dart';
 import 'package:gun_range_app/presentation/make_booking/make_booking_v2.dart';
+import 'package:gun_range_app/presentation/profile/profile_page_widget.dart';
 import 'package:gun_range_app/presentation/ranges/ranges_screen_v2.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -50,6 +51,11 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/make-booking',
       builder: (context, state) => const MakeBookingV2(),
+    ),
+    GoRoute(
+      name: 'profile',
+      path: '/profile',
+      builder: (context, state) => const ProfilePageWidget(),
     ),
   ],
 );

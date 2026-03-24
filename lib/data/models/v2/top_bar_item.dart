@@ -16,7 +16,7 @@ enum TopBarDestination {
   home,
   ranges,
   events,
-  membership,
+  profile,
   login,
   unknown,
 }

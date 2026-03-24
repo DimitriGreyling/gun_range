@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/data/models/v2/top_bar_item.dart';
 import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
+import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 
 class TopBarWidget extends ConsumerStatefulWidget {
@@ -26,6 +27,12 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
       routeName: 'ranges',
       path: '/ranges',
     ),
+    const TopBarItem(
+      destination: TopBarDestination.ranges,
+      label: 'PROFILE',
+      routeName: 'profile',
+      path: '/profile',
+    ),
   ];
 
   TopBarDestination _destinationFromLocation(String location) {
@@ -38,8 +45,8 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
     if (location.startsWith('/events')) {
       return TopBarDestination.events;
     }
-    if (location.startsWith('/membership')) {
-      return TopBarDestination.membership;
+    if (location.startsWith('/profile')) {
+      return TopBarDestination.profile;
     }
     if (location.startsWith('/login')) {
       return TopBarDestination.login;
@@ -61,6 +68,7 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
     final topBarState = ref.watch(topBarViewModelProvider);
     final location = GoRouterState.of(context).matchedLocation;
     final activeDestination = _destinationFromLocation(location);
+    final isAuthed = ref.read(isAuthenticatedProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -111,15 +119,6 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                         spacing: 20,
                         runSpacing: 8,
                         children: [
-                          // _navItem(theme, 'HOME', active: true, callBack: () {
-                          //   context.goNamed('home');
-                          // }),
-                          // _navItem(theme, 'RANGES', callBack: () {
-                          //   context.goNamed('ranges');
-                          // }),
-                          // _navItem(theme, 'EVENTS'),
-                          // _navItem(theme, 'MEMBERSHIP'),
-
                           _navItem(
                             theme,
                             'HOME',
@@ -133,6 +132,22 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                                 activeDestination == TopBarDestination.ranges,
                             callBack: () => context.goNamed('ranges'),
                           ),
+                          _navItem(
+                            theme,
+                            'EVENTS',
+                            active:
+                                activeDestination == TopBarDestination.events,
+                            callBack: () => context.goNamed('events'),
+                          ),
+                          if (isAuthed)
+                            _navItem(
+                              theme,
+                              'PROFILE',
+                              active: activeDestination ==
+                                  TopBarDestination.profile,
+                              callBack: () => context.goNamed('profile'),
+                              disabled: !isAuthed,
+                            ),
                         ],
                       ),
                     ],
@@ -141,17 +156,19 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                     spacing: 12,
                     runSpacing: 12,
                     children: [
-                      GradientButton(
-                        label: 'LOGIN',
-                        onPressed: () {
-                          context.goNamed('login');
-                        },
-                        tone: GradientButtonTone.tertiary,
-                      ),
-                      GradientButton(
-                        label: 'BOOK NOW',
-                        onPressed: () {},
-                      ),
+                      if (!isAuthed)
+                        GradientButton(
+                          label: 'LOGIN',
+                          onPressed: () {
+                            context.goNamed('login');
+                          },
+                          tone: GradientButtonTone.tertiary,
+                        ),
+                      if (isAuthed)
+                        GradientButton(
+                          label: 'BOOK NOW',
+                          onPressed: () {},
+                        ),
                     ],
                   ),
                 ],
@@ -168,15 +185,18 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
     String label, {
     bool active = false,
     VoidCallback? callBack,
+    bool disabled = false,
   }) {
     final scheme = theme.colorScheme;
 
     return MouseRegion(
       cursor: MouseCursor.defer,
       child: InkWell(
-        onTap: () {
-          callBack?.call();
-        },
+        onTap: disabled
+            ? null
+            : () {
+                callBack?.call();
+              },
         child: Container(
           padding: const EdgeInsets.only(bottom: 4),
           decoration: active
@@ -192,7 +212,11 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
           child: Text(
             label,
             style: theme.textTheme.labelMedium?.copyWith(
-              color: active ? scheme.primary : scheme.onSurfaceVariant,
+              color: disabled
+                  ? scheme.outlineVariant
+                  : active
+                      ? scheme.primary
+                      : scheme.onSurfaceVariant,
               fontWeight: FontWeight.w900,
               letterSpacing: 1.0,
             ),
