@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -103,7 +104,8 @@ class _LoginPageV2State extends ConsumerState<LoginPageV2> {
                           child: Container(
                             padding: EdgeInsets.all(isCompact ? 24 : 32),
                             decoration: BoxDecoration(
-                              color: scheme.surfaceContainerLow.withOpacity(0.82),
+                              color:
+                                  scheme.surfaceContainerLow.withOpacity(0.82),
                               borderRadius: BorderRadius.circular(32),
                               border: Border.all(
                                 color: Colors.white.withOpacity(0.05),
@@ -121,7 +123,8 @@ class _LoginPageV2State extends ConsumerState<LoginPageV2> {
                               children: [
                                 Text(
                                   'Operator Authentication',
-                                  style: theme.textTheme.headlineLarge?.copyWith(
+                                  style:
+                                      theme.textTheme.headlineLarge?.copyWith(
                                     fontSize: 26,
                                     fontWeight: FontWeight.w700,
                                   ),
@@ -140,10 +143,10 @@ class _LoginPageV2State extends ConsumerState<LoginPageV2> {
                                     children: [
                                       _buildTextField(
                                         context,
-                                        label: 'EMAIL / OPERATOR ID',
+                                        label: 'EMAIL',
                                         controller: _emailController,
                                         focusNode: _emailFocusNode,
-                                        hint: 'ID-88294-X',
+                                        hint: 'EMAIL',
                                         icon: Icons.person_outline,
                                         enabled: !authState.isLoading,
                                         textInputAction: TextInputAction.next,
@@ -153,25 +156,29 @@ class _LoginPageV2State extends ConsumerState<LoginPageV2> {
                                         },
                                         validator: (value) {
                                           final text = (value ?? '').trim();
+
                                           if (text.isEmpty) {
-                                            return 'Email is required';
+                                            return 'Email is required.';
                                           }
+
                                           final emailOk = RegExp(
                                             r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
                                           ).hasMatch(text);
-                                          if (!emailOk && text.length < 4) {
-                                            return 'Enter a valid email or ID';
+
+                                          if (!emailOk) {
+                                            return 'Enter a valid email address.';
                                           }
+
                                           return null;
                                         },
                                       ),
                                       const SizedBox(height: 20),
                                       _buildTextField(
                                         context,
-                                        label: 'ACCESS KEY',
+                                        label: 'PASSWORD',
                                         controller: _passwordController,
                                         focusNode: _passwordFocusNode,
-                                        hint: '••••••••••••',
+                                        hint: 'PASSWORD',
                                         icon: Icons.key_outlined,
                                         enabled: !authState.isLoading,
                                         obscureText: !_showPassword,
@@ -237,16 +244,19 @@ class _LoginPageV2State extends ConsumerState<LoginPageV2> {
                                     Expanded(
                                       child: Text(
                                         'Remember this terminal',
-                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
                                           color: scheme.onSurfaceVariant,
                                         ),
                                       ),
                                     ),
                                     TextButton(
-                                      onPressed: authState.isLoading ? null : () {},
+                                      onPressed:
+                                          authState.isLoading ? null : () {},
                                       child: Text(
                                         'Forgot Key?',
-                                        style: theme.textTheme.labelMedium?.copyWith(
+                                        style: theme.textTheme.labelMedium
+                                            ?.copyWith(
                                           color: scheme.primary,
                                           fontWeight: FontWeight.w900,
                                         ),
@@ -264,7 +274,7 @@ class _LoginPageV2State extends ConsumerState<LoginPageV2> {
                                       child: GradientButton(
                                         label: authState.isLoading
                                             ? 'AUTHENTICATING...'
-                                            : 'SECURE LOGIN',
+                                            : 'LOGIN',
                                         icon: Icons.verified_user,
                                         large: true,
                                         onPressed: () =>
@@ -288,7 +298,8 @@ class _LoginPageV2State extends ConsumerState<LoginPageV2> {
                                       ),
                                       child: Text(
                                         'THIRD PARTY INTEL',
-                                        style: theme.textTheme.labelMedium?.copyWith(
+                                        style: theme.textTheme.labelMedium
+                                            ?.copyWith(
                                           color: scheme.outlineVariant,
                                           fontWeight: FontWeight.w900,
                                           letterSpacing: 1.6,
