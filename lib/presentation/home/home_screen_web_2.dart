@@ -265,25 +265,39 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                           ),
                         ),
                         const SizedBox(height: 28),
-                        Text(
-                          'DISCOVER & BOOK\nELITE TACTICAL\nEXPERIENCES.',
+                        Text.rich(
                           textAlign: TextAlign.center,
-                          style: theme.textTheme.displayLarge?.copyWith(
-                            fontSize: isWide ? 86 : 56,
-                            height: 0.92,
-                            fontWeight: FontWeight.w800,
-                            color: scheme.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'ELITE TACTICAL',
-                          textAlign: TextAlign.center,
-                          style: theme.textTheme.displayLarge?.copyWith(
-                            fontSize: isWide ? 86 : 56,
-                            height: 0.92,
-                            fontWeight: FontWeight.w800,
-                            color: scheme.primaryContainer,
+                          TextSpan(
+                            style: Theme.of(context).textTheme.bodyLarge,
+                            children: [
+                              TextSpan(
+                                text: 'DISCOVER & BOOK',
+                                style: theme.textTheme.displayLarge?.copyWith(
+                                  fontSize: isWide ? 86 : 56,
+                                  height: 0.92,
+                                  fontWeight: FontWeight.w800,
+                                  color: scheme.onSurface,
+                                ),
+                              ),
+                              TextSpan(
+                                text: '\nELITE TACTICAL',
+                                style: theme.textTheme.displayLarge?.copyWith(
+                                  fontSize: isWide ? 86 : 56,
+                                  height: 0.92,
+                                  fontWeight: FontWeight.w800,
+                                  color: scheme.primaryContainer,
+                                ),
+                              ),
+                              TextSpan(
+                                text: '\nEXPERIENCES.',
+                                style: theme.textTheme.displayLarge?.copyWith(
+                                  fontSize: isWide ? 86 : 56,
+                                  height: 0.92,
+                                  fontWeight: FontWeight.w800,
+                                  color: scheme.onSurface,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 36),
@@ -292,7 +306,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 760),
                           child: Text(
-                            'The premier marketplace for precision shooting, tactical education, and professional-grade training environments across North America.',
+                              'Book shooting ranges, tactical courses, and professional training experiences across South Africa.',
                             textAlign: TextAlign.center,
                             style: theme.textTheme.bodyLarge?.copyWith(
                               color: scheme.onSurfaceVariant,
@@ -809,6 +823,4 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
       color: theme.colorScheme.outlineVariant.withOpacity(0.15),
     );
   }
-
-
 }

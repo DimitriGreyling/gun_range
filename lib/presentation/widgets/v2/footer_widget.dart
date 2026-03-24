@@ -97,46 +97,46 @@ class _FooterWidgetState extends ConsumerState<FooterWidget> {
                             'Sponsorships',
                           ],
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'GLOBAL PRESENCE',
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: scheme.primary,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Serving over 500 locations\nAcross 48 States\nHeadquarters: Phoenix, AZ',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: scheme.onSurfaceVariant,
-                                height: 1.8,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Container(
-                              height: 96,
-                              decoration: BoxDecoration(
-                                color: scheme.surfaceContainerHighest,
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color:
-                                      scheme.outlineVariant.withOpacity(0.25),
-                                ),
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  Icons.map_outlined,
-                                  color: scheme.primary.withOpacity(0.75),
-                                  size: 32,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                        // Column(
+                        //   crossAxisAlignment: CrossAxisAlignment.start,
+                        //   children: [
+                        //     Text(
+                        //       'GLOBAL PRESENCE',
+                        //       style: theme.textTheme.labelMedium?.copyWith(
+                        //         color: scheme.primary,
+                        //         fontWeight: FontWeight.w900,
+                        //         letterSpacing: 1.2,
+                        //       ),
+                        //     ),
+                        //     const SizedBox(height: 16),
+                        //     Text(
+                        //       'Serving over 500 locations\nAcross 48 States\nHeadquarters: Phoenix, AZ',
+                        //       style: theme.textTheme.bodyMedium?.copyWith(
+                        //         color: scheme.onSurfaceVariant,
+                        //         height: 1.8,
+                        //       ),
+                        //     ),
+                        //     const SizedBox(height: 16),
+                        //     Container(
+                        //       height: 96,
+                        //       decoration: BoxDecoration(
+                        //         color: scheme.surfaceContainerHighest,
+                        //         borderRadius: BorderRadius.circular(12),
+                        //         border: Border.all(
+                        //           color:
+                        //               scheme.outlineVariant.withOpacity(0.25),
+                        //         ),
+                        //       ),
+                        //       child: Center(
+                        //         child: Icon(
+                        //           Icons.map_outlined,
+                        //           color: scheme.primary.withOpacity(0.75),
+                        //           size: 32,
+                        //         ),
+                        //       ),
+                        //     ),
+                        //   ],
+                        // ),
                       ],
                     );
                   },
