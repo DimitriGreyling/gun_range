@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/booking.dart';
 import 'package:gun_range_app/data/models/booking_configs.dart';
 import 'package:gun_range_app/data/models/booking_state.dart';
+import 'package:gun_range_app/providers/repository_providers.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:gun_range_app/providers/make_booking_provider.dart';
 import 'package:gun_range_app/viewmodels/make_booking_vm.dart';
@@ -198,8 +199,8 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
                                         .read(makeBookingProvider.notifier)
                                         .updateBookingTime(slot);
                                   },
-                                  isSelected:
-                                      _isTimeSlotSelected(slot, makeBookingState),
+                                  isSelected: _isTimeSlotSelected(
+                                      slot, makeBookingState),
                                 );
                               }).toList()
                             : [],
@@ -224,12 +225,30 @@ class _BookingWidgetState extends ConsumerState<BookingWidget> {
   }
 
   Future<void> _pickDate(BuildContext context) async {
+    final blackouts = await ref
+        .read(bookingBlackoutRepositoryProvider)
+        .getBookingBlackoutsByRangeId(widget.rangeId!);
+
+    final blockedDates = blackouts
+        .where((item) => item.date != null)
+        .map((item) =>
+            DateTime(item.date!.year, item.date!.month, item.date!.day))
+        .toList();
+
     final now = DateTime.now();
     final picked = await showDatePicker(
       context: context,
       initialDate: now,
       firstDate: now,
       lastDate: now.add(const Duration(days: 365)),
+      selectableDayPredicate: (day) {
+        return !blockedDates.any(
+          (blocked) =>
+              blocked.year == day.year &&
+              blocked.month == day.month &&
+              blocked.day == day.day,
+        );
+      },
     );
     if (picked != null) {
       // This automatically triggers persistence

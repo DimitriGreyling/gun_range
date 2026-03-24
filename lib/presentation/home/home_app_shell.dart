@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:gun_range_app/presentation/home/home_screen_desktop.dart';
 import 'package:gun_range_app/presentation/home/home_screen_mobile.dart';
 import 'package:gun_range_app/presentation/home/home_screen_web.dart';
+import 'package:gun_range_app/presentation/home/home_screen_web_2.dart';
 
 class HomeAppShell extends StatelessWidget {
   const HomeAppShell({super.key});
@@ -18,7 +19,7 @@ class HomeAppShell extends StatelessWidget {
     if (isMobile) {
       return HomeScreenMobile();
     } else if (isWeb) {
-      return const HomeScreenWeb();
+      return const HomeScreenWeb2();
     } else {
       return const HomeScreenDesktop();
     }

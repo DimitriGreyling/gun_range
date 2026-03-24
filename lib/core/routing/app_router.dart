@@ -40,9 +40,10 @@ final appRouter = GoRouter(
     GoRoute(
       name: 'home',
       path: '/home',
-      builder: (context, state) => const HomeSPAView(
-        child: HomeAppShell(),
-      ),
+      builder: (context, state) => const HomeAppShell(),
+      //  const HomeSPAView(
+      //   child: HomeAppShell(),
+      // ),
     ),
     GoRoute(
       name: 'home-2',
@@ -94,7 +95,7 @@ final appRouter = GoRouter(
         builder: (context, state) {
           final rangeId = state.pathParameters['id'];
           final range = state.extra as Range?;
-          
+
           return MakeBookingAppShell(
             rangeId: rangeId,
             range: range,

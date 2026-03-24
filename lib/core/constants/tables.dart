@@ -10,5 +10,5 @@ class Tables {
   static const String bookingGuests = 'booking_guests';
   static const String invoices = 'invoices';
   static const String bookingConfigs = 'booking_configs';
-  static const String bookingBlackouts = 'booking_blackouts';
+  static const String bookingBlackouts = 'booking_blackout_days';
 }

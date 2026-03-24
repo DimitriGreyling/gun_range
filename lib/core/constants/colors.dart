@@ -1,57 +1,40 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  // Primary
-  // Tailwind scheme
-  // primary: #1f7693
-  // accent: #CC9A33
-  // background-light: #f2f2f3
-  // background-dark: #1c1e22
-  // surface-dark: #2c2f34
-  // border-dark: #3e4c51
+  static const surface = Color(0xFF131313);
+  static const surfaceContainerLow = Color(0xFF1C1B1B);
+  static const surfaceContainer = Color(0xFF201F1F);
+  static const surfaceContainerHigh = Color(0xFF2A2929);
+  static const surfaceContainerHighest = Color(0xFF353534);
+  static const surfaceBright = Color(0xFF3F3E3E);
+  static const surfaceVariant = Color(0xFF4A4542);
 
-  static const primary = Color(0xFF1F7693);
-  static const primaryForeground = Color(0xFFFFFFFF);
+  static const primary = Color(0xFFFFB59C);
+  static const primaryContainer = Color(0xFFFF5F1F);
+  static const onPrimary = Color(0xFF5C1900);
 
-  static const accent = Color(0xFFCC9A33);
-  static const accentForeground = Color(0xFF1C1E22);
+  static const tertiary = Color(0xFFA0D663);
+  static const tertiaryContainer = Color(0xFF2E4620);
+  static const onTertiary = Color(0xFF162106);
 
-  //Tertiary
-  static const tertiary = Color(0xFF6B8A7B);
-  static const tertiaryForeground = Color(0xFFFFFFFF);
+  static const error = Color(0xFFFF6B6B);
+  static const onError = Colors.white;
 
-  // Background
-  static const backgroundLight = Color(0xFFF2F2F3);
-  static const backgroundDark = Color(0xFF1C1E22);
+  static const onSurface = Color(0xFFF4F1ED);
+  static const onSurfaceMuted = Color(0xFFB8B1AA);
+  static const outlineVariant = Color(0xFF6C6762);
 
-  // Card
-  static const cardLight = Color(0xFFFFFFFF);
-  static const cardDark = Color(0xFF2C2F34);
+  static const shadow = Color(0x66000000);
 
-  // Surface / Border
-  static const surfaceLight = Color(0xFFFFFFFF);
-  static const surfaceDark = Color(0xFF2C2F34);
-  static const borderDark = Color(0xFF3E4C51);
-  static const borderLight = Color(0xFFD7D8DA);
+  static const radiusMd = 6.0;
+  static const radiusLg = 8.0;
+  static const radiusXl = 12.0;
 
-  // Muted Foreground
-  static const mutedForegroundLight = Color(0xFF64748B);
-  static const mutedForegroundDark = Color(0xFF94A3B8);
-
-  // Input
-  static const inputLight = Color(0xFFFFFFFF);
-  static const inputDark = Color(0xFF2C2F34);
-
-  // Foreground
-  // Matches Slate 900 / Slate 100 from your HTML
-  static const foregroundLight = Color(0xFF0F172A);
-  static const foregroundDark = Color(0xFFF1F5F9);
-
-  // Button
-  // Tailwind radii: default 4, lg 8, xl 12, full 9999
-  static const buttonRadius = 8.0;
-  static const borderRadius = 4.0;
-  static const borderRadiusLg = 8.0;
-  static const borderRadiusXl = 12.0;
-  static const borderRadiusFull = 9999.0;
+  static const space1 = 4.0;
+  static const space1_5 = 6.0;
+  static const space2 = 8.0;
+  static const space4 = 16.0;
+  static const space6 = 24.0;
+  static const space8 = 32.0;
+  static const space24 = 96.0;
 }

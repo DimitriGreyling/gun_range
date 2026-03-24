@@ -57,8 +57,8 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
       if (profileInformation != null) {
         fullName = profileInformation.fullName;
-        _ref.read(themeModeProvider.notifier).state =
-            themeModeFromDb(profileInformation.themeMode);
+        // _ref.read(themeModeProvider.notifier).state =
+        //     themeModeFromDb(profileInformation.themeMode);
       }
 
       log('User profile loaded: $profileInformation');
@@ -135,8 +135,8 @@ class AuthViewModel extends StateNotifier<AuthState> {
       // }
 
       fullName = profileInformation.fullName;
-      _ref.read(themeModeProvider.notifier).state =
-          themeModeFromDb(profileInformation.themeMode);
+      // _ref.read(themeModeProvider.notifier).state =
+      //     themeModeFromDb(profileInformation.themeMode);
 
       log('User profile loaded: $profileInformation');
 
@@ -184,8 +184,8 @@ class AuthViewModel extends StateNotifier<AuthState> {
       final profileInformation = await _profileRepository.getMyProfile();
 
       fullName = profileInformation.fullName;
-      _ref.read(themeModeProvider.notifier).state =
-          themeModeFromDb(profileInformation.themeMode);
+      // _ref.read(themeModeProvider.notifier).state =
+      //     themeModeFromDb(profileInformation.themeMode);
 
       log('User profile loaded: $profileInformation');
 

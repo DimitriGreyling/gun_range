@@ -95,7 +95,7 @@ class _MainAppState extends ConsumerState<MainApp> with WidgetsBindingObserver {
           debugShowCheckedModeBanner: false,
           routerConfig: appRouter,
           title: 'Range Connect',
-          theme: AppTheme.lightTheme,
+          theme: AppTheme.darkTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeMode,
           builder: (context, child) {
