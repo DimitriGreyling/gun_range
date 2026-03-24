@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/add_range/add_range_app_shell.dart';
 import 'package:gun_range_app/presentation/auth/login_app_shell.dart';
+import 'package:gun_range_app/presentation/auth/login_page_v2.dart';
 import 'package:gun_range_app/presentation/home/home_app_shell.dart';
 import 'package:gun_range_app/presentation/home/home_spa_view.dart';
 import 'package:gun_range_app/presentation/make_booking/make_booking_app_shell.dart';
@@ -57,7 +58,7 @@ final appRouter = GoRouter(
     GoRoute(
       name: 'login',
       path: '/login',
-      builder: (context, state) => const LoginAppShell(),
+      builder: (context, state) => const LoginPageV2(),
     ),
     GoRoute(
       name:'ranges',

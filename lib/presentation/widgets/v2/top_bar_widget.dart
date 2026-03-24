@@ -57,7 +57,7 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
         : width >= 1024
             ? 32.0
             : 20.0;
-            
+
     final topBarState = ref.watch(topBarViewModelProvider);
     final location = GoRouterState.of(context).matchedLocation;
     final activeDestination = _destinationFromLocation(location);
@@ -143,7 +143,9 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                     children: [
                       GradientButton(
                         label: 'LOGIN',
-                        onPressed: () {},
+                        onPressed: () {
+                          context.goNamed('login');
+                        },
                         tone: GradientButtonTone.tertiary,
                       ),
                       GradientButton(
