@@ -82,10 +82,15 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                     spacing: 12,
                     runSpacing: 12,
                     children: [
-                      TextButton(
+                      ElevatedButton(
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStatePropertyAll<Color>(
+                            theme.colorScheme.secondary,
+                          ),
+                        ),
                         onPressed: () {},
                         child: Text(
-                          'PARTNER LOGIN',
+                          'LOGIN',
                           style: theme.textTheme.labelMedium?.copyWith(
                             fontWeight: FontWeight.w800,
                             letterSpacing: 1.0,
