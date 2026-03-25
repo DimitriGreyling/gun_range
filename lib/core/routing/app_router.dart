@@ -5,6 +5,7 @@ import 'package:gun_range_app/presentation/home/home_screen_web_2.dart';
 import 'package:gun_range_app/presentation/make_booking/make_booking_v2.dart';
 import 'package:gun_range_app/presentation/profile/profile_page_widget.dart';
 import 'package:gun_range_app/presentation/ranges/ranges_screen_v2.dart';
+import 'package:gun_range_app/presentation/target_capturing/target_capturing.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final isMobile = !kIsWeb &&
@@ -56,6 +57,11 @@ final appRouter = GoRouter(
       name: 'profile',
       path: '/profile',
       builder: (context, state) => const ProfilePageWidget(),
+    ),
+    GoRoute(
+      name: 'target',
+      path: '/target',
+      builder: (context, state) => const TargetCapturing(),
     ),
   ],
 );
