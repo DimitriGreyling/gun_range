@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
-import '../constants/colors.dart';
+import '../constants/app_colors.dart';
 
 final themeModeProvider = StateProvider<ThemeMode>((ref) {
   final repo = ref.watch(isAuthenticatedProvider);

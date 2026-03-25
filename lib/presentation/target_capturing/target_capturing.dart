@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gun_range_app/core/constants/colors.dart';
+import 'package:gun_range_app/core/constants/app_colors.dart';
 import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
 
 class TargetCapturing extends ConsumerStatefulWidget {

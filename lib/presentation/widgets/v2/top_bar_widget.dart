@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/data/models/v2/top_bar_item.dart';
+import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';

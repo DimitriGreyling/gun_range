@@ -65,15 +65,6 @@ class GlobalPopupOverlay extends ConsumerWidget {
 
     switch (popup.position) {
       case PopupPosition.top:
-        // return Positioned(
-        //   top: 50,
-        //   left: 0,
-        //   right: 0,
-        //   child: PopupMessageWidget(
-        //     popup: popup,
-        //     onDismiss: () => notifier.dismissPopup(popup.id),
-        //   ),
-        // );
         return Positioned.fill(
           child: SafeArea(
             child: Align(
@@ -94,20 +85,6 @@ class GlobalPopupOverlay extends ConsumerWidget {
         );
 
       case PopupPosition.center:
-        // return Positioned.fill(
-        //   child: Center(
-        //     child: ConstrainedBox(
-        //       constraints: const BoxConstraints(
-        //         maxWidth: double.infinity * 0.8,
-        //         minWidth: double.infinity * 0.4,
-        //       ),
-        //       child: PopupMessageWidget(
-        //         popup: popup,
-        //         onDismiss: () => notifier.dismissPopup(popup.id),
-        //       ),
-        //     ),
-        //   ),
-        // );
 
         return Positioned.fill(
           child: SafeArea(
@@ -129,15 +106,6 @@ class GlobalPopupOverlay extends ConsumerWidget {
         );
 
       case PopupPosition.bottom:
-        // return Positioned(
-        //   bottom: 50,
-        //   left: 0,
-        //   right: 0,
-        //   child: PopupMessageWidget(
-        //     popup: popup,
-        //     onDismiss: () => notifier.dismissPopup(popup.id),
-        //   ),
-        // );
         return Positioned.fill(
           child: SafeArea(
             child: Align(
@@ -158,14 +126,6 @@ class GlobalPopupOverlay extends ConsumerWidget {
         );
 
       case PopupPosition.topLeft:
-        // return Positioned(
-        //   top: 50,
-        //   left: 16,
-        //   child: PopupMessageWidget(
-        //     popup: popup,
-        //     onDismiss: () => notifier.dismissPopup(popup.id),
-        //   ),
-        // );
         return Positioned.fill(
           child: SafeArea(
             child: Align(
@@ -186,14 +146,6 @@ class GlobalPopupOverlay extends ConsumerWidget {
         );
 
       case PopupPosition.topRight:
-        // return Positioned(
-        //   top: 50,
-        //   right: 16,
-        //   child: PopupMessageWidget(
-        //     popup: popup,
-        //     onDismiss: () => notifier.dismissPopup(popup.id),
-        //   ),
-        // );
         return Positioned.fill(
           child: SafeArea(
             child: Align(
@@ -214,15 +166,6 @@ class GlobalPopupOverlay extends ConsumerWidget {
         );
 
       case PopupPosition.bottomLeft:
-        // return Positioned(
-        //   bottom: 50,
-        //   left: 16,
-        //   child: PopupMessageWidget(
-        //     popup: popup,
-        //     onDismiss: () => notifier.dismissPopup(popup.id),
-        //   ),
-        // );
-
         return Positioned.fill(
           child: SafeArea(
             child: Align(
@@ -243,15 +186,6 @@ class GlobalPopupOverlay extends ConsumerWidget {
         );
 
       case PopupPosition.bottomRight:
-        // return Positioned(
-        //   bottom: 50,
-        //   right: 16,
-        //   child: PopupMessageWidget(
-        //     popup: popup,
-        //     onDismiss: () => notifier.dismissPopup(popup.id),
-        //   ),
-        // );
-
         return Positioned.fill(
           child: SafeArea(
             child: Align(
@@ -272,15 +206,6 @@ class GlobalPopupOverlay extends ConsumerWidget {
         );
 
       default:
-        // return Positioned(
-        //   top: 50,
-        //   left: 0,
-        //   right: 0,
-        //   child: PopupMessageWidget(
-        //     popup: popup,
-        //     onDismiss: () => notifier.dismissPopup(popup.id),
-        //   ),
-        // );
         return Positioned.fill(
           child: SafeArea(
             child: Align(
