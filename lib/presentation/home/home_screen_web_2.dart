@@ -164,10 +164,9 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
           children: [
             const TopBarWidget(),
             _buildHeroSection(
-              theme: theme,
-              horizontalPadding: horizontalPadding,
-              lookupState: lookupState
-            ),
+                theme: theme,
+                horizontalPadding: horizontalPadding,
+                lookupState: lookupState),
             _buildCategoriesSection(theme, horizontalPadding),
             _buildEventsSection(theme, horizontalPadding),
             _buildBenefitsSection(theme, horizontalPadding),
@@ -301,7 +300,8 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                           ),
                         ),
                         const SizedBox(height: 36),
-                        _buildSearchPanel(theme: theme,lookupState: lookupState),
+                        _buildSearchPanel(
+                            theme: theme, lookupState: lookupState),
                         const SizedBox(height: 24),
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 760),
@@ -333,6 +333,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
     final scheme = theme.colorScheme;
     final isWide = MediaQuery.sizeOf(context).width >= 980;
     TextEditingController locationController = TextEditingController();
+    String? selectedValue;
 
     final fields = [
       SearchField(
@@ -360,18 +361,18 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
       SearchField(
         label: 'ACTIVITY',
         child: DropdownButtonFormField<String>(
-          value: 'Indoor Lane',
-          items: const [
-            DropdownMenuItem(value: 'Indoor Lane', child: Text('Indoor Lane')),
-            DropdownMenuItem(
-                value: 'Outdoor Range', child: Text('Outdoor Range')),
-            DropdownMenuItem(
-              value: 'Dynamic Training',
-              child: Text('Dynamic Training'),
-            ),
-            DropdownMenuItem(value: 'Competition', child: Text('Competition')),
-          ],
-          onChanged: (_) {},
+          value: selectedValue,
+          hint: const Text('ACTIVITY'),
+          items: lookupState.lookups != null && lookupState.lookups!.isNotEmpty
+              ? lookupState.lookups!.map((lookup) {
+                  return DropdownMenuItem(
+                      value: lookup.id,
+                      child: Text(lookup.lookupDescription ?? ''));
+                }).toList()
+              : [],
+          onChanged: (value) {
+            selectedValue = value;
+          },
           decoration: const InputDecoration(
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
@@ -389,22 +390,23 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
         ),
       ),
       SearchField(
-        label: 'DATE',
-        child: TextField(
-          decoration: const InputDecoration(
-            hintText: 'Select Date',
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            filled: false,
-            contentPadding: EdgeInsets.zero,
-            isDense: true,
-          ),
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: scheme.onSurface,
-          ),
-        ),
+        label: 'AVAILABLE DATE',
+        child: DatePickerDialog(firstDate: DateTime.now(), lastDate: DateTime.now())
+        //  TextField(
+        //   decoration: const InputDecoration(
+        //     hintText: 'Select Date',
+        //     border: InputBorder.none,
+        //     enabledBorder: InputBorder.none,
+        //     focusedBorder: InputBorder.none,
+        //     filled: false,
+        //     contentPadding: EdgeInsets.zero,
+        //     isDense: true,
+        //   ),
+        //   style: theme.textTheme.titleLarge?.copyWith(
+        //     fontWeight: FontWeight.w700,
+        //     color: scheme.onSurface,
+        //   ),
+        // ),
       ),
     ];
 
@@ -429,57 +431,63 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
               ),
             ],
           ),
-          child: lookupState.isLoading ? Center(child: CircularProgressIndicator(),) : isWide
-              ? Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(child: fields[0]),
-                          _ghostDivider(theme),
-                          Expanded(child: fields[1]),
-                          _ghostDivider(theme),
-                          Expanded(child: fields[2]),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    GradientButton(
-                      label: 'SEARCH',
-                      icon: Icons.search,
-                      large: true,
-                      onPressed: () {
-                        context.goNamed(
-                          'ranges',
-                          queryParameters: {
-                            'location': locationController.text,
-                          },
-                        );
-                      },
-                    ),
-                  ],
+          child: lookupState.isLoading
+              ? Center(
+                  child: CircularProgressIndicator(),
                 )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    fields[0],
-                    _softSpacer(theme),
-                    fields[1],
-                    _softSpacer(theme),
-                    fields[2],
-                    const SizedBox(height: 12),
-                    GradientButton(
-                      label: 'SEARCH',
-                      icon: Icons.search,
-                      large: true,
-                      onPressed: () {
-                        context.goNamed('ranges', queryParameters: {
-                          'location': locationController.text,
-                        });
-                      },
+              : isWide
+                  ? Row(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Expanded(child: fields[0]),
+                              _ghostDivider(theme),
+                              Expanded(child: fields[1]),
+                              _ghostDivider(theme),
+                              Expanded(child: fields[2]),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        GradientButton(
+                          label: 'SEARCH',
+                          icon: Icons.search,
+                          large: true,
+                          onPressed: () {
+                            context.goNamed(
+                              'ranges',
+                              queryParameters: {
+                                'location': locationController.text,
+                                'activity': selectedValue,
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        fields[0],
+                        _softSpacer(theme),
+                        fields[1],
+                        _softSpacer(theme),
+                        fields[2],
+                        const SizedBox(height: 12),
+                        GradientButton(
+                          label: 'SEARCH',
+                          icon: Icons.search,
+                          large: true,
+                          onPressed: () {
+                            context.goNamed('ranges', queryParameters: {
+                              'location': locationController.text,
+                              'activity': selectedValue,
+                            });
+                          },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
         ),
       ),
     );
