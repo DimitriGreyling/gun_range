@@ -24,24 +24,24 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
       title: 'Indoor Ranges',
       subtitle: '240+ Facilities',
       imageUrl:
-          'https://images.unsplash.com/photo-1511884642898-4c92249e20b6?auto=format&fit=crop&w=1200&q=80',
+          'assets/indoor_range_2.png',
     ),
     CategoryItem(
       title: 'Outdoor Long Range',
       subtitle: '115+ Facilities',
       imageUrl:
-          'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+          'assets/outdoor_range_2.png',
     ),
-    CategoryItem(
-      title: 'Dynamic Shoot Houses',
-      subtitle: '38 Facilities',
-      tint: Color(0x33FFB59C),
-    ),
-    CategoryItem(
-      title: 'Tactical Training Centers',
-      subtitle: '86 Facilities',
-      tint: Color(0x33A0D663),
-    ),
+    // CategoryItem(
+    //   title: 'Dynamic Shoot Houses',
+    //   subtitle: '38 Facilities',
+    //   tint: Color(0x33FFB59C),
+    // ),
+    // CategoryItem(
+    //   title: 'Tactical Training Centers',
+    //   subtitle: '86 Facilities',
+    //   tint: Color(0x33A0D663),
+    // ),
   ];
 
   final List<EventItem> _events = const [
@@ -184,28 +184,6 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
               clipBehavior: Clip.antiAlias,
               child: Stack(
                 children: [
-                  Positioned.fill(
-                    child: Image.network(
-                      'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1800&q=80',
-                      fit: BoxFit.cover,
-                      color: Colors.black.withOpacity(0.35),
-                      colorBlendMode: BlendMode.darken,
-                      errorBuilder: (_, __, ___) {
-                        return DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                scheme.surfaceContainerHighest,
-                                scheme.surface,
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
                   Positioned.fill(
                     child: DecoratedBox(
                       decoration: BoxDecoration(
@@ -535,7 +513,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
           _sectionHeader(
             theme,
             eyebrow: 'FEATURED EXPERIENCE',
-            title: 'Upcoming Tactical Events',
+            title: 'Upcoming Events',
           ),
           const SizedBox(height: 28),
           LayoutBuilder(
