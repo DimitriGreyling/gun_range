@@ -11,6 +11,8 @@ import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
 import 'package:gun_range_app/presentation/widgets/v2/search_field_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/tier_card_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/top_bar_widget.dart';
+import 'package:gun_range_app/providers/viewmodel_providers.dart';
+import 'package:gun_range_app/viewmodels/lookup_vm.dart';
 
 class HomeScreenWeb2 extends ConsumerStatefulWidget {
   const HomeScreenWeb2({super.key});
@@ -132,6 +134,17 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+
+    Future.microtask(() {
+      ref
+          .read(lookupViewModelProvider.notifier)
+          .getLookupsByListValue(listValue: 'RANGE_TYPE');
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -142,13 +155,19 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
             ? 32.0
             : 20.0;
 
+    final lookupState = ref.watch(lookupViewModelProvider);
+
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SingleChildScrollView(
         child: Column(
           children: [
             const TopBarWidget(),
-            _buildHeroSection(theme, horizontalPadding),
+            _buildHeroSection(
+              theme: theme,
+              horizontalPadding: horizontalPadding,
+              lookupState: lookupState
+            ),
             _buildCategoriesSection(theme, horizontalPadding),
             _buildEventsSection(theme, horizontalPadding),
             _buildBenefitsSection(theme, horizontalPadding),
@@ -160,7 +179,11 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
     );
   }
 
-  Widget _buildHeroSection(ThemeData theme, double horizontalPadding) {
+  Widget _buildHeroSection({
+    required ThemeData theme,
+    required double horizontalPadding,
+    required LookupState lookupState,
+  }) {
     final scheme = theme.colorScheme;
     final isWide = MediaQuery.sizeOf(context).width >= 900;
 
@@ -278,7 +301,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                           ),
                         ),
                         const SizedBox(height: 36),
-                        _buildSearchPanel(theme),
+                        _buildSearchPanel(theme: theme,lookupState: lookupState),
                         const SizedBox(height: 24),
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 760),
@@ -303,7 +326,10 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
     );
   }
 
-  Widget _buildSearchPanel(ThemeData theme) {
+  Widget _buildSearchPanel({
+    required ThemeData theme,
+    required LookupState lookupState,
+  }) {
     final scheme = theme.colorScheme;
     final isWide = MediaQuery.sizeOf(context).width >= 980;
     TextEditingController locationController = TextEditingController();
@@ -403,7 +429,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
               ),
             ],
           ),
-          child: isWide
+          child: lookupState.isLoading ? Center(child: CircularProgressIndicator(),) : isWide
               ? Row(
                   children: [
                     Expanded(
@@ -423,9 +449,12 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                       icon: Icons.search,
                       large: true,
                       onPressed: () {
-                        context.goNamed('ranges', queryParameters: {
-                          'location': locationController.text,
-                        },);
+                        context.goNamed(
+                          'ranges',
+                          queryParameters: {
+                            'location': locationController.text,
+                          },
+                        );
                       },
                     ),
                   ],

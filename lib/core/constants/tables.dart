@@ -11,4 +11,5 @@ class Tables {
   static const String invoices = 'invoices';
   static const String bookingConfigs = 'booking_configs';
   static const String bookingBlackouts = 'booking_blackout_days';
+  static const String lookupTableName = 'lookups';
 }
