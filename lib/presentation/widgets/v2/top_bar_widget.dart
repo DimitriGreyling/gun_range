@@ -70,6 +70,8 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
     final location = GoRouterState.of(context).matchedLocation;
     final activeDestination = _destinationFromLocation(location);
     final isAuthed = ref.read(isAuthenticatedProvider);
+    final authViewModel = ref.read(authViewModelProvider.notifier);
+    final authState = ref.watch(authViewModelProvider);
 
     return Container(
       decoration: BoxDecoration(
@@ -164,6 +166,14 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                             context.goNamed('login');
                           },
                           tone: GradientButtonTone.tertiary,
+                        ),
+                      if (isAuthed)
+                        GradientButton(
+                          label: 'LOG OUT',
+                          onPressed: () {
+                            authViewModel.signOut();
+                          },
+                          tone: GradientButtonTone.secondary,
                         ),
                       if (isAuthed)
                         GradientButton(
