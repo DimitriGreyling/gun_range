@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/presentation/auth/login_page_v2.dart';
@@ -17,17 +19,6 @@ final isDesktop = !isMobile && !isWeb;
 final appRouter = GoRouter(
   initialLocation: isDesktop ? '/login' : '/home',
   restorationScopeId: 'appRouter',
-  redirect: (context, state) {
-    if (isDesktop) {
-      final isLoggingIn = state.matchedLocation == '/login';
-      final isAuthedNow = Supabase.instance.client.auth.currentUser != null;
-
-      if (!isAuthedNow) return isLoggingIn ? null : '/login';
-      if (isLoggingIn) return '/home';
-    }
-
-    return state.matchedLocation;
-  },
   routes: [
     GoRoute(
       name: 'home',
@@ -47,11 +38,17 @@ final appRouter = GoRouter(
     GoRoute(
       name: 'ranges',
       path: '/ranges',
-      builder: (context, state) => const RangesScreenV2(),
+      builder: (context, state) {
+        final filters = state.uri.queryParameters;
+        return const RangesScreenV2();
+      }
     ),
     GoRoute(
       path: '/make-booking',
-      builder: (context, state) => const MakeBookingV2(),
+      builder: (context, state) {
+        log('TESTING :: ${state}');
+        return const MakeBookingV2();
+      },
     ),
     GoRoute(
       name: 'profile',

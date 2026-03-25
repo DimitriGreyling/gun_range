@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/data/models/v2/widget_models.dart';
 import 'package:gun_range_app/presentation/widgets/v2/category_card_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/event_card_widget.dart';
@@ -23,14 +24,12 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
     CategoryItem(
       title: 'Indoor Ranges',
       subtitle: '240+ Facilities',
-      imageUrl:
-          'assets/indoor_range_2.png',
+      imageUrl: 'assets/indoor_range_2.png',
     ),
     CategoryItem(
       title: 'Outdoor Long Range',
       subtitle: '115+ Facilities',
-      imageUrl:
-          'assets/outdoor_range_2.png',
+      imageUrl: 'assets/outdoor_range_2.png',
     ),
     // CategoryItem(
     //   title: 'Dynamic Shoot Houses',
@@ -284,7 +283,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 760),
                           child: Text(
-                              'Book shooting ranges, tactical courses, and professional training experiences across South Africa.',
+                            'Book shooting ranges, tactical courses, and professional training experiences across South Africa.',
                             textAlign: TextAlign.center,
                             style: theme.textTheme.bodyLarge?.copyWith(
                               color: scheme.onSurfaceVariant,
@@ -307,13 +306,15 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
   Widget _buildSearchPanel(ThemeData theme) {
     final scheme = theme.colorScheme;
     final isWide = MediaQuery.sizeOf(context).width >= 980;
+    TextEditingController locationController = TextEditingController();
 
     final fields = [
       SearchField(
         label: 'LOCATION',
         child: TextField(
+          controller: locationController,
           decoration: InputDecoration(
-            hintText: 'Zip or City',
+            hintText: 'Province or City',
             hintStyle: theme.textTheme.titleLarge?.copyWith(
               color: scheme.onSurfaceVariant,
             ),
@@ -421,7 +422,11 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                       label: 'SEARCH',
                       icon: Icons.search,
                       large: true,
-                      onPressed: () {},
+                      onPressed: () {
+                        context.goNamed('ranges', queryParameters: {
+                          'location': locationController.text,
+                        },);
+                      },
                     ),
                   ],
                 )
@@ -438,7 +443,11 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                       label: 'SEARCH',
                       icon: Icons.search,
                       large: true,
-                      onPressed: () {},
+                      onPressed: () {
+                        context.goNamed('ranges', queryParameters: {
+                          'location': locationController.text,
+                        });
+                      },
                     ),
                   ],
                 ),
