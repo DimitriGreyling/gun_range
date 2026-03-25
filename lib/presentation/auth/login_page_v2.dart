@@ -55,11 +55,12 @@ class _LoginPageV2State extends ConsumerState<LoginPageV2> {
             ),
           ),
           Positioned(
-            top: -80,
-            right: -120,
+            top: 0,
+            right: 0,
             child: _GlowOrb(
-              color: scheme.primaryContainer.withOpacity(0.18),
-              size: 420,
+              color: scheme.primaryContainer.withOpacity(0.4),
+              size: MediaQuery.of(context).size.width * 0.4,
+              rotation: -0.35,
             ),
           ),
           Positioned(
@@ -67,7 +68,8 @@ class _LoginPageV2State extends ConsumerState<LoginPageV2> {
             left: -80,
             child: _GlowOrb(
               color: scheme.tertiary.withOpacity(0.10),
-              size: 320,
+              size: MediaQuery.of(context).size.width * 0.6,
+              rotation: 0.45,
             ),
           ),
           Positioned(
@@ -296,16 +298,15 @@ class _LoginPageV2State extends ConsumerState<LoginPageV2> {
                                     child: Opacity(
                                       opacity: authState.isLoading ? 0.75 : 1,
                                       child: GradientButton(
-                                        tone: GradientButtonTone.secondary,
-                                        label: authState.isLoading
-                                            ? 'AUTHENTICATING...'
-                                            : 'Home',
-                                        icon: Icons.door_back_door_outlined,
-                                        large: true,
-                                        onPressed: () {
-                                          context.goNamed('home');
-                                        }
-                                      ),
+                                          tone: GradientButtonTone.secondary,
+                                          label: authState.isLoading
+                                              ? 'AUTHENTICATING...'
+                                              : 'Home',
+                                          icon: Icons.door_back_door_outlined,
+                                          large: true,
+                                          onPressed: () {
+                                            context.goNamed('home');
+                                          }),
                                     ),
                                   ),
                                 ),
@@ -665,27 +666,85 @@ class _GlowOrb extends StatelessWidget {
   const _GlowOrb({
     required this.color,
     required this.size,
+    this.rotation = 0,
   });
 
   final Color color;
   final double size;
+  final double rotation;
 
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: color,
-              blurRadius: 120,
-              spreadRadius: 12,
+      child: Transform.rotate(
+        angle: rotation,
+        child: SizedBox(
+          width: size * 1.35,
+          height: size,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              _smokeLayer(
+                left: size * 0.02,
+                top: size * 0.22,
+                width: size * 0.92,
+                height: size * 0.52,
+                opacity: 0.18,
+              ),
+              _smokeLayer(
+                left: size * 0.42,
+                top: size * 0.02,
+                width: size * 0.62,
+                height: size * 0.46,
+                opacity: 0.14,
+              ),
+              _smokeLayer(
+                left: size * 0.26,
+                top: size * 0.42,
+                width: size * 0.74,
+                height: size * 0.40,
+                opacity: 0.10,
+              ),
+              _smokeLayer(
+                left: size * 0.62,
+                top: size * 0.28,
+                width: size * 0.38,
+                height: size * 0.30,
+                opacity: 0.08,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _smokeLayer({
+    required double left,
+    required double top,
+    required double width,
+    required double height,
+    required double opacity,
+  }) {
+    return Positioned(
+      left: left,
+      top: top,
+      child: ImageFiltered(
+        imageFilter: ImageFilter.blur(sigmaX: 42, sigmaY: 60),
+        child: Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(height),
+            gradient: RadialGradient(
+              colors: [
+                color.withOpacity(opacity),
+                color.withOpacity(opacity * 0.55),
+                Colors.transparent,
+              ],
+              stops: const [0.0, 0.48, 1.0],
             ),
-          ],
+          ),
         ),
       ),
     );
