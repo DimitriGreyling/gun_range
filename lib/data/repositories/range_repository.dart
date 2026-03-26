@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/core/constants/tables.dart';
 import 'package:gun_range_app/data/models/event.dart';
@@ -23,5 +25,20 @@ class RangeRepository {
       return Range.fromJson(response);
     }
     return null;
+  }
+
+  Future<List<Range>> searchRanges({
+    String? activityId,
+    String? location,
+    DateTime? availableDate,
+  }) async {
+    final response = await _supabase
+        .from(tablename)
+        .select()
+        .eq('is_active', true)
+        .or('city.ilike.%$location%,province.ilike.%$location%');
+    log('FOUND');
+
+    return response.map((range)=> Range.fromJson(range)).toList();
   }
 }

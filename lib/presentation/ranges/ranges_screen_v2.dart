@@ -2,13 +2,28 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/core/constants/general_constants.dart';
+import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/widgets/v2/footer_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
 import 'package:gun_range_app/presentation/widgets/v2/search_field_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/top_bar_widget.dart';
+import 'package:gun_range_app/providers/viewmodel_providers.dart';
+import 'package:gun_range_app/viewmodels/lookup_vm.dart';
+import 'package:intl/intl.dart';
 
 class RangesScreenV2 extends ConsumerStatefulWidget {
-  const RangesScreenV2({super.key});
+  final DateTime? availableDate;
+  final String? location;
+  final String? activityId;
+
+  const RangesScreenV2({
+    super.key,
+    this.location,
+    this.activityId,
+    this.availableDate,
+  });
 
   @override
   ConsumerState<RangesScreenV2> createState() => _RangesScreenV2State();
@@ -59,9 +74,33 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
   String _caliber = 'Up to .45 ACP';
   bool _gridSelected = true;
 
+  final TextEditingController _locationController = TextEditingController();
+  String? _selectedActivityValue;
+  DateTime? _dateSelected;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(lookupViewModelProvider.notifier)
+          .getLookupsByListValue(listValue: 'RANGE_TYPE');
+      ref.read(rangeViewModelProvider.notifier).searchRanges(
+            availableDate: _dateSelected,
+            activityId: _selectedActivityValue,
+            location: _locationController.text,
+          );
+    });
+
+    _locationController.text = widget.location ?? '';
+    _selectedActivityValue = widget.activityId;
+    _dateSelected = widget.availableDate;
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final rangeState = ref.watch(rangeViewModelProvider);
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -72,9 +111,9 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  _buildHero(context),
-                  _buildFacilitiesSection(context),
-                  _buildMapSection(context),
+                  _buildHero(context: context, isLoading: rangeState.isLoading),
+                  _buildFacilitiesSection(context: context),
+                  // _buildMapSection(context),
                   const FooterWidget(),
                 ],
               ),
@@ -85,7 +124,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
     );
   }
 
-  Widget _buildHero(BuildContext context) {
+  Widget _buildHero({required BuildContext context, bool? isLoading = false}) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final width = MediaQuery.sizeOf(context).width;
@@ -161,7 +200,8 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                       ),
                     ),
                     const SizedBox(height: 28),
-                    _buildFilterPanel(context),
+                    // _buildFilterPanel(context),
+                    _buildSearchPanel(theme: theme, isLoading: isLoading),
                   ],
                 ),
               ),
@@ -170,6 +210,227 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
         ],
       ),
     );
+  }
+
+  Widget _buildSearchPanel({
+    required ThemeData theme,
+    bool? isLoading = false,
+  }) {
+    final scheme = theme.colorScheme;
+    final isWide = MediaQuery.sizeOf(context).width >= 980;
+
+    return Consumer(
+      builder: (context, ref, child) {
+        final lookupState = ref.watch(lookupViewModelProvider);
+
+        if (lookupState.isLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        final fields = [
+          SearchField(
+            label: 'LOCATION',
+            child: TextField(
+              enabled: isLoading != true,
+              controller: isLoading == true
+                  ? TextEditingController(text: 'SEARCHING...')
+                  : _locationController,
+              decoration: InputDecoration(
+                hintText:
+                    isLoading == true ? 'SEARCHING...' : 'Province or City',
+                hintStyle: theme.textTheme.titleLarge?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                filled: false,
+              ),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: isLoading == true
+                    ? scheme.onSurfaceVariant
+                    : scheme.onSurface,
+              ),
+            ),
+          ),
+          SearchField(
+            label: 'ACTIVITY',
+            child: DropdownButtonFormField<String>(
+              value: _selectedActivityValue,
+              hint: Text(isLoading == true ? 'SEARCHING...' : 'ACTIVITY'),
+              items:
+                  lookupState.lookups != null && lookupState.lookups!.isNotEmpty
+                      ? lookupState.lookups!.map((lookup) {
+                          return DropdownMenuItem(
+                              value: lookup.id,
+                              child: Text(lookup.lookupDescription ?? ''));
+                        }).toList()
+                      : [],
+              onChanged: isLoading == true
+                  ? null
+                  : (value) {
+                      _selectedActivityValue = value;
+                    },
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                filled: false,
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+              ),
+              dropdownColor: scheme.surfaceContainerHigh,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: isLoading == true
+                    ? scheme.onSurfaceVariant
+                    : scheme.onSurface,
+              ),
+              iconEnabledColor: scheme.primary,
+            ),
+          ),
+          MouseRegion(
+            cursor: MouseCursor.defer,
+            child: InkWell(
+              onTap: isLoading == true
+                  ? null
+                  : () async {
+                      _dateSelected = await _pickDate();
+
+                      setState(() {});
+                    },
+              child: SearchField(
+                label: isLoading == true ? 'SEARCHING...' : 'AVAILABLE DATE',
+                child: Text(
+                  isLoading == true
+                      ? 'SEARCHING...'
+                      : _dateSelected != null
+                          ? DateFormat(GeneralConstants.dateFormat)
+                              .format(_dateSelected!)
+                          : 'SELECT DATE',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: isLoading == true
+                        ? scheme.onSurfaceVariant
+                        : _dateSelected == null
+                            ? scheme.onSurfaceVariant
+                            : scheme.onSurface,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ];
+
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1060),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHigh.withOpacity(0.82),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: scheme.outlineVariant.withOpacity(0.25),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: scheme.shadow.withOpacity(0.35),
+                    blurRadius: 32,
+                    offset: const Offset(0, 20),
+                  ),
+                ],
+              ),
+              child: lookupState.isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : isWide
+                      ? Row(
+                          children: [
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Expanded(child: fields[0]),
+                                  _ghostDivider(theme),
+                                  Expanded(child: fields[1]),
+                                  _ghostDivider(theme),
+                                  Expanded(child: fields[2]),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            GradientButton(
+                              label:
+                                  isLoading == true ? 'SEARCHING...' : 'SEARCH',
+                              icon: Icons.search,
+                              large: true,
+                              onPressed: isLoading == true ? null : () {},
+                              tone: isLoading == true
+                                  ? GradientButtonTone.secondary
+                                  : GradientButtonTone.primary,
+                            ),
+                          ],
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            fields[0],
+                            _softSpacer(theme),
+                            fields[1],
+                            _softSpacer(theme),
+                            fields[2],
+                            const SizedBox(height: 12),
+                            GradientButton(
+                              label:
+                                  isLoading == true ? 'SEARCHING...' : 'SEARCH',
+                              icon: Icons.search,
+                              large: true,
+                              onPressed: isLoading == true ? null : () {},
+                              tone: isLoading == true
+                                  ? GradientButtonTone.secondary
+                                  : GradientButtonTone.primary,
+                            ),
+                          ],
+                        ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _softSpacer(ThemeData theme) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      height: 1,
+      color: theme.colorScheme.outlineVariant.withOpacity(0.15),
+    );
+  }
+
+  Widget _ghostDivider(ThemeData theme) {
+    return Container(
+      width: 1,
+      height: 52,
+      color: theme.colorScheme.outlineVariant.withOpacity(0.20),
+    );
+  }
+
+  Future<DateTime?> _pickDate() async {
+    final dateSelected = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2027),
+    );
+    return dateSelected;
   }
 
   Widget _buildFilterPanel(BuildContext context) {
@@ -400,7 +661,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
     );
   }
 
-  Widget _buildFacilitiesSection(BuildContext context) {
+  Widget _buildFacilitiesSection({required BuildContext context}) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final width = MediaQuery.sizeOf(context).width;
@@ -424,7 +685,6 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
               80,
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 LayoutBuilder(
                   builder: (context, constraints) {
@@ -451,51 +711,37 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                     );
                   },
                 ),
-                const SizedBox(height: 28),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final columns = constraints.maxWidth >= 1200
-                        ? 3
-                        : constraints.maxWidth >= 760
-                            ? 2
-                            : 1;
+                const SizedBox(
+                  height: 20,
+                ),
+                Consumer(
+                  builder: (context, ref, child) {
+                    final rangeState = ref.watch(rangeViewModelProvider);
+
+                    if (rangeState.isLoading == true) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
 
                     return GridView.builder(
-                      itemCount: _facilities.length,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: columns,
+                      itemCount: rangeState.foundRanges?.length ?? 0,
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 360,
                         crossAxisSpacing: 24,
                         mainAxisSpacing: 24,
-                        childAspectRatio: columns == 1 ? 1.05 : 0.78,
+                        childAspectRatio: 0.75,
                       ),
                       itemBuilder: (context, index) {
-                        return _FacilityCard(facility: _facilities[index]);
+                        final item = rangeState?.foundRanges?[index];
+
+                        return _FacilityCardWidget(facility: item ?? Range());
                       },
                     );
                   },
-                ),
-                const SizedBox(height: 28),
-                Center(
-                  child: OutlinedButton(
-                    onPressed: () {},
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: scheme.surfaceContainerHighest,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 28,
-                        vertical: 18,
-                      ),
-                    ),
-                    child: Text(
-                      'LOAD MORE OPERATIONAL ZONES',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: scheme.onSurface,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.8,
-                      ),
-                    ),
-                  ),
                 ),
               ],
             ),
@@ -739,22 +985,32 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
   }
 }
 
-class _FacilityCard extends StatelessWidget {
-  const _FacilityCard({
+class _FacilityCardWidget extends ConsumerStatefulWidget {
+  final Range facility;
+  const _FacilityCardWidget({
+    super.key,
     required this.facility,
   });
 
-  final _Facility facility;
+  @override
+  ConsumerState<_FacilityCardWidget> createState() => _FacilityCardState();
+}
+
+class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
+  // const _FacilityCard({
+  //   required this.facility,
+  // });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    final statusColor = switch (facility.statusColorKind) {
-      _StatusColorKind.available => scheme.tertiary,
-      _StatusColorKind.full => scheme.error,
-    };
+    final statusColor = scheme.tertiary;
+    //  switch (facility.statusColorKind) {
+    //   _StatusColorKind.available => scheme.tertiary,
+    //   _StatusColorKind.full => scheme.error,
+    // };
 
     return Container(
       decoration: BoxDecoration(
@@ -774,7 +1030,7 @@ class _FacilityCard extends StatelessWidget {
               children: [
                 Positioned.fill(
                   child: Image.network(
-                    facility.imageUrl,
+                    '', //facility.imageUrl,//TODO: ADD IMAGE HERE
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -814,7 +1070,7 @@ class _FacilityCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          facility.rating,
+                          '', //facility.rating,//TODO:: ADD RATING
                           style: theme.textTheme.labelMedium?.copyWith(
                             color: scheme.onSurface,
                             fontWeight: FontWeight.w900,
@@ -833,17 +1089,17 @@ class _FacilityCard extends StatelessWidget {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _TagPill(
-                        label: facility.tags.first,
-                        background: scheme.primaryContainer.withOpacity(0.92),
-                        foreground: scheme.onPrimary,
-                      ),
-                      if (facility.tags.length > 1)
-                        _TagPill(
-                          label: facility.tags[1],
-                          background: scheme.surfaceBright.withOpacity(0.92),
-                          foreground: scheme.onSurface,
-                        ),
+                      // _TagPill(
+                      //   label: facility.tags.first,
+                      //   background: scheme.primaryContainer.withOpacity(0.92),
+                      //   foreground: scheme.onPrimary,
+                      // ),
+                      // if (facility.tags.length > 1)
+                      //   _TagPill(
+                      //     label: facility.tags[1],
+                      //     background: scheme.surfaceBright.withOpacity(0.92),
+                      //     foreground: scheme.onSurface,
+                      //   ),
                     ],
                   ),
                 ),
@@ -862,7 +1118,7 @@ class _FacilityCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          facility.name.toUpperCase(),
+                          widget.facility.name?.toUpperCase() ?? '',
                           style: theme.textTheme.titleLarge?.copyWith(
                             color: scheme.onSurface,
                             fontWeight: FontWeight.w800,
@@ -870,19 +1126,41 @@ class _FacilityCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        facility.distance,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: scheme.primary,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.0,
-                        ),
+                      FutureBuilder(
+                        future: ref
+                            .read(rangeViewModelProvider.notifier)
+                            .getLocationState(widget.facility),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 1,
+                                ),
+                              ),
+                            );
+                          }
+
+                          return Text(
+                            widget.facility.nspDistanceInKilometers != null
+                                ? 'DIST: ${widget.facility.nspDistanceInKilometers} KM'
+                                : 'DIST: N/A',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: scheme.primary,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.0,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    facility.description,
+                    widget.facility.description ?? '',
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodyMedium?.copyWith(
@@ -913,7 +1191,7 @@ class _FacilityCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            facility.statusLabel,
+                            'STATUS', // facility.statusLabel,//TODO: ADD STATUS
                             style: theme.textTheme.labelMedium?.copyWith(
                               color: statusColor,
                               fontWeight: FontWeight.w900,
@@ -1003,9 +1281,8 @@ class _ToggleButton extends StatelessWidget {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: selected
-              ? scheme.surfaceContainerHigh
-              : scheme.surfaceContainer,
+          color:
+              selected ? scheme.surfaceContainerHigh : scheme.surfaceContainer,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(

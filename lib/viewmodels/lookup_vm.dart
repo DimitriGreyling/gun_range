@@ -26,9 +26,14 @@ class LookupVm extends StateNotifier<LookupState> {
   Future<void> getLookupsByListValue({
     required String listValue,
   }) async {
-    state = state.copyWith(isLoading: true);
-    final lookups = await _lookupRepository.getLookupsByListValue(listvalue: listValue);
+    if (state.lookups != null && state.lookups!.isNotEmpty) {
+      return;
+    }
 
-    state = state.copyWith(isLoading: false,lookups: lookups);
+    state = state.copyWith(isLoading: true);
+    final lookups =
+        await _lookupRepository.getLookupsByListValue(listvalue: listValue);
+
+    state = state.copyWith(isLoading: false, lookups: lookups);
   }
 }
