@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/constants/general_constants.dart';
+import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/widgets/v2/footer_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
 import 'package:gun_range_app/presentation/widgets/v2/search_field_widget.dart';
@@ -710,7 +711,9 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                     );
                   },
                 ),
-                const SizedBox(height: 20,),
+                const SizedBox(
+                  height: 20,
+                ),
                 Consumer(
                   builder: (context, ref, child) {
                     final rangeState = ref.watch(rangeViewModelProvider);
@@ -724,7 +727,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                     return GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _facilities.length,
+                      itemCount: rangeState.foundRanges?.length ?? 0,
                       gridDelegate:
                           const SliverGridDelegateWithMaxCrossAxisExtent(
                         maxCrossAxisExtent: 360,
@@ -733,6 +736,8 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                         childAspectRatio: 0.75,
                       ),
                       itemBuilder: (context, index) {
+                        final item = rangeState?.foundRanges?[index];
+
                         return _FacilityCard(facility: _facilities[index]);
                       },
                     );
@@ -985,17 +990,18 @@ class _FacilityCard extends StatelessWidget {
     required this.facility,
   });
 
-  final _Facility facility;
+  final Range facility;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
-    final statusColor = switch (facility.statusColorKind) {
-      _StatusColorKind.available => scheme.tertiary,
-      _StatusColorKind.full => scheme.error,
-    };
+    final statusColor = scheme.tertiary;
+    //  switch (facility.statusColorKind) {
+    //   _StatusColorKind.available => scheme.tertiary,
+    //   _StatusColorKind.full => scheme.error,
+    // };
 
     return Container(
       decoration: BoxDecoration(
@@ -1015,7 +1021,7 @@ class _FacilityCard extends StatelessWidget {
               children: [
                 Positioned.fill(
                   child: Image.network(
-                    facility.imageUrl,
+                    '', //facility.imageUrl,//TODO: ADD IMAGE HERE 
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -1055,7 +1061,7 @@ class _FacilityCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          facility.rating,
+                         '', //facility.rating,//TODO:: ADD RATING
                           style: theme.textTheme.labelMedium?.copyWith(
                             color: scheme.onSurface,
                             fontWeight: FontWeight.w900,
