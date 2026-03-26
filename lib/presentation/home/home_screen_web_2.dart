@@ -11,6 +11,7 @@ import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
 import 'package:gun_range_app/presentation/widgets/v2/search_field_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/tier_card_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/top_bar_widget.dart';
+import 'package:gun_range_app/providers/supabase_provider.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:gun_range_app/viewmodels/lookup_vm.dart';
 import 'package:intl/intl.dart';
@@ -233,40 +234,53 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: scheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(
-                              color: scheme.primary.withOpacity(0.20),
-                            ),
-                          ),
-                          child: Wrap(
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            spacing: 10,
-                            children: [
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: scheme.tertiary,
-                                  shape: BoxShape.circle,
+                        FutureBuilder(
+                          future: ref.read(systemHealthProvider).check(),
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const Center(
+                                child: CircularProgressIndicator(),
+                              );
+                            }
+
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: scheme.surfaceContainerHighest,
+                                borderRadius: BorderRadius.circular(999),
+                                border: Border.all(
+                                  color: scheme.primary.withOpacity(0.20),
                                 ),
                               ),
-                              Text(
-                                'NETWORK STATUS: 542 FACILITIES ONLINE',
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  color: scheme.primary,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.2,
-                                ),
+                              child: Wrap(
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                spacing: 10,
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: BoxDecoration(
+                                      color: scheme.tertiary,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  Text(
+                                    'NETWORK STATUS: 542 FACILITIES ONLINE',
+                                    style:
+                                        theme.textTheme.labelMedium?.copyWith(
+                                      color: scheme.primary,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 1.2,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
+                            );
+                          },
                         ),
                         const SizedBox(height: 28),
                         Text.rich(
@@ -469,7 +483,8 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                                 if (_selectedActivityValue != null)
                                   'activity': _selectedActivityValue,
                                 if (_dateSelected != null)
-                                  'date': DateFormat('yyyy/MM/dd').format(_dateSelected!),
+                                  'date': DateFormat('yyyy/MM/dd')
+                                      .format(_dateSelected!),
                               },
                             );
                           },
