@@ -162,8 +162,6 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
             ? 32.0
             : 20.0;
 
-    final lookupState = ref.watch(lookupViewModelProvider);
-
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       body: SingleChildScrollView(
@@ -171,9 +169,9 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
           children: [
             const TopBarWidget(),
             _buildHeroSection(
-                theme: theme,
-                horizontalPadding: horizontalPadding,
-                lookupState: lookupState),
+              theme: theme,
+              horizontalPadding: horizontalPadding,
+            ),
             _buildCategoriesSection(theme, horizontalPadding),
             _buildEventsSection(theme, horizontalPadding),
             _buildBenefitsSection(theme, horizontalPadding),
@@ -188,7 +186,6 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
   Widget _buildHeroSection({
     required ThemeData theme,
     required double horizontalPadding,
-    required LookupState lookupState,
   }) {
     final scheme = theme.colorScheme;
     final isWide = MediaQuery.sizeOf(context).width >= 900;
@@ -235,55 +232,55 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        FutureBuilder(
-                          future: ref.read(systemHealthProvider).check(),
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              return const Center(
-                                child: CircularProgressIndicator(),
-                              );
-                            }
+                        // FutureBuilder(
+                        //   future: ref.read(systemHealthProvider).check(),
+                        //   builder: (context, snapshot) {
+                        //     if (snapshot.connectionState ==
+                        //         ConnectionState.waiting) {
+                        //       return const Center(
+                        //         child: CircularProgressIndicator(),
+                        //       );
+                        //     }
 
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 14,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: scheme.surfaceContainerHighest,
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(
-                                  color: scheme.primary.withOpacity(0.20),
-                                ),
-                              ),
-                              child: Wrap(
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                spacing: 10,
-                                children: [
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: BoxDecoration(
-                                      color: scheme.tertiary,
-                                      shape: BoxShape.circle,
-                                    ),
-                                  ),
-                                  Text(
-                                    'NETWORK STATUS: 542 FACILITIES ONLINE',
-                                    style:
-                                        theme.textTheme.labelMedium?.copyWith(
-                                      color: scheme.primary,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 1.2,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 28),
+                        //     return Container(
+                        //       padding: const EdgeInsets.symmetric(
+                        //         horizontal: 14,
+                        //         vertical: 8,
+                        //       ),
+                        //       decoration: BoxDecoration(
+                        //         color: scheme.surfaceContainerHighest,
+                        //         borderRadius: BorderRadius.circular(999),
+                        //         border: Border.all(
+                        //           color: scheme.primary.withOpacity(0.20),
+                        //         ),
+                        //       ),
+                        //       child: Wrap(
+                        //         crossAxisAlignment: WrapCrossAlignment.center,
+                        //         spacing: 10,
+                        //         children: [
+                        //           Container(
+                        //             width: 8,
+                        //             height: 8,
+                        //             decoration: BoxDecoration(
+                        //               color: scheme.tertiary,
+                        //               shape: BoxShape.circle,
+                        //             ),
+                        //           ),
+                        //           Text(
+                        //             'NETWORK STATUS: 542 FACILITIES ONLINE',
+                        //             style:
+                        //                 theme.textTheme.labelMedium?.copyWith(
+                        //               color: scheme.primary,
+                        //               fontWeight: FontWeight.w900,
+                        //               letterSpacing: 1.2,
+                        //             ),
+                        //           ),
+                        //         ],
+                        //       ),
+                        //     );
+                        //   },
+                        // ),
+                        // const SizedBox(height: 28),
                         Text.rich(
                           textAlign: TextAlign.center,
                           TextSpan(
@@ -320,8 +317,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                           ),
                         ),
                         const SizedBox(height: 36),
-                        _buildSearchPanel(
-                            theme: theme, lookupState: lookupState),
+                        _buildSearchPanel(theme: theme),
                         const SizedBox(height: 24),
                         ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 760),
@@ -348,176 +344,188 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
 
   Widget _buildSearchPanel({
     required ThemeData theme,
-    required LookupState lookupState,
   }) {
     final scheme = theme.colorScheme;
     final isWide = MediaQuery.sizeOf(context).width >= 980;
 
-    final fields = [
-      SearchField(
-        label: 'LOCATION',
-        child: TextField(
-          controller: _locationController,
-          decoration: InputDecoration(
-            hintText: 'Province or City',
-            hintStyle: theme.textTheme.titleLarge?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
-            isDense: true,
-            contentPadding: EdgeInsets.zero,
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            filled: false,
-          ),
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: scheme.onSurface,
-          ),
-        ),
-      ),
-      SearchField(
-        label: 'ACTIVITY',
-        child: DropdownButtonFormField<String>(
-          value: _selectedActivityValue,
-          hint: const Text('ACTIVITY'),
-          items: lookupState.lookups != null && lookupState.lookups!.isNotEmpty
-              ? lookupState.lookups!.map((lookup) {
-                  return DropdownMenuItem(
-                      value: lookup.id,
-                      child: Text(lookup.lookupDescription ?? ''));
-                }).toList()
-              : [],
-          onChanged: (value) {
-            _selectedActivityValue = value;
-          },
-          decoration: const InputDecoration(
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            filled: false,
-            contentPadding: EdgeInsets.zero,
-            isDense: true,
-          ),
-          dropdownColor: scheme.surfaceContainerHigh,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: scheme.onSurface,
-          ),
-          iconEnabledColor: scheme.primary,
-        ),
-      ),
-      MouseRegion(
-        cursor: MouseCursor.defer,
-        child: InkWell(
-          onTap: () async {
-            _dateSelected = await _pickDate();
+    return Consumer(
+      builder: (context, ref, child) {
+        final lookupState = ref.watch(lookupViewModelProvider);
 
-            setState(() {});
-          },
-          child: SearchField(
-            label: 'AVAILABLE DATE',
-            child: Text(
-              _dateSelected != null
-                  ? DateFormat(GeneralConstants.dateFormat)
-                      .format(_dateSelected!)
-                  : 'SELECT DATE',
+        if (lookupState.isLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        final fields = [
+          SearchField(
+            label: 'LOCATION',
+            child: TextField(
+              controller: _locationController,
+              decoration: InputDecoration(
+                hintText: 'Province or City',
+                hintStyle: theme.textTheme.titleLarge?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                filled: false,
+              ),
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
-                color: scheme.onSurfaceVariant,
+                color: scheme.onSurface,
               ),
             ),
           ),
-        ),
-      ),
-    ];
+          SearchField(
+            label: 'ACTIVITY',
+            child: DropdownButtonFormField<String>(
+              value: _selectedActivityValue,
+              hint: const Text('ACTIVITY'),
+              items:
+                  lookupState.lookups != null && lookupState.lookups!.isNotEmpty
+                      ? lookupState.lookups!.map((lookup) {
+                          return DropdownMenuItem(
+                              value: lookup.id,
+                              child: Text(lookup.lookupDescription ?? ''));
+                        }).toList()
+                      : [],
+              onChanged: (value) {
+                _selectedActivityValue = value;
+              },
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                filled: false,
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+              ),
+              dropdownColor: scheme.surfaceContainerHigh,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: scheme.onSurface,
+              ),
+              iconEnabledColor: scheme.primary,
+            ),
+          ),
+          MouseRegion(
+            cursor: MouseCursor.defer,
+            child: InkWell(
+              onTap: () async {
+                _dateSelected = await _pickDate();
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 1060),
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainerHigh.withOpacity(0.82),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: scheme.outlineVariant.withOpacity(0.25),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: scheme.shadow.withOpacity(0.35),
-                blurRadius: 32,
-                offset: const Offset(0, 20),
+                setState(() {});
+              },
+              child: SearchField(
+                label: 'AVAILABLE DATE',
+                child: Text(
+                  _dateSelected != null
+                      ? DateFormat(GeneralConstants.dateFormat)
+                          .format(_dateSelected!)
+                      : 'SELECT DATE',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: scheme.onSurfaceVariant,
+                  ),
+                ),
               ),
-            ],
+            ),
           ),
-          child: lookupState.isLoading
-              ? Center(
-                  child: CircularProgressIndicator(),
-                )
-              : isWide
-                  ? Row(
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Expanded(child: fields[0]),
-                              _ghostDivider(theme),
-                              Expanded(child: fields[1]),
-                              _ghostDivider(theme),
-                              Expanded(child: fields[2]),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        GradientButton(
-                          label: 'SEARCH',
-                          icon: Icons.search,
-                          large: true,
-                          onPressed: () {
-                            context.goNamed(
-                              'ranges',
-                              queryParameters: {
-                                if (_locationController.text.isNotEmpty)
-                                  'location': _locationController.text,
-                                if (_selectedActivityValue != null)
-                                  'activity': _selectedActivityValue,
-                                if (_dateSelected != null)
-                                  'date':
-                                      DateFormat(GeneralConstants.dateFormat)
-                                          .format(_dateSelected!),
-                              },
-                            );
-                          },
-                        ),
-                      ],
+        ];
+
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1060),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHigh.withOpacity(0.82),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: scheme.outlineVariant.withOpacity(0.25),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: scheme.shadow.withOpacity(0.35),
+                    blurRadius: 32,
+                    offset: const Offset(0, 20),
+                  ),
+                ],
+              ),
+              child: lookupState.isLoading
+                  ? Center(
+                      child: CircularProgressIndicator(),
                     )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        fields[0],
-                        _softSpacer(theme),
-                        fields[1],
-                        _softSpacer(theme),
-                        fields[2],
-                        const SizedBox(height: 12),
-                        GradientButton(
-                          label: 'SEARCH',
-                          icon: Icons.search,
-                          large: true,
-                          onPressed: () {
-                            context.goNamed('ranges', queryParameters: {
-                              'location': _locationController.text,
-                              'activity': _selectedActivityValue,
-                            });
-                          },
+                  : isWide
+                      ? Row(
+                          children: [
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Expanded(child: fields[0]),
+                                  _ghostDivider(theme),
+                                  Expanded(child: fields[1]),
+                                  _ghostDivider(theme),
+                                  Expanded(child: fields[2]),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            GradientButton(
+                              label: 'SEARCH',
+                              icon: Icons.search,
+                              large: true,
+                              onPressed: () {
+                                context.goNamed(
+                                  'ranges',
+                                  queryParameters: {
+                                    if (_locationController.text.isNotEmpty)
+                                      'location': _locationController.text,
+                                    if (_selectedActivityValue != null)
+                                      'activity': _selectedActivityValue,
+                                    if (_dateSelected != null)
+                                      'date': DateFormat(
+                                              GeneralConstants.dateFormat)
+                                          .format(_dateSelected!),
+                                  },
+                                );
+                              },
+                            ),
+                          ],
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            fields[0],
+                            _softSpacer(theme),
+                            fields[1],
+                            _softSpacer(theme),
+                            fields[2],
+                            const SizedBox(height: 12),
+                            GradientButton(
+                              label: 'SEARCH',
+                              icon: Icons.search,
+                              large: true,
+                              onPressed: () {
+                                context.goNamed('ranges', queryParameters: {
+                                  'location': _locationController.text,
+                                  'activity': _selectedActivityValue,
+                                });
+                              },
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 

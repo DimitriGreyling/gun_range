@@ -80,7 +80,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() {
+   WidgetsBinding.instance.addPostFrameCallback((_){
       ref
           .read(lookupViewModelProvider.notifier)
           .getLookupsByListValue(listValue: 'RANGE_TYPE');
