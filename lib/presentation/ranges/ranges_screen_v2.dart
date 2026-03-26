@@ -738,7 +738,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                       itemBuilder: (context, index) {
                         final item = rangeState?.foundRanges?[index];
 
-                        return _FacilityCard(facility: _facilities[index]);
+                        return _FacilityCardWidget(facility: item ?? Range());
                       },
                     );
                   },
@@ -985,12 +985,21 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
   }
 }
 
-class _FacilityCard extends StatelessWidget {
-  const _FacilityCard({
+class _FacilityCardWidget extends ConsumerStatefulWidget {
+  final Range facility;
+  const _FacilityCardWidget({
+    super.key,
     required this.facility,
   });
 
-  final Range facility;
+  @override
+  ConsumerState<_FacilityCardWidget> createState() => _FacilityCardState();
+}
+
+class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
+  // const _FacilityCard({
+  //   required this.facility,
+  // });
 
   @override
   Widget build(BuildContext context) {
@@ -1021,7 +1030,7 @@ class _FacilityCard extends StatelessWidget {
               children: [
                 Positioned.fill(
                   child: Image.network(
-                    '', //facility.imageUrl,//TODO: ADD IMAGE HERE 
+                    '', //facility.imageUrl,//TODO: ADD IMAGE HERE
                     fit: BoxFit.cover,
                   ),
                 ),
@@ -1061,7 +1070,7 @@ class _FacilityCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                         '', //facility.rating,//TODO:: ADD RATING
+                          '', //facility.rating,//TODO:: ADD RATING
                           style: theme.textTheme.labelMedium?.copyWith(
                             color: scheme.onSurface,
                             fontWeight: FontWeight.w900,
@@ -1080,17 +1089,17 @@ class _FacilityCard extends StatelessWidget {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      _TagPill(
-                        label: facility.tags.first,
-                        background: scheme.primaryContainer.withOpacity(0.92),
-                        foreground: scheme.onPrimary,
-                      ),
-                      if (facility.tags.length > 1)
-                        _TagPill(
-                          label: facility.tags[1],
-                          background: scheme.surfaceBright.withOpacity(0.92),
-                          foreground: scheme.onSurface,
-                        ),
+                      // _TagPill(
+                      //   label: facility.tags.first,
+                      //   background: scheme.primaryContainer.withOpacity(0.92),
+                      //   foreground: scheme.onPrimary,
+                      // ),
+                      // if (facility.tags.length > 1)
+                      //   _TagPill(
+                      //     label: facility.tags[1],
+                      //     background: scheme.surfaceBright.withOpacity(0.92),
+                      //     foreground: scheme.onSurface,
+                      //   ),
                     ],
                   ),
                 ),
@@ -1109,7 +1118,7 @@ class _FacilityCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          facility.name.toUpperCase(),
+                          widget.facility.name?.toUpperCase() ?? '',
                           style: theme.textTheme.titleLarge?.copyWith(
                             color: scheme.onSurface,
                             fontWeight: FontWeight.w800,
@@ -1117,19 +1126,41 @@ class _FacilityCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        facility.distance,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          color: scheme.primary,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.0,
-                        ),
+                      FutureBuilder(
+                        future: ref
+                            .read(rangeViewModelProvider.notifier)
+                            .getLocationState(widget.facility),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            return const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 1,
+                                ),
+                              ),
+                            );
+                          }
+
+                          return Text(
+                            widget.facility.nspDistanceInKilometers != null
+                                ? 'DIST: ${widget.facility.nspDistanceInKilometers} KM'
+                                : 'DIST: N/A',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: scheme.primary,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.0,
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    facility.description,
+                    widget.facility.description ?? '',
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.bodyMedium?.copyWith(
@@ -1160,7 +1191,7 @@ class _FacilityCard extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            facility.statusLabel,
+                            'STATUS', // facility.statusLabel,//TODO: ADD STATUS
                             style: theme.textTheme.labelMedium?.copyWith(
                               color: statusColor,
                               fontWeight: FontWeight.w900,

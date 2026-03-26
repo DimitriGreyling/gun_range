@@ -8,6 +8,8 @@ class Range {
   bool? isActive;
   String? contactNumber;
 
+  double? nspDistanceInKilometers;
+
   bool nspIsFavorite = false;
   List<String> nspPhotoUrls = [];
 

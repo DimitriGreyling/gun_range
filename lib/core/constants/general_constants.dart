@@ -3,4 +3,5 @@ class GeneralConstants {
   static const int pageSize = 10;
 
   static const String dateFormat = 'yyyy-MM-dd';
+  static const double metersToKilometers = 1000;
 }
