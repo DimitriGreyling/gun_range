@@ -80,7 +80,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
   @override
   void initState() {
     super.initState();
-   WidgetsBinding.instance.addPostFrameCallback((_){
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       ref
           .read(lookupViewModelProvider.notifier)
           .getLookupsByListValue(listValue: 'RANGE_TYPE');
@@ -99,7 +99,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final lookupState = ref.watch(lookupViewModelProvider);
+    final rangeState = ref.watch(rangeViewModelProvider);
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -110,9 +110,10 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  _buildHero(context: context, lookupState: lookupState),
-                  _buildFacilitiesSection(context),
-                  _buildMapSection(context),
+                  _buildHero(context: context, isLoading: rangeState.isLoading),
+                  _buildFacilitiesSection(
+                      context: context, isLoading: rangeState.isLoading),
+                  // _buildMapSection(context),
                   const FooterWidget(),
                 ],
               ),
@@ -123,8 +124,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
     );
   }
 
-  Widget _buildHero(
-      {required BuildContext context, required LookupState lookupState}) {
+  Widget _buildHero({required BuildContext context, bool? isLoading = false}) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final width = MediaQuery.sizeOf(context).width;
@@ -201,7 +201,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                     ),
                     const SizedBox(height: 28),
                     // _buildFilterPanel(context),
-                    _buildSearchPanel(theme: theme, lookupState: lookupState),
+                    _buildSearchPanel(theme: theme, isLoading: isLoading),
                   ],
                 ),
               ),
@@ -214,176 +214,192 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
 
   Widget _buildSearchPanel({
     required ThemeData theme,
-    required LookupState lookupState,
+    bool? isLoading = false,
   }) {
     final scheme = theme.colorScheme;
     final isWide = MediaQuery.sizeOf(context).width >= 980;
 
-    final fields = [
-      SearchField(
-        label: 'LOCATION',
-        child: TextField(
-          controller: _locationController,
-          decoration: InputDecoration(
-            hintText: 'Province or City',
-            hintStyle: theme.textTheme.titleLarge?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
-            isDense: true,
-            contentPadding: EdgeInsets.zero,
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            filled: false,
-          ),
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: scheme.onSurface,
-          ),
-        ),
-      ),
-      SearchField(
-        label: 'ACTIVITY',
-        child: DropdownButtonFormField<String>(
-          value: _selectedActivityValue,
-          hint: const Text('ACTIVITY'),
-          items: lookupState.lookups != null && lookupState.lookups!.isNotEmpty
-              ? lookupState.lookups!.map((lookup) {
-                  return DropdownMenuItem(
-                      value: lookup.id,
-                      child: Text(lookup.lookupDescription ?? ''));
-                }).toList()
-              : [],
-          onChanged: (value) {
-            _selectedActivityValue = value;
-          },
-          decoration: const InputDecoration(
-            border: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            filled: false,
-            contentPadding: EdgeInsets.zero,
-            isDense: true,
-          ),
-          dropdownColor: scheme.surfaceContainerHigh,
-          style: theme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: scheme.onSurface,
-          ),
-          iconEnabledColor: scheme.primary,
-        ),
-      ),
-      MouseRegion(
-        cursor: MouseCursor.defer,
-        child: InkWell(
-          onTap: () async {
-            _dateSelected = await _pickDate();
+    return Consumer(
+      builder: (context, ref, child) {
+        final lookupState = ref.watch(lookupViewModelProvider);
 
-            setState(() {});
-          },
-          child: SearchField(
-            label: 'AVAILABLE DATE',
-            child: Text(
-              _dateSelected != null
-                  ? DateFormat(GeneralConstants.dateFormat)
-                      .format(_dateSelected!)
-                  : 'SELECT DATE',
+        if (lookupState.isLoading) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+
+        final fields = [
+          SearchField(
+            label: 'LOCATION',
+            child: TextField(
+              enabled: isLoading != true,
+              controller: isLoading == true
+                  ? TextEditingController(text: 'SEARCHING...')
+                  : _locationController,
+              decoration: InputDecoration(
+                hintText:
+                    isLoading == true ? 'SEARCHING...' : 'Province or City',
+                hintStyle: theme.textTheme.titleLarge?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                filled: false,
+              ),
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
-                color: scheme.onSurfaceVariant,
+                color: isLoading == true
+                    ? scheme.onSurfaceVariant
+                    : scheme.onSurface,
               ),
             ),
           ),
-        ),
-      ),
-    ];
+          SearchField(
+            label: 'ACTIVITY',
+            child: DropdownButtonFormField<String>(
+              value: _selectedActivityValue,
+              hint: Text(isLoading == true ? 'SEARCHING...' : 'ACTIVITY'),
+              items:
+                  lookupState.lookups != null && lookupState.lookups!.isNotEmpty
+                      ? lookupState.lookups!.map((lookup) {
+                          return DropdownMenuItem(
+                              value: lookup.id,
+                              child: Text(lookup.lookupDescription ?? ''));
+                        }).toList()
+                      : [],
+              onChanged: isLoading == true
+                  ? null
+                  : (value) {
+                      _selectedActivityValue = value;
+                    },
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                filled: false,
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+              ),
+              dropdownColor: scheme.surfaceContainerHigh,
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: isLoading == true
+                    ? scheme.onSurfaceVariant
+                    : scheme.onSurface,
+              ),
+              iconEnabledColor: scheme.primary,
+            ),
+          ),
+          MouseRegion(
+            cursor: MouseCursor.defer,
+            child: InkWell(
+              onTap: isLoading == true
+                  ? null
+                  : () async {
+                      _dateSelected = await _pickDate();
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 1060),
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainerHigh.withOpacity(0.82),
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: scheme.outlineVariant.withOpacity(0.25),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: scheme.shadow.withOpacity(0.35),
-                blurRadius: 32,
-                offset: const Offset(0, 20),
+                      setState(() {});
+                    },
+              child: SearchField(
+                label: isLoading == true ? 'SEARCHING...' : 'AVAILABLE DATE',
+                child: Text(
+                  isLoading == true
+                      ? 'SEARCHING...'
+                      : _dateSelected != null
+                          ? DateFormat(GeneralConstants.dateFormat)
+                              .format(_dateSelected!)
+                          : 'SELECT DATE',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: isLoading == true
+                        ? scheme.onSurfaceVariant
+                        : _dateSelected == null
+                            ? scheme.onSurfaceVariant
+                            : scheme.onSurface,
+                  ),
+                ),
               ),
-            ],
+            ),
           ),
-          child: lookupState.isLoading
-              ? Center(
-                  child: CircularProgressIndicator(),
-                )
-              : isWide
-                  ? Row(
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Expanded(child: fields[0]),
-                              _ghostDivider(theme),
-                              Expanded(child: fields[1]),
-                              _ghostDivider(theme),
-                              Expanded(child: fields[2]),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        GradientButton(
-                          label: 'SEARCH',
-                          icon: Icons.search,
-                          large: true,
-                          onPressed: () {
-                            context.goNamed(
-                              'ranges',
-                              queryParameters: {
-                                if (_locationController.text.isNotEmpty)
-                                  'location': _locationController.text,
-                                if (_selectedActivityValue != null)
-                                  'activity': _selectedActivityValue,
-                                if (_dateSelected != null)
-                                  'date':
-                                      DateFormat(GeneralConstants.dateFormat)
-                                          .format(_dateSelected!),
-                              },
-                            );
-                          },
-                        ),
-                      ],
+        ];
+
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 1060),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainerHigh.withOpacity(0.82),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: scheme.outlineVariant.withOpacity(0.25),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: scheme.shadow.withOpacity(0.35),
+                    blurRadius: 32,
+                    offset: const Offset(0, 20),
+                  ),
+                ],
+              ),
+              child: lookupState.isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(),
                     )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        fields[0],
-                        _softSpacer(theme),
-                        fields[1],
-                        _softSpacer(theme),
-                        fields[2],
-                        const SizedBox(height: 12),
-                        GradientButton(
-                          label: 'SEARCH',
-                          icon: Icons.search,
-                          large: true,
-                          onPressed: () {
-                            context.goNamed('ranges', queryParameters: {
-                              'location': _locationController.text,
-                              'activity': _selectedActivityValue,
-                            });
-                          },
+                  : isWide
+                      ? Row(
+                          children: [
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Expanded(child: fields[0]),
+                                  _ghostDivider(theme),
+                                  Expanded(child: fields[1]),
+                                  _ghostDivider(theme),
+                                  Expanded(child: fields[2]),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            GradientButton(
+                              label:
+                                  isLoading == true ? 'SEARCHING...' : 'SEARCH',
+                              icon: Icons.search,
+                              large: true,
+                              onPressed: isLoading == true ? null : () {},
+                              tone:  isLoading == true ? GradientButtonTone.secondary : GradientButtonTone.primary,
+                            ),
+                          ],
+                        )
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            fields[0],
+                            _softSpacer(theme),
+                            fields[1],
+                            _softSpacer(theme),
+                            fields[2],
+                            const SizedBox(height: 12),
+                            GradientButton(
+                              label:
+                                  isLoading == true ? 'SEARCHING...' : 'SEARCH',
+                              icon: Icons.search,
+                              large: true,
+                              onPressed: isLoading == true ? null : () {},
+                              tone: isLoading == true ? GradientButtonTone.secondary : GradientButtonTone.primary,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-        ),
-      ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -641,7 +657,8 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
     );
   }
 
-  Widget _buildFacilitiesSection(BuildContext context) {
+  Widget _buildFacilitiesSection(
+      {required BuildContext context, bool? isLoading = false}) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final width = MediaQuery.sizeOf(context).width;

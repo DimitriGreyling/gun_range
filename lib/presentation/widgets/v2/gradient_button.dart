@@ -17,7 +17,7 @@ class GradientButton extends StatelessWidget {
   });
 
   final String label;
-  final VoidCallback onPressed;
+  final void Function()? onPressed;
   final IconData? icon;
   final bool large;
   final GradientButtonTone tone;

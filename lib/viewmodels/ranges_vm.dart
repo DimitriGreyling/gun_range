@@ -35,6 +35,7 @@ class RangesVm extends StateNotifier<RangesState> {
     DateTime? availableDate,
   }) async {
     state = state.copyWith(isLoading: true);
+    await Future.delayed(Duration(seconds: 10));
     final result = await rangeRepository.searchRanges(
       activityId: activityId,
       availableDate: availableDate,
