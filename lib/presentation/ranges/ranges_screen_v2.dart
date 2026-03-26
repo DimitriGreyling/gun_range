@@ -73,7 +73,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
   String _caliber = 'Up to .45 ACP';
   bool _gridSelected = true;
 
-  TextEditingController _locationController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
   String? _selectedActivityValue;
   DateTime? _dateSelected;
 

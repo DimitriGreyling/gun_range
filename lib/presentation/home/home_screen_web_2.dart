@@ -136,7 +136,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
     ),
   ];
 
-  TextEditingController _locationController = TextEditingController();
+ final TextEditingController _locationController = TextEditingController();
   String? _selectedActivityValue;
   DateTime? _dateSelected;
 
