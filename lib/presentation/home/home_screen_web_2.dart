@@ -13,6 +13,7 @@ import 'package:gun_range_app/presentation/widgets/v2/tier_card_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/top_bar_widget.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:gun_range_app/viewmodels/lookup_vm.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreenWeb2 extends ConsumerStatefulWidget {
   const HomeScreenWeb2({super.key});
@@ -132,6 +133,10 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
       ],
     ),
   ];
+
+  TextEditingController _locationController = TextEditingController();
+  String? _selectedValue;
+  DateTime? _dateSelected;
 
   @override
   void initState() {
@@ -332,14 +337,12 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
   }) {
     final scheme = theme.colorScheme;
     final isWide = MediaQuery.sizeOf(context).width >= 980;
-    TextEditingController locationController = TextEditingController();
-    String? selectedValue;
 
     final fields = [
       SearchField(
         label: 'LOCATION',
         child: TextField(
-          controller: locationController,
+          controller: _locationController,
           decoration: InputDecoration(
             hintText: 'Province or City',
             hintStyle: theme.textTheme.titleLarge?.copyWith(
@@ -361,7 +364,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
       SearchField(
         label: 'ACTIVITY',
         child: DropdownButtonFormField<String>(
-          value: selectedValue,
+          value: _selectedValue,
           hint: const Text('ACTIVITY'),
           items: lookupState.lookups != null && lookupState.lookups!.isNotEmpty
               ? lookupState.lookups!.map((lookup) {
@@ -371,7 +374,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                 }).toList()
               : [],
           onChanged: (value) {
-            selectedValue = value;
+            _selectedValue = value;
           },
           decoration: const InputDecoration(
             border: InputBorder.none,
@@ -389,24 +392,27 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
           iconEnabledColor: scheme.primary,
         ),
       ),
-      SearchField(
-        label: 'AVAILABLE DATE',
-        child: DatePickerDialog(firstDate: DateTime.now(), lastDate: DateTime.now())
-        //  TextField(
-        //   decoration: const InputDecoration(
-        //     hintText: 'Select Date',
-        //     border: InputBorder.none,
-        //     enabledBorder: InputBorder.none,
-        //     focusedBorder: InputBorder.none,
-        //     filled: false,
-        //     contentPadding: EdgeInsets.zero,
-        //     isDense: true,
-        //   ),
-        //   style: theme.textTheme.titleLarge?.copyWith(
-        //     fontWeight: FontWeight.w700,
-        //     color: scheme.onSurface,
-        //   ),
-        // ),
+      MouseRegion(
+        cursor: MouseCursor.defer,
+        child: InkWell(
+          onTap: () async {
+            _dateSelected = await _pickDate();
+
+            setState(() {});
+          },
+          child: SearchField(
+            label: 'AVAILABLE DATE',
+            child: Text(
+              _dateSelected != null
+                  ? DateFormat('yyyy/MM/dd').format(_dateSelected!)
+                  : 'SELECT DATE',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
       ),
     ];
 
@@ -458,8 +464,8 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                             context.goNamed(
                               'ranges',
                               queryParameters: {
-                                'location': locationController.text,
-                                'activity': selectedValue,
+                                'location': _locationController.text,
+                                'activity': _selectedValue,
                               },
                             );
                           },
@@ -481,8 +487,8 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                           large: true,
                           onPressed: () {
                             context.goNamed('ranges', queryParameters: {
-                              'location': locationController.text,
-                              'activity': selectedValue,
+                              'location': _locationController.text,
+                              'activity': _selectedValue,
                             });
                           },
                         ),
@@ -491,6 +497,15 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
         ),
       ),
     );
+  }
+
+  Future<DateTime?> _pickDate() async {
+    final dateSelected = await showDatePicker(
+      context: context,
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2027),
+    );
+    return dateSelected;
   }
 
   Widget _buildCategoriesSection(ThemeData theme, double horizontalPadding) {
