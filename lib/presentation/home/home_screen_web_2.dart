@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/core/constants/general_constants.dart';
 import 'package:gun_range_app/data/models/v2/widget_models.dart';
 import 'package:gun_range_app/presentation/widgets/v2/category_card_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/event_card_widget.dart';
@@ -418,7 +419,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
             label: 'AVAILABLE DATE',
             child: Text(
               _dateSelected != null
-                  ? DateFormat('yyyy/MM/dd').format(_dateSelected!)
+                  ? DateFormat(GeneralConstants.dateFormat).format(_dateSelected!)
                   : 'SELECT DATE',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
@@ -483,7 +484,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                                 if (_selectedActivityValue != null)
                                   'activity': _selectedActivityValue,
                                 if (_dateSelected != null)
-                                  'date': DateFormat('yyyy/MM/dd')
+                                  'date': DateFormat(GeneralConstants.dateFormat)
                                       .format(_dateSelected!),
                               },
                             );
@@ -521,6 +522,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
   Future<DateTime?> _pickDate() async {
     final dateSelected = await showDatePicker(
       context: context,
+      initialDate: DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(2027),
     );

@@ -36,13 +36,27 @@ final appRouter = GoRouter(
       builder: (context, state) => const LoginPageV2(),
     ),
     GoRoute(
-      name: 'ranges',
-      path: '/ranges',
-      builder: (context, state) {
-        final filters = state.uri.queryParameters;
-        return const RangesScreenV2();
-      }
-    ),
+        name: 'ranges',
+        path: '/ranges',
+        builder: (context, state) {
+          final filters = state.uri.queryParameters as Map<String, dynamic>?;
+
+          if (filters == null) {
+            return const RangesScreenV2();
+          }
+
+          log('${filters.keys}');
+          final rawDate = filters['date'];
+          final DateTime? date = rawDate != null ? DateTime.tryParse(rawDate) : null;
+          final String? activityId = filters['activity'];
+          final String? location = filters['location'];
+
+          return RangesScreenV2(
+            location: location,
+            availableDate: date,
+            activityId: activityId,
+          );
+        }),
     GoRoute(
       path: '/make-booking',
       builder: (context, state) {

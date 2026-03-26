@@ -2,13 +2,27 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/core/constants/general_constants.dart';
 import 'package:gun_range_app/presentation/widgets/v2/footer_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
 import 'package:gun_range_app/presentation/widgets/v2/search_field_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/top_bar_widget.dart';
+import 'package:gun_range_app/providers/viewmodel_providers.dart';
+import 'package:gun_range_app/viewmodels/lookup_vm.dart';
+import 'package:intl/intl.dart';
 
 class RangesScreenV2 extends ConsumerStatefulWidget {
-  const RangesScreenV2({super.key});
+  final DateTime? availableDate;
+  final String? location;
+  final String? activityId;
+
+  const RangesScreenV2({
+    super.key,
+    this.location,
+    this.activityId,
+    this.availableDate,
+  });
 
   @override
   ConsumerState<RangesScreenV2> createState() => _RangesScreenV2State();
@@ -59,9 +73,28 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
   String _caliber = 'Up to .45 ACP';
   bool _gridSelected = true;
 
+  TextEditingController _locationController = TextEditingController();
+  String? _selectedActivityValue;
+  DateTime? _dateSelected;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref
+          .read(lookupViewModelProvider.notifier)
+          .getLookupsByListValue(listValue: 'RANGE_TYPE');
+    });
+
+    _locationController.text = widget.location ?? '';
+    _selectedActivityValue = widget.activityId;
+    _dateSelected = widget.availableDate;
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final lookupState = ref.watch(lookupViewModelProvider);
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -72,7 +105,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  _buildHero(context),
+                  _buildHero(context: context, lookupState: lookupState),
                   _buildFacilitiesSection(context),
                   _buildMapSection(context),
                   const FooterWidget(),
@@ -85,7 +118,8 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
     );
   }
 
-  Widget _buildHero(BuildContext context) {
+  Widget _buildHero(
+      {required BuildContext context, required LookupState lookupState}) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final width = MediaQuery.sizeOf(context).width;
@@ -161,7 +195,8 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                       ),
                     ),
                     const SizedBox(height: 28),
-                    _buildFilterPanel(context),
+                    // _buildFilterPanel(context),
+                    _buildSearchPanel(theme: theme, lookupState: lookupState),
                   ],
                 ),
               ),
@@ -170,6 +205,207 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
         ],
       ),
     );
+  }
+
+  Widget _buildSearchPanel({
+    required ThemeData theme,
+    required LookupState lookupState,
+  }) {
+    final scheme = theme.colorScheme;
+    final isWide = MediaQuery.sizeOf(context).width >= 980;
+
+    final fields = [
+      SearchField(
+        label: 'LOCATION',
+        child: TextField(
+          controller: _locationController,
+          decoration: InputDecoration(
+            hintText: 'Province or City',
+            hintStyle: theme.textTheme.titleLarge?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+            isDense: true,
+            contentPadding: EdgeInsets.zero,
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            filled: false,
+          ),
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: scheme.onSurface,
+          ),
+        ),
+      ),
+      SearchField(
+        label: 'ACTIVITY',
+        child: DropdownButtonFormField<String>(
+          value: _selectedActivityValue,
+          hint: const Text('ACTIVITY'),
+          items: lookupState.lookups != null && lookupState.lookups!.isNotEmpty
+              ? lookupState.lookups!.map((lookup) {
+                  return DropdownMenuItem(
+                      value: lookup.id,
+                      child: Text(lookup.lookupDescription ?? ''));
+                }).toList()
+              : [],
+          onChanged: (value) {
+            _selectedActivityValue = value;
+          },
+          decoration: const InputDecoration(
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            filled: false,
+            contentPadding: EdgeInsets.zero,
+            isDense: true,
+          ),
+          dropdownColor: scheme.surfaceContainerHigh,
+          style: theme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: scheme.onSurface,
+          ),
+          iconEnabledColor: scheme.primary,
+        ),
+      ),
+      MouseRegion(
+        cursor: MouseCursor.defer,
+        child: InkWell(
+          onTap: () async {
+            _dateSelected = await _pickDate();
+
+            setState(() {});
+          },
+          child: SearchField(
+            label: 'AVAILABLE DATE',
+            child: Text(
+              _dateSelected != null
+                  ? DateFormat(GeneralConstants.dateFormat)
+                      .format(_dateSelected!)
+                  : 'SELECT DATE',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: scheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ];
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(24),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1060),
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHigh.withOpacity(0.82),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: scheme.outlineVariant.withOpacity(0.25),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: scheme.shadow.withOpacity(0.35),
+                blurRadius: 32,
+                offset: const Offset(0, 20),
+              ),
+            ],
+          ),
+          child: lookupState.isLoading
+              ? Center(
+                  child: CircularProgressIndicator(),
+                )
+              : isWide
+                  ? Row(
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Expanded(child: fields[0]),
+                              _ghostDivider(theme),
+                              Expanded(child: fields[1]),
+                              _ghostDivider(theme),
+                              Expanded(child: fields[2]),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        GradientButton(
+                          label: 'SEARCH',
+                          icon: Icons.search,
+                          large: true,
+                          onPressed: () {
+                            context.goNamed(
+                              'ranges',
+                              queryParameters: {
+                                if (_locationController.text.isNotEmpty)
+                                  'location': _locationController.text,
+                                if (_selectedActivityValue != null)
+                                  'activity': _selectedActivityValue,
+                                if (_dateSelected != null)
+                                  'date':
+                                      DateFormat(GeneralConstants.dateFormat)
+                                          .format(_dateSelected!),
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        fields[0],
+                        _softSpacer(theme),
+                        fields[1],
+                        _softSpacer(theme),
+                        fields[2],
+                        const SizedBox(height: 12),
+                        GradientButton(
+                          label: 'SEARCH',
+                          icon: Icons.search,
+                          large: true,
+                          onPressed: () {
+                            context.goNamed('ranges', queryParameters: {
+                              'location': _locationController.text,
+                              'activity': _selectedActivityValue,
+                            });
+                          },
+                        ),
+                      ],
+                    ),
+        ),
+      ),
+    );
+  }
+
+  Widget _softSpacer(ThemeData theme) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      height: 1,
+      color: theme.colorScheme.outlineVariant.withOpacity(0.15),
+    );
+  }
+
+  Widget _ghostDivider(ThemeData theme) {
+    return Container(
+      width: 1,
+      height: 52,
+      color: theme.colorScheme.outlineVariant.withOpacity(0.20),
+    );
+  }
+
+  Future<DateTime?> _pickDate() async {
+    final dateSelected = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2027),
+    );
+    return dateSelected;
   }
 
   Widget _buildFilterPanel(BuildContext context) {
@@ -1003,9 +1239,8 @@ class _ToggleButton extends StatelessWidget {
         width: 44,
         height: 44,
         decoration: BoxDecoration(
-          color: selected
-              ? scheme.surfaceContainerHigh
-              : scheme.surfaceContainer,
+          color:
+              selected ? scheme.surfaceContainerHigh : scheme.surfaceContainer,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(
