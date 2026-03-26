@@ -44,8 +44,7 @@ final appRouter = GoRouter(
           if (filters == null) {
             return const RangesScreenV2();
           }
-
-          log('${filters.keys}');
+          
           final rawDate = filters['date'];
           final DateTime? date = rawDate != null ? DateTime.tryParse(rawDate) : null;
           final String? activityId = filters['activity'];

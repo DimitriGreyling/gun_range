@@ -111,8 +111,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
               child: Column(
                 children: [
                   _buildHero(context: context, isLoading: rangeState.isLoading),
-                  _buildFacilitiesSection(
-                      context: context, isLoading: rangeState.isLoading),
+                  _buildFacilitiesSection(context: context),
                   // _buildMapSection(context),
                   const FooterWidget(),
                 ],
@@ -373,7 +372,9 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                               icon: Icons.search,
                               large: true,
                               onPressed: isLoading == true ? null : () {},
-                              tone:  isLoading == true ? GradientButtonTone.secondary : GradientButtonTone.primary,
+                              tone: isLoading == true
+                                  ? GradientButtonTone.secondary
+                                  : GradientButtonTone.primary,
                             ),
                           ],
                         )
@@ -392,7 +393,9 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                               icon: Icons.search,
                               large: true,
                               onPressed: isLoading == true ? null : () {},
-                              tone: isLoading == true ? GradientButtonTone.secondary : GradientButtonTone.primary,
+                              tone: isLoading == true
+                                  ? GradientButtonTone.secondary
+                                  : GradientButtonTone.primary,
                             ),
                           ],
                         ),
@@ -657,8 +660,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
     );
   }
 
-  Widget _buildFacilitiesSection(
-      {required BuildContext context, bool? isLoading = false}) {
+  Widget _buildFacilitiesSection({required BuildContext context}) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final width = MediaQuery.sizeOf(context).width;
@@ -682,7 +684,6 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
               80,
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 LayoutBuilder(
                   builder: (context, constraints) {
@@ -709,51 +710,33 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                     );
                   },
                 ),
-                const SizedBox(height: 28),
-                LayoutBuilder(
-                  builder: (context, constraints) {
-                    final columns = constraints.maxWidth >= 1200
-                        ? 3
-                        : constraints.maxWidth >= 760
-                            ? 2
-                            : 1;
+                const SizedBox(height: 20,),
+                Consumer(
+                  builder: (context, ref, child) {
+                    final rangeState = ref.watch(rangeViewModelProvider);
+
+                    if (rangeState.isLoading == true) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
 
                     return GridView.builder(
-                      itemCount: _facilities.length,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: columns,
+                      itemCount: _facilities.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 360,
                         crossAxisSpacing: 24,
                         mainAxisSpacing: 24,
-                        childAspectRatio: columns == 1 ? 1.05 : 0.78,
+                        childAspectRatio: 0.75,
                       ),
                       itemBuilder: (context, index) {
                         return _FacilityCard(facility: _facilities[index]);
                       },
                     );
                   },
-                ),
-                const SizedBox(height: 28),
-                Center(
-                  child: OutlinedButton(
-                    onPressed: () {},
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: scheme.surfaceContainerHighest,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 28,
-                        vertical: 18,
-                      ),
-                    ),
-                    child: Text(
-                      'LOAD MORE OPERATIONAL ZONES',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: scheme.onSurface,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.8,
-                      ),
-                    ),
-                  ),
                 ),
               ],
             ),
