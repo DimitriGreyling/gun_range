@@ -135,7 +135,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
   ];
 
   TextEditingController _locationController = TextEditingController();
-  String? _selectedValue;
+  String? _selectedActivityValue;
   DateTime? _dateSelected;
 
   @override
@@ -364,7 +364,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
       SearchField(
         label: 'ACTIVITY',
         child: DropdownButtonFormField<String>(
-          value: _selectedValue,
+          value: _selectedActivityValue,
           hint: const Text('ACTIVITY'),
           items: lookupState.lookups != null && lookupState.lookups!.isNotEmpty
               ? lookupState.lookups!.map((lookup) {
@@ -374,7 +374,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                 }).toList()
               : [],
           onChanged: (value) {
-            _selectedValue = value;
+            _selectedActivityValue = value;
           },
           decoration: const InputDecoration(
             border: InputBorder.none,
@@ -464,8 +464,12 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                             context.goNamed(
                               'ranges',
                               queryParameters: {
-                                'location': _locationController.text,
-                                'activity': _selectedValue,
+                                if (_locationController.text.isNotEmpty)
+                                  'location': _locationController.text,
+                                if (_selectedActivityValue != null)
+                                  'activity': _selectedActivityValue,
+                                if (_dateSelected != null)
+                                  'date': DateFormat('yyyy/MM/dd').format(_dateSelected!),
                               },
                             );
                           },
@@ -488,7 +492,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                           onPressed: () {
                             context.goNamed('ranges', queryParameters: {
                               'location': _locationController.text,
-                              'activity': _selectedValue,
+                              'activity': _selectedActivityValue,
                             });
                           },
                         ),
