@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/constants/general_constants.dart';
 import 'package:gun_range_app/data/models/v2/widget_models.dart';
+import 'package:gun_range_app/domain/services/global_loading_state.dart';
 import 'package:gun_range_app/presentation/widgets/v2/category_card_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/event_card_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/footer_widget.dart';
@@ -136,7 +137,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
     ),
   ];
 
- final TextEditingController _locationController = TextEditingController();
+  final TextEditingController _locationController = TextEditingController();
   String? _selectedActivityValue;
   DateTime? _dateSelected;
 
@@ -144,7 +145,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
   void initState() {
     super.initState();
 
-    Future.microtask(() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       ref
           .read(lookupViewModelProvider.notifier)
           .getLookupsByListValue(listValue: 'RANGE_TYPE');
@@ -419,7 +420,8 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
             label: 'AVAILABLE DATE',
             child: Text(
               _dateSelected != null
-                  ? DateFormat(GeneralConstants.dateFormat).format(_dateSelected!)
+                  ? DateFormat(GeneralConstants.dateFormat)
+                      .format(_dateSelected!)
                   : 'SELECT DATE',
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w700,
@@ -484,8 +486,9 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                                 if (_selectedActivityValue != null)
                                   'activity': _selectedActivityValue,
                                 if (_dateSelected != null)
-                                  'date': DateFormat(GeneralConstants.dateFormat)
-                                      .format(_dateSelected!),
+                                  'date':
+                                      DateFormat(GeneralConstants.dateFormat)
+                                          .format(_dateSelected!),
                               },
                             );
                           },
