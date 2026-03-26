@@ -6,6 +6,7 @@ import 'package:gun_range_app/providers/supabase_provider.dart';
 import 'package:gun_range_app/viewmodels/booking_config_vm.dart';
 import 'package:gun_range_app/viewmodels/lookup_vm.dart';
 import 'package:gun_range_app/viewmodels/range_detail_vm.dart';
+import 'package:gun_range_app/viewmodels/ranges_vm.dart';
 import 'package:gun_range_app/viewmodels/top_bar_viewmodel.dart';
 import '../viewmodels/auth_vm.dart';
 import '../viewmodels/range_vm.dart';
@@ -21,14 +22,14 @@ final authViewModelProvider =
   return AuthViewModel(authRepository, profileRepository, ref);
 });
 
-final rangeViewModelProvider =
-    StateNotifierProvider<RangeViewModel, RangeState>((ref) {
-  final rangeRepository = ref.watch(rangeRepositoryProvider);
-  final favoriteRepository = ref.watch(favoriteProvider);
-  final photoRepository = ref.watch(photoProvider);
+// final rangeViewModelProvider =
+//     StateNotifierProvider<RangeViewModel, RangeState>((ref) {
+//   final rangeRepository = ref.watch(rangeRepositoryProvider);
+//   final favoriteRepository = ref.watch(favoriteProvider);
+//   final photoRepository = ref.watch(photoProvider);
 
-  return RangeViewModel(rangeRepository, favoriteRepository, photoRepository);
-});
+//   return RangeViewModel(rangeRepository, favoriteRepository, photoRepository);
+// });
 
 final eventViewModelProvider =
     StateNotifierProvider<EventViewModel, EventState>((ref) {
@@ -67,4 +68,11 @@ final lookupViewModelProvider =
     StateNotifierProvider<LookupVm, LookupState>((ref) {
   final lookupRepository = ref.watch(lookupProvider);
   return LookupVm(lookupRepository);
+});
+
+final rangeViewModelProvider =
+    StateNotifierProvider<RangesVm, RangesState>((ref) {
+  final rangeRepository = ref.watch(rangeRepositoryProvider);
+
+  return RangesVm(rangeRepository: rangeRepository);
 });

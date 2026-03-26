@@ -84,6 +84,11 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
       ref
           .read(lookupViewModelProvider.notifier)
           .getLookupsByListValue(listValue: 'RANGE_TYPE');
+      ref.read(rangeViewModelProvider.notifier).searchRanges(
+            availableDate: _dateSelected,
+            activityId: _selectedActivityValue,
+            location: _locationController.text,
+          );
     });
 
     _locationController.text = widget.location ?? '';
