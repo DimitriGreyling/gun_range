@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/constants/general_constants.dart';
 import 'package:gun_range_app/data/models/v2/widget_models.dart';
-import 'package:gun_range_app/domain/services/global_loading_state.dart';
 import 'package:gun_range_app/presentation/widgets/v2/category_card_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/event_card_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/footer_widget.dart';
