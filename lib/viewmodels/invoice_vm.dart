@@ -1,5 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/core/constants/app_details.dart';
+import 'package:gun_range_app/core/constants/general_constants.dart';
+import 'package:gun_range_app/data/models/booking_guest.dart';
+import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/data/repositories/invoice_repository.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -27,9 +31,13 @@ class InvoiceStateVm {
 
 class InvoiceVm extends StateNotifier<InvoiceStateVm> {
   final InvoiceRepository _invoiceRepository;
+  final User _authUserProvider;
 
-  InvoiceVm({required InvoiceRepository invoiceRepository})
+  InvoiceVm(
+      {required InvoiceRepository invoiceRepository,
+      required User authUserProvider})
       : _invoiceRepository = invoiceRepository,
+        _authUserProvider = authUserProvider,
         super(InvoiceStateVm(isLoading: false, pdfDocument: null));
   static pw.MemoryImage? _cachedLogo;
 
@@ -54,85 +62,38 @@ class InvoiceVm extends StateNotifier<InvoiceStateVm> {
     return _cachedLogo!;
   }
 
-  // Future<pw.Document> _buildInvoicePdf() async {
-  //   // final logo = await _getLogo();
-  //   // final logo = pw.MemoryImage(logoBytes.buffer.asUint8List());
-  //   final fontData = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
-  //   final ttf = pw.Font.ttf(fontData);
-  //   final invoiceNumber = await _invoiceRepository.getNextInvoiceNumber();
+  Future<void> generateInvoicePdf({
+    required Range range,
+    required DateTime date,
+    List<BookingGuest>? bookingGuest,
+  }) async {
+    state = state.copyWith(isLoading: true);
 
-  //   final pdf = pw.Document(
-  //     theme: pw.ThemeData.withFont(
-  //       base: ttf,
-  //       bold: ttf,
-  //       italic: ttf,
-  //       boldItalic: ttf,
-  //     ),
-  //   );
+    final pdf = await _buildInvoicePdf(
+      range: range,
+      date: date,
+      bookingGuest: bookingGuest,
+    );
+    final pdfBytes = await pdf.save();
+    state = state.copyWith(isLoading: false, pdfDocument: pdfBytes);
+  }
 
-  //   pdf.addPage(
-  //     pw.Page(
-  //       pageFormat: PdfPageFormat.a4,
-  //       build: (pw.Context context) {
-  //         return pw.Padding(
-  //           padding: const pw.EdgeInsets.all(8),
-  //           child: pw.Column(
-  //             crossAxisAlignment: pw.CrossAxisAlignment.start,
-  //             children: [
-  //               pw.Row(
-  //                 mainAxisAlignment: pw.MainAxisAlignment.center,
-  //                 children: [
-  //                   pw.Text(
-  //                     'INVOICE',
-  //                     style: pw.TextStyle(
-  //                       fontSize: 24,
-  //                       fontWeight: pw.FontWeight.bold,
-  //                     ),
-  //                   ),
-  //                 ],
-  //               ),
-  //               pw.SizedBox(height: 24),
-  //               pw.Row(children: [
-  //                 // pw.Image(logo, width: 80, height: 80),
-  //                 pw.SizedBox(width: 16),
-  //                 pw.Column(
-  //                   crossAxisAlignment: pw.CrossAxisAlignment.start,
-  //                   children: [
-  //                     pw.Text(
-  //                       'Invoice Number: $invoiceNumber',
-  //                     ),
-  //                     pw.Text(
-  //                       'Date: ${DateTime.now().toLocal().toIso8601String().split('T').first}',
-  //                     ),
-  //                     pw.Text(
-  //                       'Range Connect',
-  //                     ),
-  //                   ],
-  //                 ),
-  //               ]),
-  //               pw.SizedBox(height: 32),
-  //               pw.Divider(),
-  //               pw.SizedBox(height: 16),
-  //             ],
-  //           ),
-  //         );
-  //       },
-  //     ),
-  //   );
-  //   return pdf;
-  // }
-
-  Future<pw.Document> _buildInvoicePdf() async {
+  Future<pw.Document> _buildInvoicePdf({
+    required Range range,
+    required DateTime date,
+    List<BookingGuest>? bookingGuest,
+  }) async {
     final fontData = await rootBundle.load('assets/fonts/Roboto-Regular.ttf');
     final ttf = pw.Font.ttf(fontData);
 
     // Example data (replace with your real data)
-    final companyName = 'Range Connect';
-    final companyAddress = '123 Main St, City, Country';
-    final companyContact = 'info@rangeconnect.com | +1234567890';
-    final customerName = 'John Doe';
-    final customerAddress = '456 Customer Rd, City, Country';
-    final customerContact = 'john@example.com';
+    const companyName = AppDetails.appName;
+    const companyAddress = '123 Main St, City, Country';
+    const companyContact = 'info@rangeconnect.com | +1234567890';
+    final authUser = _authUserProvider;
+    // const customerName = 'John Doe';
+    // const customerAddress = '456 Customer Rd, City, Country';
+    // const customerContact = 'john@example.com';
     final invoiceNumber = await _invoiceRepository.getNextInvoiceNumber();
     final invoiceDate = DateTime.now();
     final dueDate = invoiceDate.add(const Duration(days: 30));
@@ -197,9 +158,8 @@ class InvoiceVm extends StateNotifier<InvoiceStateVm> {
                         pw.Text('Bill To:',
                             style:
                                 pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                        pw.Text(customerName),
-                        pw.Text(customerAddress),
-                        pw.Text(customerContact),
+                        pw.Text(authUser.userMetadata?['full_name'] ?? ''),
+                        pw.Text(authUser.email ?? ''),
                       ],
                     ),
                     pw.Column(
@@ -216,7 +176,7 @@ class InvoiceVm extends StateNotifier<InvoiceStateVm> {
                 ),
                 pw.SizedBox(height: 24),
                 // Line items table
-                pw.Table.fromTextArray(
+                pw.TableHelper.fromTextArray(
                   headers: ['Description', 'Qty', 'Unit Price', 'Total'],
                   data: items
                       .map((item) => [
@@ -286,13 +246,5 @@ class InvoiceVm extends StateNotifier<InvoiceStateVm> {
       ),
     );
     return pdf;
-  }
-
-  Future<void> generateInvoicePdf() async {
-    state = state.copyWith(isLoading: true);
-
-    final pdf = await _buildInvoicePdf();
-    final pdfBytes = await pdf.save();
-    state = state.copyWith(isLoading: false, pdfDocument: pdfBytes);
   }
 }

@@ -115,6 +115,8 @@ class _PopupMessageWidgetState extends State<PopupMessageWidget>
       return widget.popup.customContent!;
     }
 
+    final theme = Theme.of(context);
+
     return GestureDetector(
       onTap: widget.popup.isDismissible ? _handleDismiss : null,
       child: SingleChildScrollView(
@@ -122,78 +124,126 @@ class _PopupMessageWidgetState extends State<PopupMessageWidget>
           margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: widget.popup.backgroundColor ?? _getBackgroundColor(),
-            borderRadius: BorderRadius.circular(12),
+            color: widget.popup.backgroundColor ?? const Color(0xFF1E1C1B),
+            borderRadius: BorderRadius.circular(18),
+            border: Border(
+              left: BorderSide(
+                color: _getBorderColor(),
+                width: 6,
+              ),
+            ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
+                color: Colors.black.withOpacity(0.28),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
             ],
-            border: Border.all(
-              color: _getBorderColor().withOpacity(0.3),
-              width: 1,
-            ),
           ),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Icon
-              _buildIcon(),
-              const SizedBox(width: 12),
-
-              // Content
+              Container(
+                width: 68,
+                height: 68,
+                decoration: BoxDecoration(
+                  color: _getBorderColor().withOpacity(0.14),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(child: _buildIcon()),
+              ),
+              const SizedBox(width: 18),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _statusLabel(),
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: _getBorderColor(),
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.4,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          'Just now',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (widget.popup.showCloseButton) ...[
+                          const SizedBox(width: 8),
+                          IconButton(
+                            onPressed: _handleDismiss,
+                            icon: Icon(
+                              Icons.close,
+                              color: theme.colorScheme.onSurfaceVariant,
+                              size: 18,
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(
+                              minWidth: 24,
+                              minHeight: 24,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 10),
                     Text(
                       widget.popup.title,
-                      style: TextStyle(
-                        color: widget.popup.textColor ?? _getTextColor(),
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        color: widget.popup.textColor ??
+                            theme.colorScheme.onSurface,
+                        fontWeight: FontWeight.w800,
+                        height: 1.2,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 14),
                     Text(
                       widget.popup.message,
-                      style: TextStyle(
-                        color: (widget.popup.textColor ?? _getTextColor())
-                            .withOpacity(0.8),
-                        fontSize: 14,
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        color: (widget.popup.textColor ??
+                                theme.colorScheme.onSurface)
+                            .withOpacity(0.78),
+                        height: 1.5,
                       ),
                     ),
-                    // Updated button layout - check for both action buttons
                     if (widget.popup.actionText != null ||
                         widget.popup.secondaryActionText != null) ...[
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       _buildButtonRow(),
                     ],
                   ],
                 ),
               ),
-
-              // Close button
-              if (widget.popup.showCloseButton)
-                IconButton(
-                  onPressed: _handleDismiss,
-                  icon: Icon(
-                    Icons.close,
-                    color: (widget.popup.textColor ?? _getTextColor())
-                        .withOpacity(0.6),
-                    size: 18,
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints:
-                      const BoxConstraints(minWidth: 24, minHeight: 24),
-                ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  String _statusLabel() {
+    switch (widget.popup.type) {
+      case PopupType.success:
+        return 'STATUS: CONFIRMED';
+      case PopupType.warning:
+        return 'STATUS: WARNING';
+      case PopupType.error:
+        return 'STATUS: ERROR';
+      case PopupType.info:
+        return 'STATUS: INFO';
+      case PopupType.custom:
+        return 'STATUS: UPDATE';
+    }
   }
 
   Widget _buildButtonRow() {
@@ -204,18 +254,19 @@ class _PopupMessageWidgetState extends State<PopupMessageWidget>
       children: [
         // Secondary button (left side)
         if (widget.popup.secondaryActionText != null) ...[
-          OutlinedButton(
+          ElevatedButton(
+            style: ButtonStyle(
+              elevation: WidgetStateProperty.all(0),
+              backgroundColor: WidgetStateProperty.all(
+                Theme.of(context).colorScheme.secondary.withOpacity(0.8),
+              ),
+            ),
             onPressed: () {
               widget.popup.onSecondaryAction?.call();
               if (widget.popup.dismissOnSecondaryAction ?? true) {
                 _handleDismiss();
               }
             },
-            style: OutlinedButton.styleFrom(
-              foregroundColor: _getBorderColor(),
-              side: BorderSide(color: _getBorderColor()),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            ),
             child: Text(widget.popup.secondaryActionText!),
           ),
           const SizedBox(width: 8),
@@ -230,10 +281,11 @@ class _PopupMessageWidgetState extends State<PopupMessageWidget>
                 _handleDismiss();
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _getBorderColor(),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            style: ButtonStyle(
+              elevation: WidgetStateProperty.all(0),
+              backgroundColor: WidgetStateProperty.all(
+                _getBorderColor().withOpacity(0.8),
+              ),
             ),
             child: Text(widget.popup.actionText!),
           ),
@@ -273,14 +325,14 @@ class _PopupMessageWidgetState extends State<PopupMessageWidget>
   Color _getBackgroundColor() {
     switch (widget.popup.type) {
       case PopupType.success:
-        return Colors.green.shade50;
+        return Colors.green.shade50.withOpacity(0.7);
       case PopupType.warning:
-        return Colors.orange.shade50;
+        return Colors.orange.shade50.withOpacity(0.7);
       case PopupType.error:
-        return Colors.red.shade50;
+        return Colors.red.shade50.withOpacity(0.7);
       case PopupType.info:
       default:
-        return Colors.blue.shade50;
+        return Colors.blue.shade50.withOpacity(0.7);
     }
   }
 

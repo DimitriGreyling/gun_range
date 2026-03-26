@@ -2,7 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/providers/favorite_provider.dart';
 import 'package:gun_range_app/providers/photo_provider.dart';
 import 'package:gun_range_app/providers/review_provider.dart';
+import 'package:gun_range_app/providers/supabase_provider.dart';
+import 'package:gun_range_app/viewmodels/booking_config_vm.dart';
+import 'package:gun_range_app/viewmodels/lookup_vm.dart';
 import 'package:gun_range_app/viewmodels/range_detail_vm.dart';
+import 'package:gun_range_app/viewmodels/top_bar_viewmodel.dart';
 import '../viewmodels/auth_vm.dart';
 import '../viewmodels/range_vm.dart';
 import '../viewmodels/event_vm.dart';
@@ -46,4 +50,21 @@ final rangeDetailViewModelProvider =
   final reviewRepository = ref.watch(reviewRepositoryProvider);
 
   return RangeDetailVm(rangeRepository, reviewRepository);
+});
+
+final bookingConfigViewModelProvider =
+    StateNotifierProvider<BookingConfigVm, BookingConfigState>((ref) {
+  final bookingConfigRepository = ref.watch(bookingConfigRepositoryProvider);
+  return BookingConfigVm(bookingConfigRepository);
+});
+
+final topBarViewModelProvider =
+    StateNotifierProvider<TopBarViewModel, TopBarState>((ref) {
+  return TopBarViewModel();
+});
+
+final lookupViewModelProvider =
+    StateNotifierProvider<LookupVm, LookupState>((ref) {
+  final lookupRepository = ref.watch(lookupProvider);
+  return LookupVm(lookupRepository);
 });

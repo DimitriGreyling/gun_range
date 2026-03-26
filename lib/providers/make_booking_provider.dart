@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/data/models/booking_state.dart';
 import 'package:gun_range_app/providers/auth_state_provider.dart';
 import 'package:gun_range_app/providers/booking_guest_provider.dart';
 import 'package:gun_range_app/providers/repository_providers.dart';
@@ -9,6 +10,12 @@ final makeBookingProvider =
   final bookingRepository = ref.watch(bookingRepositoryProvider);
   final authUser = ref.watch(authUserProvider).value!;
   final bookingGuestRepository = ref.watch(bookingGuestProvider);
+  final rangeRepository = ref.watch(rangeRepositoryProvider);
   
-  return MakeBookingVm(bookingRepository, authUser, bookingGuestRepository);
+  return MakeBookingVm(
+    bookingRepository, 
+    bookingGuestRepository, 
+    rangeRepository,
+    authUser,
+  );
 });

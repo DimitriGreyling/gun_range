@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/data/models/booking_guest.dart';
+import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/providers/invoice_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -21,7 +23,17 @@ class _InvoiceWidgetState extends ConsumerState<InvoiceWidget> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Future.microtask(
-          () => ref.read(invoiceProvider.notifier).generateInvoicePdf());
+          () => ref.read(invoiceProvider.notifier).generateInvoicePdf(
+                range: Range(
+                  id: '123',
+                  name: 'Test Range',
+                ),
+                date: DateTime.now(),
+                bookingGuest: [
+                  BookingGuest(name: 'John Doe', email: ''),
+                  BookingGuest(name: '', email: ''),
+                ],
+              ));
     });
   }
 
@@ -35,7 +47,7 @@ class _InvoiceWidgetState extends ConsumerState<InvoiceWidget> {
     return invoiceState.isLoading
         ? const Center(child: CircularProgressIndicator())
         : PdfViewer.data(
-           invoiceState.pdfDocument ?? Uint8List(0),
+            invoiceState.pdfDocument ?? Uint8List(0),
             sourceName: 'Generated PDF',
             params: PdfViewerParams(
               errorBannerBuilder: (context, error, stackTrace, documentRef) {

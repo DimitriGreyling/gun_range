@@ -1,11 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/event.dart';
 import 'package:gun_range_app/data/models/favorite.dart';
-import 'package:gun_range_app/data/models/popup_position.dart';
 import 'package:gun_range_app/data/repositories/favorite_repository.dart';
 import 'package:gun_range_app/data/repositories/photo_repository.dart';
 import 'package:gun_range_app/domain/services/errors_exception_service.dart';
-import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../data/models/range.dart';
 import '../data/repositories/range_repository.dart';
