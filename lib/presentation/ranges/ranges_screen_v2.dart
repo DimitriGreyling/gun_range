@@ -940,13 +940,14 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                               if (!snapshot.hasData) {
                                 return const SizedBox.shrink();
                               }
-                              
+
                               return _TagPill(
                                 label: snapshot.data ?? '',
                                 isLoading: snapshot.connectionState ==
                                     ConnectionState.waiting,
-                                  background: scheme.primaryContainer.withOpacity(0.92),
-                        foreground: scheme.onPrimary,
+                                background:
+                                    scheme.primaryContainer.withOpacity(0.92),
+                                foreground: scheme.onPrimary,
                               );
                             },
                           );
