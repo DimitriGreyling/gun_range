@@ -359,28 +359,28 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
         }
 
         final fields = [
-          SearchField(
-            label: 'LOCATION',
-            child: TextField(
-              controller: _locationController,
-              decoration: InputDecoration(
-                hintText: 'Province or City',
-                hintStyle: theme.textTheme.titleLarge?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                filled: false,
-              ),
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: scheme.onSurface,
-              ),
-            ),
-          ),
+          // SearchField(
+          //   label: 'LOCATION',
+          //   child: TextField(
+          //     controller: _locationController,
+          //     decoration: InputDecoration(
+          //       hintText: 'Province or City',
+          //       hintStyle: theme.textTheme.titleLarge?.copyWith(
+          //         color: scheme.onSurfaceVariant,
+          //       ),
+          //       isDense: true,
+          //       contentPadding: EdgeInsets.zero,
+          //       border: InputBorder.none,
+          //       enabledBorder: InputBorder.none,
+          //       focusedBorder: InputBorder.none,
+          //       filled: false,
+          //     ),
+          //     style: theme.textTheme.titleLarge?.copyWith(
+          //       fontWeight: FontWeight.w700,
+          //       color: scheme.onSurface,
+          //     ),
+          //   ),
+          // ),
           SearchField(
             label: 'ACTIVITY',
             child: DropdownButtonFormField<String>(
@@ -460,7 +460,7 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                 ],
               ),
               child: lookupState.isLoading
-                  ? Center(
+                  ?const Center(
                       child: CircularProgressIndicator(),
                     )
                   : isWide
@@ -469,11 +469,11 @@ class _HomeScreenWeb2State extends ConsumerState<HomeScreenWeb2> {
                             Expanded(
                               child: Row(
                                 children: [
+                                  // Expanded(child: fields[0]),
+                                  // _ghostDivider(theme),
                                   Expanded(child: fields[0]),
                                   _ghostDivider(theme),
                                   Expanded(child: fields[1]),
-                                  _ghostDivider(theme),
-                                  Expanded(child: fields[2]),
                                 ],
                               ),
                             ),

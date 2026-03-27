@@ -47,14 +47,16 @@ class RangesVm extends StateNotifier<RangesState> {
       location: location,
     );
 
-    // await getLocationState(result);
-
     state = state.copyWith(isLoading: false, foundRanges: result);
   }
 
-  Future<String?> getLocationState(Range range) async {
+  Future<void> getDistanceBetweenLocations(Range range) async {
     bool serviceEnabled;
     LocationPermission permission;
+
+    if (range.nspDistanceInKilometers != null) {
+      return;
+    }
 
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {

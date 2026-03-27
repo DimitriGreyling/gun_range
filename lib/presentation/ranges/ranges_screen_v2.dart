@@ -113,7 +113,6 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                 children: [
                   _buildHero(context: context, isLoading: rangeState.isLoading),
                   _buildFacilitiesSection(context: context),
-                  // _buildMapSection(context),
                   const FooterWidget(),
                 ],
               ),
@@ -230,34 +229,34 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
         }
 
         final fields = [
-          SearchField(
-            label: 'LOCATION',
-            child: TextField(
-              enabled: isLoading != true,
-              controller: isLoading == true
-                  ? TextEditingController(text: 'SEARCHING...')
-                  : _locationController,
-              decoration: InputDecoration(
-                hintText:
-                    isLoading == true ? 'SEARCHING...' : 'Province or City',
-                hintStyle: theme.textTheme.titleLarge?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                filled: false,
-              ),
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: isLoading == true
-                    ? scheme.onSurfaceVariant
-                    : scheme.onSurface,
-              ),
-            ),
-          ),
+          // SearchField(
+          //   label: 'LOCATION',
+          //   child: TextField(
+          //     enabled: isLoading != true,
+          //     controller: isLoading == true
+          //         ? TextEditingController(text: 'SEARCHING...')
+          //         : _locationController,
+          //     decoration: InputDecoration(
+          //       hintText:
+          //           isLoading == true ? 'SEARCHING...' : 'Province or City',
+          //       hintStyle: theme.textTheme.titleLarge?.copyWith(
+          //         color: scheme.onSurfaceVariant,
+          //       ),
+          //       isDense: true,
+          //       contentPadding: EdgeInsets.zero,
+          //       border: InputBorder.none,
+          //       enabledBorder: InputBorder.none,
+          //       focusedBorder: InputBorder.none,
+          //       filled: false,
+          //     ),
+          //     style: theme.textTheme.titleLarge?.copyWith(
+          //       fontWeight: FontWeight.w700,
+          //       color: isLoading == true
+          //           ? scheme.onSurfaceVariant
+          //           : scheme.onSurface,
+          //     ),
+          //   ),
+          // ),
           SearchField(
             label: 'ACTIVITY',
             child: DropdownButtonFormField<String>(
@@ -358,11 +357,11 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                             Expanded(
                               child: Row(
                                 children: [
+                                  // Expanded(child: fields[0]),
+                                  // _ghostDivider(theme),
                                   Expanded(child: fields[0]),
                                   _ghostDivider(theme),
                                   Expanded(child: fields[1]),
-                                  _ghostDivider(theme),
-                                  Expanded(child: fields[2]),
                                 ],
                               ),
                             ),
@@ -1129,7 +1128,7 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                       FutureBuilder(
                         future: ref
                             .read(rangeViewModelProvider.notifier)
-                            .getLocationState(widget.facility),
+                            .getDistanceBetweenLocations(widget.facility),
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
