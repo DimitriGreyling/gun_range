@@ -12,6 +12,7 @@ class Range {
 
   bool nspIsFavorite = false;
   List<String> nspPhotoUrls = [];
+  String? nspImage;
 
   Range({
     this.id,
@@ -24,6 +25,7 @@ class Range {
     this.nspIsFavorite = false,
     this.nspPhotoUrls = const [],
     this.contactNumber,
+    this.nspImage,
   });
 
   factory Range.fromJson(Map<String, dynamic> json) => Range(
