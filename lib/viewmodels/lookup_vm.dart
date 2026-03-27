@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/v2/lookup_model.dart';
 import 'package:gun_range_app/data/repositories/lookup_repository.dart';
+import 'package:gun_range_app/providers/supabase_provider.dart';
 
 class LookupState {
   final bool isLoading;
@@ -36,4 +37,16 @@ class LookupVm extends StateNotifier<LookupState> {
 
     state = state.copyWith(isLoading: false, lookups: lookups);
   }
+
+  Future<String?> loadLookupValueById({
+    required String id,
+  })async{
+    final result = await _lookupRepository.getLookupValueById(id: id);
+
+    if(result == null){
+      return '';
+    }
+
+    return result.lookupDescription;
+  } 
 }

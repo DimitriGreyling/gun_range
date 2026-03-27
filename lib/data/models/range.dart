@@ -4,7 +4,7 @@ class Range {
   String? description;
   double? latitude;
   double? longitude;
-  Map<String, dynamic> facilities;
+  List<Facility>? facilities;
   bool? isActive;
   String? contactNumber;
 
@@ -19,7 +19,7 @@ class Range {
     this.description,
     this.latitude,
     this.longitude,
-    this.facilities = const {},
+    this.facilities,
     this.isActive,
     this.nspIsFavorite = false,
     this.nspPhotoUrls = const [],
@@ -32,8 +32,24 @@ class Range {
         description: json['description'],
         latitude: json['latitude'],
         longitude: json['longitude'],
-        facilities: json['facilities'] ?? {},
+        facilities: json['facilities'] != null
+            ? (json['facilities'] as List)
+                .map((fac) => Facility.fromJson(fac))
+                .toList()
+            : [],
         isActive: json['is_active'] ?? true,
         contactNumber: json['contact_number'],
+      );
+}
+
+class Facility {
+  String? facilityId;
+
+  Facility({
+    this.facilityId,
+  });
+
+  factory Facility.fromJson(Map<String, dynamic> json) => Facility(
+        facilityId: json['facility_id'],
       );
 }
