@@ -847,232 +847,249 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
     //   _StatusColorKind.full => scheme.error,
     // };
 
-    return Container(
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.05),
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Expanded(
-            flex: 6,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: Image.network(
-                    '', //facility.imageUrl,//TODO: ADD IMAGE HERE
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          Colors.black.withOpacity(0.08),
-                          Colors.black.withOpacity(0.30),
+    return MouseRegion(
+      cursor: MouseCursor.defer,
+      child: InkWell(
+        onTap: () {
+          //TODO: Go to range details
+        },
+        child: Container(
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainer,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.05),
+            ),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                flex: 6,
+                child: Stack(
+                  children: [
+                    Positioned.fill(
+                      child: widget.facility.nspImage == null
+                          ? Image.asset(
+                              'assets/no_image_found.png',
+                              fit: BoxFit.cover,
+                            )
+                          : Image.network(
+                              widget.facility.nspImage!,
+                              fit: BoxFit.cover,
+                            ),
+                    ),
+                    Positioned.fill(
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.08),
+                              Colors.black.withOpacity(0.30),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 16,
+                      right: 16,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: scheme.surface.withOpacity(0.82),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            MouseRegion(
+                              cursor: MouseCursor.defer,
+                              child: InkWell(
+                                onTap: () {
+                                  
+                                },
+                                child: Icon(
+                                  Icons.favorite_border_outlined,
+                                  color: scheme.error,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                            // const SizedBox(width: 4),
+                            // Text(
+                            //   '3.5', //facility.rating,//TODO:: ADD RATING
+                            //   style: theme.textTheme.labelMedium?.copyWith(
+                            //     color: scheme.onSurface,
+                            //     fontWeight: FontWeight.w900,
+                            //     letterSpacing: 0.8,
+                            //   ),
+                            // ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      left: 16,
+                      right: 16,
+                      bottom: 16,
+                      child: Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          if (widget.facility.facilities != null)
+                            ...widget.facility.facilities!.map((facility) {
+                              return FutureBuilder(
+                                future: ref
+                                    .read(lookupViewModelProvider.notifier)
+                                    .loadLookupValueById(
+                                        id: facility.facilityId ?? ''),
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData) {
+                                    return const SizedBox.shrink();
+                                  }
+        
+                                  return _TagPill(
+                                    label: snapshot.data ?? '',
+                                    isLoading: snapshot.connectionState ==
+                                        ConnectionState.waiting,
+                                    background:
+                                        scheme.primaryContainer.withOpacity(0.92),
+                                    foreground: scheme.onPrimary,
+                                  );
+                                },
+                              );
+                            }),
                         ],
                       ),
                     ),
-                  ),
+                  ],
                 ),
-                Positioned(
-                  top: 16,
-                  right: 16,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: scheme.surface.withOpacity(0.82),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.star,
-                          color: scheme.tertiary,
-                          size: 14,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '', //facility.rating,//TODO:: ADD RATING
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: scheme.onSurface,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.8,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 16,
-                  right: 16,
-                  bottom: 16,
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: [
-                      // _TagPill(
-                      //   label: 'sddsffds', // facility.tags.first,
-                      //   background: scheme.primaryContainer.withOpacity(0.92),
-                      //   foreground: scheme.onPrimary,
-                      // ),
-                      if (widget.facility.facilities != null)
-                        ...widget.facility.facilities!.map((facility) {
-                          return FutureBuilder(
-                            future: ref
-                                .read(lookupViewModelProvider.notifier)
-                                .loadLookupValueById(
-                                    id: facility.facilityId ?? ''),
-                            builder: (context, snapshot) {
-                              if (!snapshot.hasData) {
-                                return const SizedBox.shrink();
-                              }
-
-                              return _TagPill(
-                                label: snapshot.data ?? '',
-                                isLoading: snapshot.connectionState ==
-                                    ConnectionState.waiting,
-                                background:
-                                    scheme.primaryContainer.withOpacity(0.92),
-                                foreground: scheme.onPrimary,
-                              );
-                            },
-                          );
-                        }),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            flex: 7,
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+              ),
+              Expanded(
+                flex: 7,
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: Text(
-                          widget.facility.name?.toUpperCase() ?? '',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            color: scheme.onSurface,
-                            fontWeight: FontWeight.w800,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              widget.facility.name?.toUpperCase() ?? '',
+                              style: theme.textTheme.titleLarge?.copyWith(
+                                color: scheme.onSurface,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
                           ),
+                          const SizedBox(width: 12),
+                          FutureBuilder(
+                            future: ref
+                                .read(rangeViewModelProvider.notifier)
+                                .getDistanceBetweenLocations(widget.facility),
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 1,
+                                    ),
+                                  ),
+                                );
+                              }
+        
+                              return Text(
+                                widget.facility.nspDistanceInKilometers != null
+                                    ? 'DIST: ${widget.facility.nspDistanceInKilometers} KM'
+                                    : 'DIST: N/A',
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  color: scheme.primary,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.0,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        widget.facility.description ?? '',
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                          height: 1.6,
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      FutureBuilder(
-                        future: ref
-                            .read(rangeViewModelProvider.notifier)
-                            .getDistanceBetweenLocations(widget.facility),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 1,
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.only(top: 18),
+                        decoration: BoxDecoration(
+                          border: Border(
+                            top: BorderSide(
+                              color: Colors.white.withOpacity(0.06),
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            // Container(
+                            //   width: 8,
+                            //   height: 8,
+                            //   decoration: BoxDecoration(
+                            //     shape: BoxShape.circle,
+                            //     color: statusColor,
+                            //   ),
+                            // ),
+                            // const SizedBox(width: 8),
+                            // Expanded(
+                            //   child: Text(
+                            //     'STATUS', // facility.statusLabel,//TODO: ADD STATUS
+                            //     style: theme.textTheme.labelMedium?.copyWith(
+                            //       color: statusColor,
+                            //       fontWeight: FontWeight.w900,
+                            //       letterSpacing: 1.2,
+                            //     ),
+                            //   ),
+                            // ),
+                            TextButton.icon(
+                              onPressed: () {},
+                              iconAlignment: IconAlignment.end,
+                              onHover: (_) {},
+                              icon: const Icon(Icons.bookmark_add_outlined, size: 20),
+                              label: Text(
+                                'BOOK NOW',
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  color: scheme.primary,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.4,
                                 ),
                               ),
-                            );
-                          }
-
-                          return Text(
-                            widget.facility.nspDistanceInKilometers != null
-                                ? 'DIST: ${widget.facility.nspDistanceInKilometers} KM'
-                                : 'DIST: N/A',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: scheme.primary,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1.0,
                             ),
-                          );
-                        },
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    widget.facility.description ?? '',
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                      height: 1.6,
-                    ),
-                  ),
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.only(top: 18),
-                    decoration: BoxDecoration(
-                      border: Border(
-                        top: BorderSide(
-                          color: Colors.white.withOpacity(0.06),
-                        ),
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: statusColor,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        // Expanded(
-                        //   child: Text(
-                        //     'STATUS', // facility.statusLabel,//TODO: ADD STATUS
-                        //     style: theme.textTheme.labelMedium?.copyWith(
-                        //       color: statusColor,
-                        //       fontWeight: FontWeight.w900,
-                        //       letterSpacing: 1.2,
-                        //     ),
-                        //   ),
-                        // ),
-                        TextButton.icon(
-                          onPressed: () {},
-                          iconAlignment: IconAlignment.end,
-                          onHover: (_) {},
-                          icon: const Icon(Icons.arrow_forward, size: 16),
-                          label: Text(
-                            'VIEW DETAILS',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: scheme.primary,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1.4,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
