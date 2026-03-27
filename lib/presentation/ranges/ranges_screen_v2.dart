@@ -774,13 +774,21 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            '24 OPERATIONAL NODES FOUND',
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: scheme.onSurfaceVariant,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.6,
-            ),
+          Consumer(
+            builder: (context, ref, child) {
+              final rangeState = ref.watch(rangeViewModelProvider);
+              final message = rangeState.isLoading == true
+                  ? 'Loading facilities...'
+                  : '${rangeState.foundRanges?.length ?? 0} OPERATIONAL FACILITY FOUND';
+              return Text(
+                message,
+                style: theme.textTheme.labelMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.6,
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -806,178 +814,6 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
           onTap: () {
             setState(() => _gridSelected = false);
           },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMapSection(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final width = MediaQuery.sizeOf(context).width;
-    final horizontalPadding = width >= 1400
-        ? 48.0
-        : width >= 1024
-            ? 32.0
-            : 20.0;
-
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 1600),
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(
-            horizontalPadding,
-            64,
-            horizontalPadding,
-            72,
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final stacked = constraints.maxWidth < 1080;
-
-              final mapPreview = _buildMapPreview(theme);
-              final copyBlock = _buildMapCopy(theme);
-
-              return stacked
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        mapPreview,
-                        const SizedBox(height: 32),
-                        copyBlock,
-                      ],
-                    )
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Expanded(child: mapPreview),
-                        const SizedBox(width: 40),
-                        Expanded(child: copyBlock),
-                      ],
-                    );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMapPreview(ThemeData theme) {
-    final scheme = theme.colorScheme;
-
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Positioned(
-          top: -24,
-          left: -24,
-          child: Container(
-            width: 140,
-            height: 140,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: scheme.primaryContainer.withOpacity(0.16),
-              boxShadow: [
-                BoxShadow(
-                  color: scheme.primaryContainer.withOpacity(0.20),
-                  blurRadius: 80,
-                  spreadRadius: 10,
-                ),
-              ],
-            ),
-          ),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: Colors.white.withOpacity(0.08),
-            ),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Stack(
-            children: [
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Image.network(
-                  'https://lh3.googleusercontent.com/aida-public/AB6AXuB_S2LKz7ljM73QeV-MVbd427q0YF-6h75ZJTI4duymCHqxqmZQejpsJ_UAm3J80tVESPNajSLQ_2toOk6IBzKf7rYtpWv73AmH3B7z2_fRCLB2cCZuhoAt9cD63X8wiNgtvOV-jHuBqbvOrPqnvp1hDLRWvwlxn0pu-NYgViH_RR_FZb_11t_0lp8ifYRB8hWdpq8j9dxm-9ZHD0HnC_WMzuH05hlL5NwAOnAuwqDQg-gcnSOnPhc63Tyh9eRza4jd5jbfnULhlfUb',
-                  fit: BoxFit.cover,
-                  color: Colors.black.withOpacity(0.20),
-                  colorBlendMode: BlendMode.darken,
-                ),
-              ),
-              Positioned.fill(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: scheme.primaryContainer.withOpacity(0.06),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMapCopy(ThemeData theme) {
-    final scheme = theme.colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: 56,
-          height: 4,
-          color: scheme.primaryContainer,
-        ),
-        const SizedBox(height: 20),
-        Text(
-          'VISUAL INTELLIGENCE\nOPERATIONAL MAP VIEW',
-          style: theme.textTheme.displayLarge?.copyWith(
-            fontSize: 44,
-            fontWeight: FontWeight.w800,
-            height: 0.95,
-          ),
-        ),
-        const SizedBox(height: 18),
-        Text(
-          'Experience a new way to scout. The mapping layer can surface climate conditions, elevation context, and current lane occupancy without breaking your current design language.',
-          style: theme.textTheme.bodyLarge?.copyWith(
-            color: scheme.onSurfaceVariant,
-            height: 1.7,
-          ),
-        ),
-        const SizedBox(height: 24),
-        const _MapFeatureRow(
-          icon: Icons.cloud_outlined,
-          title: 'REAL-TIME ATMOSPHERIC DATA',
-          description: 'Check DA and wind speeds at range location.',
-        ),
-        const SizedBox(height: 16),
-        const _MapFeatureRow(
-          icon: Icons.history,
-          title: 'HISTORICAL LANE AVAILABILITY',
-          description: 'Predict peak hours using 30-day usage metrics.',
-        ),
-        const SizedBox(height: 26),
-        OutlinedButton(
-          onPressed: () {},
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 24,
-              vertical: 16,
-            ),
-            backgroundColor: scheme.surfaceContainerHighest,
-          ),
-          child: Text(
-            'LAUNCH INTERACTIVE MAP',
-            style: theme.textTheme.labelMedium?.copyWith(
-              color: scheme.onSurface,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.4,
-            ),
-          ),
         ),
       ],
     );
@@ -1089,16 +925,32 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                     runSpacing: 8,
                     children: [
                       // _TagPill(
-                      //   label: facility.tags.first,
+                      //   label: 'sddsffds', // facility.tags.first,
                       //   background: scheme.primaryContainer.withOpacity(0.92),
                       //   foreground: scheme.onPrimary,
                       // ),
-                      // if (facility.tags.length > 1)
-                      //   _TagPill(
-                      //     label: facility.tags[1],
-                      //     background: scheme.surfaceBright.withOpacity(0.92),
-                      //     foreground: scheme.onSurface,
-                      //   ),
+                      if (widget.facility.facilities != null)
+                        ...widget.facility.facilities!.map((facility) {
+                          return FutureBuilder(
+                            future: ref
+                                .read(lookupViewModelProvider.notifier)
+                                .loadLookupValueById(
+                                    id: facility.facilityId ?? ''),
+                            builder: (context, snapshot) {
+                              if (!snapshot.hasData) {
+                                return const SizedBox.shrink();
+                              }
+                              
+                              return _TagPill(
+                                label: snapshot.data ?? '',
+                                isLoading: snapshot.connectionState ==
+                                    ConnectionState.waiting,
+                                  background: scheme.primaryContainer.withOpacity(0.92),
+                        foreground: scheme.onPrimary,
+                              );
+                            },
+                          );
+                        }),
                     ],
                   ),
                 ),
@@ -1188,16 +1040,16 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                           ),
                         ),
                         const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'STATUS', // facility.statusLabel,//TODO: ADD STATUS
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: statusColor,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                        ),
+                        // Expanded(
+                        //   child: Text(
+                        //     'STATUS', // facility.statusLabel,//TODO: ADD STATUS
+                        //     style: theme.textTheme.labelMedium?.copyWith(
+                        //       color: statusColor,
+                        //       fontWeight: FontWeight.w900,
+                        //       letterSpacing: 1.2,
+                        //     ),
+                        //   ),
+                        // ),
                         TextButton.icon(
                           onPressed: () {},
                           iconAlignment: IconAlignment.end,
@@ -1230,11 +1082,13 @@ class _TagPill extends StatelessWidget {
     required this.label,
     required this.background,
     required this.foreground,
+    this.isLoading = false,
   });
 
   final String label;
   final Color background;
   final Color foreground;
+  final bool? isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -1246,14 +1100,24 @@ class _TagPill extends StatelessWidget {
         color: background,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Text(
-        label,
-        style: theme.textTheme.labelMedium?.copyWith(
-          color: foreground,
-          fontWeight: FontWeight.w900,
-          letterSpacing: 1.0,
-        ),
-      ),
+      child: isLoading == true
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: Center(
+                child: CircularProgressIndicator(
+                  strokeWidth: 1,
+                ),
+              ),
+            )
+          : Text(
+              label,
+              style: theme.textTheme.labelMedium?.copyWith(
+                color: foreground,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.0,
+              ),
+            ),
     );
   }
 }

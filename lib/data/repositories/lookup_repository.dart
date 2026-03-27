@@ -19,4 +19,16 @@ class LookupRepository {
     final data = response as List<dynamic>;
     return data.map((json) => LookupModel.fromJson(json)).toList();
   }
+
+  Future<LookupModel?> getLookupValueById({
+    required String id,
+  }) async {
+    final response = await client.from(tableName).select().eq('id', id);
+    
+    if(response.isEmpty){
+      return null;
+    }
+
+    return LookupModel.fromJson(response.first);
+  }
 }
