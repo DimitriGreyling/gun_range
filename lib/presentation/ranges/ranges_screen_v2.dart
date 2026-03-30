@@ -983,7 +983,7 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                                     return const SizedBox.shrink();
                                   }
 
-                                  return _TagPill(
+                                  return TagPill(
                                     label: snapshot.data ?? '',
                                     isLoading: snapshot.connectionState ==
                                         ConnectionState.waiting,
@@ -1124,8 +1124,8 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
   }
 }
 
-class _TagPill extends StatelessWidget {
-  const _TagPill({
+class TagPill extends StatelessWidget {
+  const TagPill({
     required this.label,
     required this.background,
     required this.foreground,

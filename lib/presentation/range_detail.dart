@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/data/models/range.dart';
+import 'package:gun_range_app/presentation/ranges/ranges_screen_v2.dart';
+import 'package:gun_range_app/presentation/widgets/v2/footer_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/top_bar_widget.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 
@@ -15,6 +17,8 @@ class RangeDetail extends ConsumerStatefulWidget {
 }
 
 class _RangeDetailState extends ConsumerState<RangeDetail> {
+  bool _isAboutExpanding = false;
+
   @override
   void initState() {
     super.initState();
@@ -55,16 +59,20 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
                   context: context,
                   range: rangeDetailState.range,
                 ),
-                _buildStatsGrid(context),
+                // _buildStatsGrid(context),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const SizedBox(height: 40),
-                      _buildAboutSection(context),
                       const SizedBox(height: 48),
-                      _buildAmenitiesSection(context),
+                      _buildAmenitiesSection(
+                          context: context, range: rangeDetailState.range),
+                      const SizedBox(height: 40),
+                      _buildAboutSection(
+                        context: context,
+                        range: rangeDetailState.range,
+                      ),
                       const SizedBox(height: 48),
                       _buildSafetySection(context),
                       const SizedBox(height: 48),
@@ -73,6 +81,7 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
                     ],
                   ),
                 ),
+                const FooterWidget()
               ],
             ),
           ),
@@ -171,54 +180,17 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
     );
   }
 
-  Widget _buildStatsGrid(BuildContext context) {
+  Widget _buildAboutSection({required BuildContext context, Range? range}) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final width = MediaQuery.sizeOf(context).width;
-    final horizontalPadding = width >= 1400
-        ? 48.0
-        : width >= 1024
-            ? 32.0
-            : 20.0;
+    final description = range?.description ?? '';
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(horizontalPadding, 0, horizontalPadding, 0),
-      child: Transform.translate(
-        offset: const Offset(0, -32),
-        child: Row(
-          children: [
-            Expanded(
-              child: _StatCard(
-                value: '500YD',
-                label: 'DISTANCE',
-                theme: theme,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                value: '12',
-                label: 'LANES',
-                theme: theme,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _StatCard(
-                value: '.50 BMG',
-                label: 'LIMIT',
-                theme: theme,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAboutSection(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
+    // Determine if text is long enough to need truncation
+    const int previewLength = 200; // Adjust this number as needed
+    final bool shouldTruncate = description.length > previewLength;
+    final String displayText = _isAboutExpanding || !shouldTruncate
+        ? description
+        : '${description.substring(0, previewLength)}...';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,21 +213,55 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
           ),
           child: Stack(
             children: [
-              Positioned(
-                top: 0,
-                right: 0,
-                child: Icon(
-                  Icons.shield_outlined,
-                  size: 80,
-                  color: scheme.onSurface.withOpacity(0.05),
-                ),
-              ),
-              Text(
-                'SENTINEL PRECISION provides a high-end, climate-controlled tactical environment designed for elite training and recreational excellence. Our facility utilizes advanced HEPA air filtration and acoustic dampening to ensure a premium shooting experience.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: scheme.onSurface.withOpacity(0.8),
-                  height: 1.7,
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 300),
+                    child: Text(
+                      displayText,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: scheme.onSurface.withOpacity(0.8),
+                        height: 1.7,
+                      ),
+                    ),
+                  ),
+                  if (shouldTruncate) ...[
+                    const SizedBox(height: 12),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _isAboutExpanding = !_isAboutExpanding;
+                        });
+                      },
+                      child: MouseRegion(
+                        cursor: MouseCursor.defer,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              _isAboutExpanding ? 'READ LESS' : 'READ MORE',
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: scheme.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            AnimatedRotation(
+                              turns: _isAboutExpanding ? 0.5 : 0,
+                              duration: const Duration(milliseconds: 300),
+                              child: Icon(
+                                Icons.keyboard_arrow_down,
+                                color: scheme.primary,
+                                size: 18,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ],
           ),
@@ -264,16 +270,12 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
     );
   }
 
-  Widget _buildAmenitiesSection(BuildContext context) {
+  Widget _buildAmenitiesSection({
+    required BuildContext context,
+    Range? range,
+  }) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-
-    final amenities = [
-      {'icon': Icons.wifi, 'label': 'GUEST WIFI'},
-      {'icon': Icons.perm_scan_wifi, 'label': 'GUN RENTAL'},
-      {'icon': Icons.shopping_cart_outlined, 'label': 'PRO SHOP'},
-      {'icon': Icons.coffee_outlined, 'label': 'LOUNGE'},
-    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -286,53 +288,34 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
             color: scheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: 16),
-        GridView.count(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 3.5,
-          children: amenities
-              .map((amenity) => _AmenityCard(
-                    icon: amenity['icon'] as IconData,
-                    label: amenity['label'] as String,
-                    theme: theme,
-                  ))
-              .toList(),
+        const SizedBox(
+          height: 10,
         ),
-        const SizedBox(height: 12),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainerLowest,
-            borderRadius: BorderRadius.circular(12),
-            border: Border(
-              left: BorderSide(
-                color: scheme.tertiary,
-                width: 3,
-              ),
-            ),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                Icons.security,
-                color: scheme.tertiary,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'RSO ON-DUTY 24/7',
-                style: theme.textTheme.labelMedium?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.2,
-                ),
-              ),
-            ],
-          ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            if (range?.facilities != null)
+              ...range!.facilities!.map((facility) {
+                return FutureBuilder(
+                  future: ref
+                      .read(lookupViewModelProvider.notifier)
+                      .loadLookupValueById(id: facility.facilityId ?? ''),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return TagPill(
+                      label: snapshot.data ?? '',
+                      isLoading:
+                          snapshot.connectionState == ConnectionState.waiting,
+                      background: scheme.primaryContainer.withOpacity(0.92),
+                      foreground: scheme.onPrimary,
+                    );
+                  },
+                );
+              }),
+          ],
         ),
       ],
     );
@@ -516,93 +499,6 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
           ],
         ),
       ],
-    );
-  }
-
-  Widget _buildBottomNavigation(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-        decoration: BoxDecoration(
-          color: scheme.surface,
-          border: Border(
-            top: BorderSide(
-              color: scheme.surfaceContainerHighest.withOpacity(0.15),
-            ),
-          ),
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(20),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: scheme.shadow.withOpacity(0.4),
-              blurRadius: 40,
-              offset: const Offset(0, -20),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: Row(
-            children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.shopping_bag_outlined,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'GEAR',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 1.0,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [scheme.primary, scheme.primaryContainer],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.calendar_today_outlined,
-                        color: scheme.onPrimary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'RESERVE LANE',
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 1.0,
-                          color: scheme.onPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
