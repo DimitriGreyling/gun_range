@@ -722,23 +722,47 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                         child: CircularProgressIndicator(),
                       );
                     }
+                    if (_gridSelected) {
+                      if (rangeState.foundRanges != null &&
+                          rangeState.foundRanges!.length > 1) {
+                        return GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: rangeState.foundRanges?.length ?? 0,
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 360,
+                            crossAxisSpacing: 24,
+                            mainAxisSpacing: 24,
+                            childAspectRatio: 0.75,
+                          ),
+                          itemBuilder: (context, index) {
+                            final item = rangeState?.foundRanges?[index];
 
-                    return GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: rangeState.foundRanges?.length ?? 0,
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 360,
-                        crossAxisSpacing: 24,
-                        mainAxisSpacing: 24,
-                        childAspectRatio: 0.75,
+                            return _FacilityCardWidget(
+                                facility: item ?? Range());
+                          },
+                        );
+                      }
+
+                      if (rangeState.foundRanges == null ||
+                          rangeState.foundRanges!.isEmpty) {
+                        return const Text('No Ranges found');
+                      }
+                    }
+
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: rangeState.foundRanges!.map((range) {
+                          return Container(
+                            width: 300,
+                            margin: const EdgeInsets.only(right: 16),
+                            child: _FacilityCardWidget(facility: range),
+                          );
+                        }).toList(),
                       ),
-                      itemBuilder: (context, index) {
-                        final item = rangeState?.foundRanges?[index];
-
-                        return _FacilityCardWidget(facility: item ?? Range());
-                      },
                     );
                   },
                 ),
@@ -804,17 +828,21 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
           selected: _gridSelected,
           icon: Icons.grid_view_rounded,
           onTap: () {
+            if (_gridSelected) {
+              return;
+            }
+            
             setState(() => _gridSelected = true);
           },
         ),
-        const SizedBox(width: 8),
-        _ToggleButton(
-          selected: !_gridSelected,
-          icon: Icons.map_outlined,
-          onTap: () {
-            setState(() => _gridSelected = false);
-          },
-        ),
+        // const SizedBox(width: 8),
+        // _ToggleButton(
+        //   selected: !_gridSelected,
+        //   icon: Icons.map_outlined,
+        //   onTap: () {
+        //     setState(() => _gridSelected = false);
+        //   },
+        // ),
       ],
     );
   }
@@ -912,9 +940,7 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                             MouseRegion(
                               cursor: MouseCursor.defer,
                               child: InkWell(
-                                onTap: () {
-                                  
-                                },
+                                onTap: () {},
                                 child: Icon(
                                   Icons.favorite_border_outlined,
                                   color: scheme.error,
@@ -954,13 +980,13 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                                   if (!snapshot.hasData) {
                                     return const SizedBox.shrink();
                                   }
-        
+
                                   return _TagPill(
                                     label: snapshot.data ?? '',
                                     isLoading: snapshot.connectionState ==
                                         ConnectionState.waiting,
-                                    background:
-                                        scheme.primaryContainer.withOpacity(0.92),
+                                    background: scheme.primaryContainer
+                                        .withOpacity(0.92),
                                     foreground: scheme.onPrimary,
                                   );
                                 },
@@ -1009,7 +1035,7 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                                   ),
                                 );
                               }
-        
+
                               return Text(
                                 widget.facility.nspDistanceInKilometers != null
                                     ? 'DIST: ${widget.facility.nspDistanceInKilometers} KM'
@@ -1070,7 +1096,8 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                               onPressed: () {},
                               iconAlignment: IconAlignment.end,
                               onHover: (_) {},
-                              icon: const Icon(Icons.bookmark_add_outlined, size: 20),
+                              icon: const Icon(Icons.bookmark_add_outlined,
+                                  size: 20),
                               label: Text(
                                 'BOOK NOW',
                                 style: theme.textTheme.labelMedium?.copyWith(
