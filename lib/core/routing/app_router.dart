@@ -78,7 +78,7 @@ final appRouter = GoRouter(
         name: 'range-details',
         path: '/range-detail/:id',
         builder: (context, state) {
-          final queryParameters = state.uri.queryParameters;
+          final queryParameters = state.pathParameters;
 
           return  RangeDetail(
             rangeId: queryParameters['id'],

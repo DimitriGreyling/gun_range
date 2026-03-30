@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/widgets/v2/top_bar_widget.dart';
+import 'package:gun_range_app/providers/viewmodel_providers.dart';
 
 class RangeDetail extends ConsumerStatefulWidget {
   final String? rangeId;
@@ -14,6 +16,19 @@ class RangeDetail extends ConsumerStatefulWidget {
 
 class _RangeDetailState extends ConsumerState<RangeDetail> {
   @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.rangeId != null) {
+        ref
+            .read(rangeDetailViewModelProvider.notifier)
+            .fetchRangeDetail(widget.rangeId ?? '');
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
@@ -23,6 +38,8 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
         : width >= 1024
             ? 32.0
             : 20.0;
+
+    final rangeDetailState = ref.watch(rangeDetailViewModelProvider);
 
     return Scaffold(
       backgroundColor: scheme.surface,
@@ -34,7 +51,10 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 TopBarWidget(),
-                _buildHeroSection(context),
+                _buildHeroSection(
+                  context: context,
+                  range: rangeDetailState.range,
+                ),
                 _buildStatsGrid(context),
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
@@ -61,7 +81,7 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
     );
   }
 
-  Widget _buildHeroSection(BuildContext context) {
+  Widget _buildHeroSection({required BuildContext context, Range? range}) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
@@ -135,7 +155,9 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'SENTINEL PRECISION',
+                  range?.name ?? '',
+
+                  //'SENTINEL PRECISION',
                   style: theme.textTheme.displayMedium?.copyWith(
                     fontWeight: FontWeight.w900,
                     color: scheme.onSurface,
