@@ -879,7 +879,9 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
       cursor: MouseCursor.defer,
       child: InkWell(
         onTap: () {
-          context.goNamed('range_details');
+          context.goNamed('range-details',pathParameters: {
+            'id': widget.facility.id ?? '',
+          });
         },
         child: Container(
           decoration: BoxDecoration(
