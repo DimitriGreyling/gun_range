@@ -831,7 +831,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
             if (_gridSelected) {
               return;
             }
-            
+
             setState(() => _gridSelected = true);
           },
         ),
@@ -879,7 +879,7 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
       cursor: MouseCursor.defer,
       child: InkWell(
         onTap: () {
-          //TODO: Go to range details
+          context.goNamed('range_details');
         },
         child: Container(
           decoration: BoxDecoration(
