@@ -23,6 +23,7 @@ dependencies:
   http: ^1.6.0
   intl: ^0.20.2
   location: ^6.0.2
+  package_info_plus: ^9.0.0
   pdf: ^3.11.3
   pdfrx: ^1.0.101
   share_plus: ^12.0.1

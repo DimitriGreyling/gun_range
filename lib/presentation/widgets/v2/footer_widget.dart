@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class FooterWidget extends ConsumerStatefulWidget {
   const FooterWidget({super.key});
@@ -160,6 +161,20 @@ class _FooterWidgetState extends ConsumerState<FooterWidget> {
                       letterSpacing: 1.2,
                     ),
                   ),
+                ),
+                FutureBuilder(
+                  future: PackageInfo.fromPlatform(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 1,
+                        ),
+                      );
+                    }
+
+                    return Text('V${snapshot.data?.version}');
+                  },
                 ),
               ],
             ),
