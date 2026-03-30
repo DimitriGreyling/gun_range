@@ -61,7 +61,6 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/make-booking',
       builder: (context, state) {
-        log('TESTING :: ${state}');
         return const MakeBookingV2();
       },
     ),
@@ -76,9 +75,14 @@ final appRouter = GoRouter(
       builder: (context, state) => const TargetCapturing(),
     ),
     GoRoute(
-      name: 'range-details',
-      path: '/range-detail/:id',
-      builder: (context, state) => const RangeDetail(),
-    ),
+        name: 'range-details',
+        path: '/range-detail/:id',
+        builder: (context, state) {
+          final queryParameters = state.uri.queryParameters;
+
+          return  RangeDetail(
+            rangeId: queryParameters['id'],
+          );
+        }),
   ],
 );

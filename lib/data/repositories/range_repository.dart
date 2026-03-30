@@ -37,7 +37,6 @@ class RangeRepository {
         .select()
         .eq('is_active', true)
         .or('city.ilike.%$location%,province.ilike.%$location%');
-    log('FOUND');
 
     return response.map((range)=> Range.fromJson(range)).toList();
   }

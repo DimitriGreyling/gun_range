@@ -111,10 +111,8 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
         await prefs.setString('range_name', state.range?.name ?? '');
         // Add other range fields as needed
       }
-
-      log('All form state saved successfully');
     } catch (e) {
-      log('Error saving form state: $e');
+      ErrorsExceptionService.handleException(e);
     }
   }
 
@@ -213,13 +211,8 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
         guests: restoredGuests,
         rangeId: savedRangeId ?? state.rangeId,
       );
-
-      log('All form state loaded successfully');
-      log('Restored booking for: $savedBookingFor');
-      log('Restored page index: $savedPageIndex');
-      log('Restored guests count: $guestsCount');
     } catch (e) {
-      log('Error loading form state: $e');
+      ErrorsExceptionService.handleException(e);
     }
   }
 
@@ -244,10 +237,8 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
       for (String key in bookingKeys) {
         await prefs.remove(key);
       }
-
-      log('All saved form state cleared');
     } catch (e) {
-      log('Error clearing form state: $e');
+      ErrorsExceptionService.handleException(e);
     }
   }
 
@@ -307,6 +298,7 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
         isLoading: false,
         errorMessage: 'Failed to load range details: $e',
       );
+      ErrorsExceptionService.handleException(e);
     }
   }
 
@@ -451,7 +443,7 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt('booking_current_page', pageIndex);
     } catch (e) {
-      // Handle error silently for now
+      ErrorsExceptionService.handleException(e);
     }
   }
 
@@ -462,7 +454,7 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
       final savedPage = prefs.getInt('booking_current_page') ?? 0;
       state = state.copyWith(currentPageIndex: savedPage);
     } catch (e) {
-      // Handle error silently for now
+      ErrorsExceptionService.handleException(e);
     }
   }
 
@@ -614,6 +606,7 @@ class MakeBookingVm extends StateNotifier<MakeBookingState> {
         isLoading: false,
         errorMessage: 'Failed to create booking: ${e.toString()}',
       );
+      ErrorsExceptionService.handleException(e);
     }
   }
 }

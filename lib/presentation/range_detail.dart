@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/presentation/widgets/v2/top_bar_widget.dart';
 
 class RangeDetail extends ConsumerStatefulWidget {
-  const RangeDetail({super.key});
+  final String? rangeId;
+
+  const RangeDetail({super.key, this.rangeId});
 
   @override
   ConsumerState<RangeDetail> createState() => _RangeDetailState();

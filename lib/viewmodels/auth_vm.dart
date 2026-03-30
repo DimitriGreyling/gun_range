@@ -61,8 +61,6 @@ class AuthViewModel extends StateNotifier<AuthState> {
         //     themeModeFromDb(profileInformation.themeMode);
       }
 
-      log('User profile loaded: $profileInformation');
-
       if (fullName != null) {
         GlobalPopupService.showSuccess(
           title: 'Login Successful',
@@ -82,7 +80,6 @@ class AuthViewModel extends StateNotifier<AuthState> {
       state = state.copyWith(
           isLoading: false, userId: userId, userFullName: fullName);
     } catch (e) {
-      log('Sign in error: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
       ErrorsExceptionService.handleException(e);
     }
@@ -96,7 +93,6 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
       state = state.copyWith(isLoading: false, userId: userId);
     } catch (e) {
-      log('Registration error: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
       ErrorsExceptionService.handleException(e);
     }
@@ -138,8 +134,6 @@ class AuthViewModel extends StateNotifier<AuthState> {
       // _ref.read(themeModeProvider.notifier).state =
       //     themeModeFromDb(profileInformation.themeMode);
 
-      log('User profile loaded: $profileInformation');
-
       if (fullName != null) {
         GlobalPopupService.showSuccess(
           title: 'Login Successful',
@@ -161,7 +155,6 @@ class AuthViewModel extends StateNotifier<AuthState> {
             isLoading: false, userId: userId, userFullName: fullName);
       });
     } catch (e) {
-      log('Sign in error: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
       ErrorsExceptionService.handleException(e);
     }
@@ -180,14 +173,11 @@ class AuthViewModel extends StateNotifier<AuthState> {
 
       _authRepository.callUserCreationEdgeFunction();
 
-      log('Google Sign in initiated, userId:');
       final profileInformation = await _profileRepository.getMyProfile();
 
       fullName = profileInformation.fullName;
       // _ref.read(themeModeProvider.notifier).state =
       //     themeModeFromDb(profileInformation.themeMode);
-
-      log('User profile loaded: $profileInformation');
 
       if (fullName != null) {
         GlobalPopupService.showSuccess(
@@ -203,7 +193,6 @@ class AuthViewModel extends StateNotifier<AuthState> {
         );
       }
     } catch (e) {
-      log('Google Sign in error: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
       ErrorsExceptionService.handleException(e);
     }
