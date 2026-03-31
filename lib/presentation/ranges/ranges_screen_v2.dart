@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/constants/general_constants.dart';
 import 'package:gun_range_app/data/models/range.dart';
+import 'package:gun_range_app/presentation/range_detail.dart';
 import 'package:gun_range_app/presentation/widgets/v2/footer_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
 import 'package:gun_range_app/presentation/widgets/v2/search_field_widget.dart';
@@ -722,23 +723,47 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                         child: CircularProgressIndicator(),
                       );
                     }
+                    if (_gridSelected) {
+                      if (rangeState.foundRanges != null &&
+                          rangeState.foundRanges!.length > 1) {
+                        return GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: rangeState.foundRanges?.length ?? 0,
+                          gridDelegate:
+                              const SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 360,
+                            crossAxisSpacing: 24,
+                            mainAxisSpacing: 24,
+                            childAspectRatio: 0.75,
+                          ),
+                          itemBuilder: (context, index) {
+                            final item = rangeState?.foundRanges?[index];
 
-                    return GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: rangeState.foundRanges?.length ?? 0,
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: 360,
-                        crossAxisSpacing: 24,
-                        mainAxisSpacing: 24,
-                        childAspectRatio: 0.75,
+                            return _FacilityCardWidget(
+                                facility: item ?? Range());
+                          },
+                        );
+                      }
+
+                      if (rangeState.foundRanges == null ||
+                          rangeState.foundRanges!.isEmpty) {
+                        return const Text('No Ranges found');
+                      }
+                    }
+
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: rangeState.foundRanges!.map((range) {
+                          return Container(
+                            width: 300,
+                            margin: const EdgeInsets.only(right: 16),
+                            child: _FacilityCardWidget(facility: range),
+                          );
+                        }).toList(),
                       ),
-                      itemBuilder: (context, index) {
-                        final item = rangeState?.foundRanges?[index];
-
-                        return _FacilityCardWidget(facility: item ?? Range());
-                      },
                     );
                   },
                 ),
@@ -804,17 +829,21 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
           selected: _gridSelected,
           icon: Icons.grid_view_rounded,
           onTap: () {
+            if (_gridSelected) {
+              return;
+            }
+
             setState(() => _gridSelected = true);
           },
         ),
-        const SizedBox(width: 8),
-        _ToggleButton(
-          selected: !_gridSelected,
-          icon: Icons.map_outlined,
-          onTap: () {
-            setState(() => _gridSelected = false);
-          },
-        ),
+        // const SizedBox(width: 8),
+        // _ToggleButton(
+        //   selected: !_gridSelected,
+        //   icon: Icons.map_outlined,
+        //   onTap: () {
+        //     setState(() => _gridSelected = false);
+        //   },
+        // ),
       ],
     );
   }
@@ -851,7 +880,11 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
       cursor: MouseCursor.defer,
       child: InkWell(
         onTap: () {
-          //TODO: Go to range details
+          _showRangeDetailDialog(rangeId: widget.facility.id ?? '');
+
+          // context.goNamed('range-details', pathParameters: {
+          //   'id': widget.facility.id ?? '',
+          // });
         },
         child: Container(
           decoration: BoxDecoration(
@@ -912,9 +945,7 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                             MouseRegion(
                               cursor: MouseCursor.defer,
                               child: InkWell(
-                                onTap: () {
-                                  
-                                },
+                                onTap: () {},
                                 child: Icon(
                                   Icons.favorite_border_outlined,
                                   color: scheme.error,
@@ -954,13 +985,13 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                                   if (!snapshot.hasData) {
                                     return const SizedBox.shrink();
                                   }
-        
-                                  return _TagPill(
+
+                                  return TagPill(
                                     label: snapshot.data ?? '',
                                     isLoading: snapshot.connectionState ==
                                         ConnectionState.waiting,
-                                    background:
-                                        scheme.primaryContainer.withOpacity(0.92),
+                                    background: scheme.primaryContainer
+                                        .withOpacity(0.92),
                                     foreground: scheme.onPrimary,
                                   );
                                 },
@@ -1009,7 +1040,7 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                                   ),
                                 );
                               }
-        
+
                               return Text(
                                 widget.facility.nspDistanceInKilometers != null
                                     ? 'DIST: ${widget.facility.nspDistanceInKilometers} KM'
@@ -1070,7 +1101,8 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                               onPressed: () {},
                               iconAlignment: IconAlignment.end,
                               onHover: (_) {},
-                              icon: const Icon(Icons.bookmark_add_outlined, size: 20),
+                              icon: const Icon(Icons.bookmark_add_outlined,
+                                  size: 20),
                               label: Text(
                                 'BOOK NOW',
                                 style: theme.textTheme.labelMedium?.copyWith(
@@ -1093,10 +1125,61 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
       ),
     );
   }
+
+  void _showRangeDetailDialog({required String? rangeId}) {
+    final theme = Theme.of(context).colorScheme;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        final screenSize = MediaQuery.of(context).size;
+        final dialogWidth = screenSize.width > 768
+            ? screenSize.width * 0.7
+            : screenSize.width * 0.9;
+        final dialogHeight = screenSize.height * 0.8;
+
+        return Dialog(
+          child: SizedBox(
+              width: dialogWidth,
+              height: dialogHeight,
+              child: Stack(
+                children: [
+                  RangeDetail(
+                    rangeId: rangeId,
+                  ),
+                  Positioned(
+                    top: 0,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.surface.withOpacity(0.82),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: IconButton(
+                        onPressed: () {
+                          context.pop();
+                        },
+                        icon: Icon(
+                          Icons.close,
+                          color: theme.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )),
+        );
+      },
+    );
+  }
 }
 
-class _TagPill extends StatelessWidget {
-  const _TagPill({
+class TagPill extends StatelessWidget {
+  const TagPill({
     required this.label,
     required this.background,
     required this.foreground,

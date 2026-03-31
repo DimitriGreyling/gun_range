@@ -6,6 +6,7 @@ import 'package:gun_range_app/presentation/auth/login_page_v2.dart';
 import 'package:gun_range_app/presentation/home/home_screen_web_2.dart';
 import 'package:gun_range_app/presentation/make_booking/make_booking_v2.dart';
 import 'package:gun_range_app/presentation/profile/profile_page_widget.dart';
+import 'package:gun_range_app/presentation/range_detail.dart';
 import 'package:gun_range_app/presentation/ranges/ranges_screen_v2.dart';
 import 'package:gun_range_app/presentation/target_capturing/target_capturing.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -44,9 +45,10 @@ final appRouter = GoRouter(
           if (filters == null) {
             return const RangesScreenV2();
           }
-          
+
           final rawDate = filters['date'];
-          final DateTime? date = rawDate != null ? DateTime.tryParse(rawDate) : null;
+          final DateTime? date =
+              rawDate != null ? DateTime.tryParse(rawDate) : null;
           final String? activityId = filters['activity'];
           final String? location = filters['location'];
 
@@ -59,7 +61,6 @@ final appRouter = GoRouter(
     GoRoute(
       path: '/make-booking',
       builder: (context, state) {
-        log('TESTING :: ${state}');
         return const MakeBookingV2();
       },
     ),
@@ -73,5 +74,15 @@ final appRouter = GoRouter(
       path: '/target',
       builder: (context, state) => const TargetCapturing(),
     ),
+    GoRoute(
+        name: 'range-details',
+        path: '/range-detail/:id',
+        builder: (context, state) {
+          final queryParameters = state.pathParameters;
+
+          return  RangeDetail(
+            rangeId: queryParameters['id'],
+          );
+        }),
   ],
 );

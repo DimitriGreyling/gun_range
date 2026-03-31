@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class LoginPageV2 extends ConsumerStatefulWidget {
   const LoginPageV2({super.key});
@@ -24,6 +25,11 @@ class _LoginPageV2State extends ConsumerState<LoginPageV2> {
 
   bool _showPassword = false;
   bool _rememberTerminal = true;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -440,7 +446,21 @@ class _LoginPageV2State extends ConsumerState<LoginPageV2> {
                       ],
                     ),
                     const Spacer(),
-                    const Text('VER: 4.2.0-STN'),
+                    FutureBuilder(
+                      future: PackageInfo.fromPlatform(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 1,
+                            ),
+                          );
+                        }
+
+                        return Text('V${snapshot.data?.version}');
+                      },
+                    ),
                   ],
                 ),
               ),

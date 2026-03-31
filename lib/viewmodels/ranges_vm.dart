@@ -47,6 +47,11 @@ class RangesVm extends StateNotifier<RangesState> {
       location: location,
     );
 
+    //SORT ALPHABETICALLY
+    result.sort((a,b){
+      return a.name!.compareTo(b.name ?? '');
+    });
+
     state = state.copyWith(isLoading: false, foundRanges: result);
   }
 

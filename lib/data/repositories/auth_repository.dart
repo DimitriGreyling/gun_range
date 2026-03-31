@@ -54,6 +54,5 @@ class AuthRepository {
     final response = await supabase
         .from('profiles')
         .update({'theme_mode': themeMode}).eq('id', currentUserId);
-    log('Updated theme mode for user $currentUserId to $themeMode: $response');
   }
 }
