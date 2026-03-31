@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/constants/general_constants.dart';
 import 'package:gun_range_app/data/models/range.dart';
+import 'package:gun_range_app/presentation/range_detail.dart';
 import 'package:gun_range_app/presentation/widgets/v2/footer_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
 import 'package:gun_range_app/presentation/widgets/v2/search_field_widget.dart';
@@ -879,9 +880,11 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
       cursor: MouseCursor.defer,
       child: InkWell(
         onTap: () {
-          context.goNamed('range-details',pathParameters: {
-            'id': widget.facility.id ?? '',
-          });
+          _showRangeDetailDialog(rangeId: widget.facility.id ?? '');
+
+          // context.goNamed('range-details', pathParameters: {
+          //   'id': widget.facility.id ?? '',
+          // });
         },
         child: Container(
           decoration: BoxDecoration(
@@ -1120,6 +1123,57 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showRangeDetailDialog({required String? rangeId}) {
+    final theme = Theme.of(context).colorScheme;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        final screenSize = MediaQuery.of(context).size;
+        final dialogWidth = screenSize.width > 768
+            ? screenSize.width * 0.7
+            : screenSize.width * 0.9;
+        final dialogHeight = screenSize.height * 0.8;
+
+        return Dialog(
+          child: SizedBox(
+              width: dialogWidth,
+              height: dialogHeight,
+              child: Stack(
+                children: [
+                  RangeDetail(
+                    rangeId: rangeId,
+                  ),
+                  Positioned(
+                    top: 0,
+                    right: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: theme.surface.withOpacity(0.82),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: IconButton(
+                        onPressed: () {
+                          context.pop();
+                        },
+                        icon: Icon(
+                          Icons.close,
+                          color: theme.primary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              )),
+        );
+      },
     );
   }
 }

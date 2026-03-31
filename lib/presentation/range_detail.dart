@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/ranges/ranges_screen_v2.dart';
 import 'package:gun_range_app/presentation/widgets/v2/footer_widget.dart';
+import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
 import 'package:gun_range_app/presentation/widgets/v2/top_bar_widget.dart';
 import 'package:gun_range_app/providers/viewmodel_providers.dart';
 
@@ -54,7 +55,7 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TopBarWidget(),
+                // TopBarWidget(),
                 _buildHeroSection(
                   context: context,
                   range: rangeDetailState.range,
@@ -71,16 +72,20 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
                           _buildAmenitiesSection(
                               context: context, range: rangeDetailState.range),
                           const Spacer(),
-                          ElevatedButton(
+                          GradientButton(
+                            icon: Icons.star,
+                            label: 'Add Review',
                             onPressed: () {},
-                            child: const Text('Add Review'),
+                            tone: GradientButtonTone.secondary,
                           ),
                           const SizedBox(
                             width: 10,
                           ),
-                          ElevatedButton(
+                          GradientButton(
+                            icon: Icons.bookmark_add_outlined,
+                            label: 'Book Now',
                             onPressed: () {},
-                            child: const Text('Book Now'),
+                            tone: GradientButtonTone.primary,
                           ),
                         ],
                       ),
@@ -250,30 +255,27 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
                           _isAboutExpanding = !_isAboutExpanding;
                         });
                       },
-                      child: MouseRegion(
-                        cursor: MouseCursor.defer,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Text(
-                              _isAboutExpanding ? 'READ LESS' : 'READ MORE',
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: scheme.primary,
-                                fontWeight: FontWeight.w700,
-                              ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            _isAboutExpanding ? 'READ LESS' : 'READ MORE',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: scheme.primary,
+                              fontWeight: FontWeight.w700,
                             ),
-                            const SizedBox(width: 4),
-                            AnimatedRotation(
-                              turns: _isAboutExpanding ? 0.5 : 0,
-                              duration: const Duration(milliseconds: 300),
-                              child: Icon(
-                                Icons.keyboard_arrow_down,
-                                color: scheme.primary,
-                                size: 18,
-                              ),
+                          ),
+                          const SizedBox(width: 4),
+                          AnimatedRotation(
+                            turns: _isAboutExpanding ? 0.5 : 0,
+                            duration: const Duration(milliseconds: 300),
+                            child: Icon(
+                              Icons.keyboard_arrow_down,
+                              color: scheme.primary,
+                              size: 18,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
