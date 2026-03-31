@@ -66,8 +66,24 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const SizedBox(height: 48),
-                      _buildAmenitiesSection(
-                          context: context, range: rangeDetailState.range),
+                      Row(
+                        children: [
+                          _buildAmenitiesSection(
+                              context: context, range: rangeDetailState.range),
+                          const Spacer(),
+                          ElevatedButton(
+                            onPressed: () {},
+                            child: const Text('Add Review'),
+                          ),
+                          const SizedBox(
+                            width: 10,
+                          ),
+                          ElevatedButton(
+                            onPressed: () {},
+                            child: const Text('Book Now'),
+                          ),
+                        ],
+                      ),
                       const SizedBox(height: 40),
                       _buildAboutSection(
                         context: context,
