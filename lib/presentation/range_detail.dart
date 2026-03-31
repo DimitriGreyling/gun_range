@@ -453,10 +453,16 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
           child:
               range == null || range.latitude == null || range.longitude == null
                   ? const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 1,
-                      ),
-                    )
+                      child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(
+                          strokeWidth: 1,
+                        ),
+                        Text('Loading map...'),
+                      ],
+                    ))
                   : GoogleMap(
                       initialCameraPosition: CameraPosition(
                         target: location,
@@ -478,7 +484,7 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
                       rotateGesturesEnabled: false,
                       tiltGesturesEnabled: false,
                       trafficEnabled: false,
-                      buildingsEnabled: false,
+                      buildingsEnabled: true,
                     ),
         ),
         const SizedBox(height: 16),
@@ -502,17 +508,20 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
                 // ),
               ],
             ),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: scheme.primary,
-                borderRadius: BorderRadius.circular(12),
+            if (range != null &&
+                range.latitude != null &&
+                range.longitude != null)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: scheme.primary,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.directions_outlined,
+                  color: scheme.onPrimary,
+                ),
               ),
-              child: Icon(
-                Icons.directions_outlined,
-                color: scheme.onPrimary,
-              ),
-            ),
           ],
         ),
       ],

@@ -115,13 +115,15 @@ class _MainAppState extends ConsumerState<MainApp> with WidgetsBindingObserver {
         return MaterialApp.router(
           restorationScopeId: 'app',
           scrollBehavior: const MaterialScrollBehavior().copyWith(
-            dragDevices: {
-              PointerDeviceKind.mouse,
-              PointerDeviceKind.touch,
-              PointerDeviceKind.trackpad,
-              PointerDeviceKind.stylus,
-              PointerDeviceKind.unknown,
-            },
+            //TODO:: add ack for mobil devices
+            
+            // dragDevices: {
+            //   PointerDeviceKind.mouse,
+            //   PointerDeviceKind.touch,
+            //   PointerDeviceKind.trackpad,
+            //   PointerDeviceKind.stylus,
+            //   PointerDeviceKind.unknown,
+            // },
           ),
           debugShowCheckedModeBanner: false,
           routerConfig: appRouter,
