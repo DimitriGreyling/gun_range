@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gun_range_app/data/models/paged_items.dart';
 import 'package:gun_range_app/data/models/range.dart';
@@ -73,5 +74,19 @@ class RangeDetailVm extends StateNotifier<RangeDetailState> {
       state = state.copyWith(isLoadingReviews: false, error: e.toString());
       rethrow;
     }
+  }
+
+  Future<String> getDarkModeMapStyle() async {
+    final String response =
+        await rootBundle.loadString('assets/maps/dark_mode.json');
+
+    return response;
+  }
+
+  Future<String> getLightModeMapStyle() async {
+    final String response =
+        await rootBundle.loadString('assets/maps/light_mode.json');
+
+    return response;
   }
 }
