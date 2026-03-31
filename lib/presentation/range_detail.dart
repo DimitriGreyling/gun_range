@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/ranges/ranges_screen_v2.dart';
 import 'package:gun_range_app/presentation/widgets/v2/footer_widget.dart';
@@ -32,6 +33,9 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
       }
     });
   }
+
+  final darkMode = "[{\"elementType\":\"geometry\",\"stylers\":[{\"color\":\"#212121\"}]},{\"elementType\":\"labels.icon\",\"stylers\":[{\"visibility\":\"off\"}]},{\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#757575\"}]},{\"elementType\":\"labels.text.stroke\",\"stylers\":[{\"color\":\"#212121\"}]},{\"featureType\":\"administrative\",\"elementType\":\"geometry\",\"stylers\":[{\"color\":\"#757575\"}]},{\"featureType\":\"administrative.country\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#9e9e9e\"}]},{\"featureType\":\"administrative.land_parcel\",\"stylers\":[{\"visibility\":\"off\"}]},{\"featureType\":\"administrative.locality\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#bdbdbd\"}]},{\"featureType\":\"poi\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#757575\"}]},{\"featureType\":\"poi.park\",\"elementType\":\"geometry\",\"stylers\":[{\"color\":\"#181818\"}]},{\"featureType\":\"poi.park\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#616161\"}]},{\"featureType\":\"poi.park\",\"elementType\":\"labels.text.stroke\",\"stylers\":[{\"color\":\"#1b1b1b\"}]},{\"featureType\":\"road\",\"elementType\":\"geometry.fill\",\"stylers\":[{\"color\":\"#2c2c2c\"}]},{\"featureType\":\"road\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#8a8a8a\"}]},{\"featureType\":\"road.arterial\",\"elementType\":\"geometry\",\"stylers\":[{\"color\":\"#373737\"}]},{\"featureType\":\"road.highway\",\"elementType\":\"geometry\",\"stylers\":[{\"color\":\"#3c3c3c\"}]},{\"featureType\":\"road.highway.controlled_access\",\"elementType\":\"geometry\",\"stylers\":[{\"color\":\"#4e4e4e\"}]},{\"featureType\":\"road.local\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#616161\"}]},{\"featureType\":\"transit\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#757575\"}]},{\"featureType\":\"water\",\"elementType\":\"geometry\",\"stylers\":[{\"color\":\"#000000\"}]},{\"featureType\":\"water\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#3d3d3d\"}]}]";
+  final lightMode = "[{\"elementType\":\"geometry\",\"stylers\":[{\"color\":\"#f5f5f5\"}]},{\"elementType\":\"labels.icon\",\"stylers\":[{\"visibility\":\"off\"}]},{\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#616161\"}]},{\"elementType\":\"labels.text.stroke\",\"stylers\":[{\"color\":\"#f5f5f5\"}]},{\"featureType\":\"administrative.land_parcel\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#bdbdbd\"}]},{\"featureType\":\"poi\",\"elementType\":\"geometry\",\"stylers\":[{\"color\":\"#eeeeee\"}]},{\"featureType\":\"poi\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#757575\"}]},{\"featureType\":\"poi.park\",\"elementType\":\"geometry\",\"stylers\":[{\"color\":\"#e5e5e5\"}]},{\"featureType\":\"poi.park\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#9e9e9e\"}]},{\"featureType\":\"road\",\"elementType\":\"geometry\",\"stylers\":[{\"color\":\"#ffffff\"}]},{\"featureType\":\"road.arterial\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#757575\"}]},{\"featureType\":\"road.highway\",\"elementType\":\"geometry\",\"stylers\":[{\"color\":\"#dadada\"}]},{\"featureType\":\"road.highway\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#616161\"}]},{\"featureType\":\"road.local\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#9e9e9e\"}]},{\"featureType\":\"transit.line\",\"elementType\":\"geometry\",\"stylers\":[{\"color\":\"#e5e5e5\"}]},{\"featureType\":\"transit.station\",\"elementType\":\"geometry\",\"stylers\":[{\"color\":\"#eeeeee\"}]},{\"featureType\":\"water\",\"elementType\":\"geometry\",\"stylers\":[{\"color\":\"#c9c9c9\"}]},{\"featureType\":\"water\",\"elementType\":\"labels.text.fill\",\"stylers\":[{\"color\":\"#9e9e9e\"}]}]";
 
   @override
   Widget build(BuildContext context) {
@@ -97,7 +101,8 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
                       const SizedBox(height: 48),
                       _buildSafetySection(context),
                       const SizedBox(height: 48),
-                      _buildLocationSection(context),
+                      _buildLocationSection(
+                          context: context, range: rangeDetailState.range),
                       const SizedBox(height: 120), // Space for bottom nav
                     ],
                   ),
@@ -409,9 +414,13 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
     );
   }
 
-  Widget _buildLocationSection(BuildContext context) {
+  Widget _buildLocationSection({required BuildContext context, Range? range}) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+
+    final LatLng location = range?.latitude != null && range?.longitude != null
+        ? LatLng(range!.latitude!, range.longitude!)
+        : const LatLng(37.7749, -122.4194);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -426,60 +435,39 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
         ),
         const SizedBox(height: 16),
         Container(
-          height: 200,
+          height: 250,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: scheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(20),
-          ),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: ColorFiltered(
-                    colorFilter: ColorFilter.mode(
-                      Colors.grey.withOpacity(0.8),
-                      BlendMode.saturation,
-                    ),
-                    child: Image.network(
-                      'https://lh3.googleusercontent.com/aida-public/AB6AXuBMhu4PlOu-s9DQkHBR42LAkXHQneidSt6dx_B_XdUKi1ckJOe2Cv7J4x6OINl7NhSWy3y1yb-UvCJA56HfqN9taj3DyRf198Ds1SLKS3YA4ANFSMa36It9lFoq745n9mIsdHp1o_qmVQHqmcEVupZfyacUgzoAxm77_o-Kp9yIoRw2OdYiAd7_PWCKzWTaTcV3p75udvP4X87mJtzpe0DbxOe1i5OZ-GrOhQssttszaUb3lCmzTDxnW38LVzinquQlBafkzXy9oju8',
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          color: scheme.surfaceContainerLow,
-                          child: Icon(
-                            Icons.map_outlined,
-                            size: 64,
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              Center(
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Container(
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: scheme.primary.withOpacity(0.2),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    Icon(
-                      Icons.location_on,
-                      color: scheme.primary,
-                      size: 32,
-                    ),
-                  ],
-                ),
+            boxShadow: [
+              BoxShadow(
+                color: scheme.shadow.withOpacity(0.2),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
               ),
             ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: GoogleMap(
+            initialCameraPosition: CameraPosition(
+              target: location,
+              zoom: 15.0,
+            ),
+            style: darkMode,
+            markers: {
+              Marker(markerId: const MarkerId('range_location'),position: location),
+            },
+            mapType: MapType.normal,
+            zoomControlsEnabled: false,
+            mapToolbarEnabled: false,
+            myLocationButtonEnabled: false,
+            compassEnabled: false,
+            scrollGesturesEnabled: true,
+            zoomGesturesEnabled: true,
+            rotateGesturesEnabled: false,
+            tiltGesturesEnabled: false,
+            trafficEnabled: false,
+            buildingsEnabled: false,
           ),
         ),
         const SizedBox(height: 16),
@@ -489,29 +477,29 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '842 Tactical Avenue',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  'Precision District, ST 90210',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
+                // Text(
+                //   range?.address ?? '842 Tactical Avenue',
+                //   style: theme.textTheme.titleMedium?.copyWith(
+                //     fontWeight: FontWeight.w700,
+                //   ),
+                // ),
+                // Text(
+                //   range?.city ?? 'Precision District, ST 90210',
+                //   style: theme.textTheme.bodySmall?.copyWith(
+                //     color: scheme.onSurfaceVariant,
+                //   ),
+                // ),
               ],
             ),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: scheme.surfaceContainerHighest,
+                color: scheme.primary,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 Icons.directions_outlined,
-                color: scheme.onSurface,
+                color: scheme.onPrimary,
               ),
             ),
           ],
