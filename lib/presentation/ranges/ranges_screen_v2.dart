@@ -1112,11 +1112,17 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                                   size: 20),
                               label: Text(
                                 'BOOK NOW',
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  color: scheme.primary,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.4,
-                                ),
+                                style: isWide
+                                    ? theme.textTheme.labelMedium?.copyWith(
+                                        color: scheme.primary,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.4,
+                                      )
+                                    : theme.textTheme.labelSmall?.copyWith(
+                                        color: scheme.primary,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.4,
+                                      ),
                               ),
                             ),
                           ],

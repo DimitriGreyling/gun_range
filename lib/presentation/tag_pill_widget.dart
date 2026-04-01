@@ -16,6 +16,7 @@ class TagPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isWide = MediaQuery.sizeOf(context).width >= 980;
 
     return Container(
       margin: const EdgeInsets.all(5),
@@ -36,11 +37,15 @@ class TagPill extends StatelessWidget {
             )
           : Text(
               label,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: foreground,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.0,
-              ),
+              style: isWide
+                  ? theme.textTheme.labelMedium?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w800,
+                    )
+                  : theme.textTheme.labelSmall?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w800,
+                    ),
             ),
     );
   }
