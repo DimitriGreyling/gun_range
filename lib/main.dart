@@ -37,36 +37,6 @@ Future<void> main() async {
   final container = ProviderContainer();
   GlobalPopupService.initialize(container);
 
-  bool serviceEnabled;
-  LocationPermission permission;
-
-  serviceEnabled = await Geolocator.isLocationServiceEnabled();
-  if (!serviceEnabled) {
-    // Location services are not enabled don't continue
-    // accessing the position and request users of the
-    // App to enable the location services.
-    return Future.error('Location services are disabled.');
-  }
-
-  permission = await Geolocator.checkPermission();
-  if (permission == LocationPermission.denied) {
-    permission = await Geolocator.requestPermission();
-    if (permission == LocationPermission.denied) {
-      // Permissions are denied, next time you could try
-      // requesting permissions again (this is also where
-      // Android's shouldShowRequestPermissionRationale
-      // returned true. According to Android guidelines
-      // your App should show an explanatory UI now.
-      return Future.error('Location permissions are denied');
-    }
-  }
-
-  if (permission == LocationPermission.deniedForever) {
-    // Permissions are denied forever, handle appropriately.
-    return Future.error(
-        'Location permissions are permanently denied, we cannot request permissions.');
-  }
-
   runApp(
     UncontrolledProviderScope(
       container: container,
@@ -89,6 +59,38 @@ class _MainAppState extends ConsumerState<MainApp> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      bool serviceEnabled;
+      LocationPermission permission;
+
+      serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        // Location services are not enabled don't continue
+        // accessing the position and request users of the
+        // App to enable the location services.
+        return Future.error('Location services are disabled.');
+      }
+
+      permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          // Permissions are denied, next time you could try
+          // requesting permissions again (this is also where
+          // Android's shouldShowRequestPermissionRationale
+          // returned true. According to Android guidelines
+          // your App should show an explanatory UI now.
+          return Future.error('Location permissions are denied');
+        }
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        // Permissions are denied forever, handle appropriately.
+        return Future.error(
+            'Location permissions are permanently denied, we cannot request permissions.');
+      }
+    });
   }
 
   @override
@@ -115,16 +117,16 @@ class _MainAppState extends ConsumerState<MainApp> with WidgetsBindingObserver {
         return MaterialApp.router(
           restorationScopeId: 'app',
           scrollBehavior: const MaterialScrollBehavior().copyWith(
-            //TODO:: add ack for mobil devices
-            
-            // dragDevices: {
-            //   PointerDeviceKind.mouse,
-            //   PointerDeviceKind.touch,
-            //   PointerDeviceKind.trackpad,
-            //   PointerDeviceKind.stylus,
-            //   PointerDeviceKind.unknown,
-            // },
-          ),
+              //TODO:: add ack for mobil devices
+
+              // dragDevices: {
+              //   PointerDeviceKind.mouse,
+              //   PointerDeviceKind.touch,
+              //   PointerDeviceKind.trackpad,
+              //   PointerDeviceKind.stylus,
+              //   PointerDeviceKind.unknown,
+              // },
+              ),
           debugShowCheckedModeBanner: false,
           routerConfig: appRouter,
           title: 'Range Connect',

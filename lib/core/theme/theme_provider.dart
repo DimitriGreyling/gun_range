@@ -315,7 +315,7 @@ class AppTheme {
         color: scheme.onSurface,
       ),
       titleLarge: GoogleFonts.inter(
-        fontSize: 22,
+        fontSize: 14,
         fontWeight: FontWeight.w600,
         height: 1.2,
         color: scheme.onSurface,
@@ -332,8 +332,14 @@ class AppTheme {
         height: 1.45,
         color: scheme.onSurfaceVariant,
       ),
-      labelMedium: GoogleFonts.inter(
+      labelSmall: GoogleFonts.inter(
         fontSize: 12,
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0.6,
+        color: scheme.onSurfaceVariant,
+      ),
+      labelMedium: GoogleFonts.inter(
+        fontSize: 14,
         fontWeight: FontWeight.w700,
         letterSpacing: 0.6,
         color: scheme.onSurfaceVariant,

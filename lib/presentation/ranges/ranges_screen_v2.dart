@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/constants/general_constants.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/range_detail.dart';
+import 'package:gun_range_app/presentation/tag_pill_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/footer_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
 import 'package:gun_range_app/presentation/widgets/v2/search_field_widget.dart';
@@ -386,7 +387,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                             _softSpacer(theme),
                             fields[1],
                             _softSpacer(theme),
-                            fields[2],
+                            // fields[2],
                             const SizedBox(height: 12),
                             GradientButton(
                               label:
@@ -869,6 +870,7 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final isWide = MediaQuery.sizeOf(context).width >= 980;
 
     final statusColor = scheme.tertiary;
     //  switch (facility.statusColorKind) {
@@ -969,10 +971,10 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                     Positioned(
                       left: 16,
                       right: 16,
-                      bottom: 16,
+                      bottom: 0,
                       child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                        spacing: 0,
+                        runSpacing: 5,
                         children: [
                           if (widget.facility.facilities != null)
                             ...widget.facility.facilities!.map((facility) {
@@ -982,10 +984,6 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                                     .loadLookupValueById(
                                         id: facility.facilityId ?? ''),
                                 builder: (context, snapshot) {
-                                  if (!snapshot.hasData) {
-                                    return const SizedBox.shrink();
-                                  }
-
                                   return TagPill(
                                     label: snapshot.data ?? '',
                                     isLoading: snapshot.connectionState ==
@@ -1016,10 +1014,15 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                           Expanded(
                             child: Text(
                               widget.facility.name?.toUpperCase() ?? '',
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                color: scheme.onSurface,
-                                fontWeight: FontWeight.w800,
-                              ),
+                              style: isWide
+                                  ? theme.textTheme.titleLarge?.copyWith(
+                                      color: scheme.onSurface,
+                                      fontWeight: FontWeight.w800,
+                                    )
+                                  : theme.textTheme.titleSmall?.copyWith(
+                                      color: scheme.onSurface,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -1045,11 +1048,15 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                                 widget.facility.nspDistanceInKilometers != null
                                     ? 'DIST: ${widget.facility.nspDistanceInKilometers} KM'
                                     : 'DIST: N/A',
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  color: scheme.primary,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.0,
-                                ),
+                                style: isWide
+                                    ? theme.textTheme.labelMedium?.copyWith(
+                                        color: scheme.primary,
+                                        fontWeight: FontWeight.w800,
+                                      )
+                                    : theme.textTheme.labelSmall?.copyWith(
+                                        color: scheme.primary,
+                                        fontWeight: FontWeight.w800,
+                                      ),
                               );
                             },
                           ),
@@ -1058,7 +1065,7 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                       const SizedBox(height: 12),
                       Text(
                         widget.facility.description ?? '',
-                        maxLines: 3,
+                        maxLines: isWide ? 3 : 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: scheme.onSurfaceVariant,
@@ -1105,11 +1112,17 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                                   size: 20),
                               label: Text(
                                 'BOOK NOW',
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  color: scheme.primary,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.4,
-                                ),
+                                style: isWide
+                                    ? theme.textTheme.labelMedium?.copyWith(
+                                        color: scheme.primary,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.4,
+                                      )
+                                    : theme.textTheme.labelSmall?.copyWith(
+                                        color: scheme.primary,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 1.4,
+                                      ),
                               ),
                             ),
                           ],
@@ -1174,51 +1187,6 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
               )),
         );
       },
-    );
-  }
-}
-
-class TagPill extends StatelessWidget {
-  const TagPill({
-    required this.label,
-    required this.background,
-    required this.foreground,
-    this.isLoading = false,
-  });
-
-  final String label;
-  final Color background;
-  final Color foreground;
-  final bool? isLoading;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: isLoading == true
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 1,
-                ),
-              ),
-            )
-          : Text(
-              label,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: foreground,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.0,
-              ),
-            ),
     );
   }
 }
