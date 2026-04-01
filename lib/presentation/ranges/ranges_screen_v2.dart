@@ -870,6 +870,7 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final isWide = MediaQuery.sizeOf(context).width >= 980;
 
     final statusColor = scheme.tertiary;
     //  switch (facility.statusColorKind) {
@@ -1013,10 +1014,15 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                           Expanded(
                             child: Text(
                               widget.facility.name?.toUpperCase() ?? '',
-                              style: theme.textTheme.titleLarge?.copyWith(
-                                color: scheme.onSurface,
-                                fontWeight: FontWeight.w800,
-                              ),
+                              style: isWide
+                                  ? theme.textTheme.titleLarge?.copyWith(
+                                      color: scheme.onSurface,
+                                      fontWeight: FontWeight.w800,
+                                    )
+                                  : theme.textTheme.titleSmall?.copyWith(
+                                      color: scheme.onSurface,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -1042,11 +1048,15 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                                 widget.facility.nspDistanceInKilometers != null
                                     ? 'DIST: ${widget.facility.nspDistanceInKilometers} KM'
                                     : 'DIST: N/A',
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  color: scheme.primary,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.0,
-                                ),
+                                style: isWide
+                                    ? theme.textTheme.labelMedium?.copyWith(
+                                        color: scheme.primary,
+                                        fontWeight: FontWeight.w800,
+                                      )
+                                    : theme.textTheme.labelSmall?.copyWith(
+                                        color: scheme.primary,
+                                        fontWeight: FontWeight.w800,
+                                      ),
                               );
                             },
                           ),
@@ -1055,7 +1065,7 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                       const SizedBox(height: 12),
                       Text(
                         widget.facility.description ?? '',
-                        maxLines: 3,
+                        maxLines: isWide ? 3 : 1,
                         overflow: TextOverflow.ellipsis,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: scheme.onSurfaceVariant,
