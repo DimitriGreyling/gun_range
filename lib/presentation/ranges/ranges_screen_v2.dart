@@ -387,7 +387,7 @@ class _RangesScreenV2State extends ConsumerState<RangesScreenV2> {
                             _softSpacer(theme),
                             fields[1],
                             _softSpacer(theme),
-                            fields[2],
+                            // fields[2],
                             const SizedBox(height: 12),
                             GradientButton(
                               label:
