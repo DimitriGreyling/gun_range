@@ -970,7 +970,7 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                     Positioned(
                       left: 16,
                       right: 16,
-                      bottom: 16,
+                      bottom: 0,
                       child: Wrap(
                         spacing: 0,
                         runSpacing: 5,
@@ -983,10 +983,6 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                                     .loadLookupValueById(
                                         id: facility.facilityId ?? ''),
                                 builder: (context, snapshot) {
-                                  if (!snapshot.hasData) {
-                                    return const SizedBox.shrink();
-                                  }
-
                                   return TagPill(
                                     label: snapshot.data ?? '',
                                     isLoading: snapshot.connectionState ==

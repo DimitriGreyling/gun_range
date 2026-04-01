@@ -339,10 +339,6 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
                       .read(lookupViewModelProvider.notifier)
                       .loadLookupValueById(id: facility.facilityId ?? ''),
                   builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return const SizedBox.shrink();
-                    }
-
                     return TagPill(
                       label: snapshot.data ?? '',
                       isLoading:
