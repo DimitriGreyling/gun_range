@@ -34,7 +34,7 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
       }
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -229,63 +229,77 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
           ),
         ),
         const SizedBox(height: 16),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainer,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Stack(
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        MouseRegion(
+          cursor: MouseCursor.defer,
+          child: InkWell(
+            onTap: () {
+              setState(() {
+                _isAboutExpanding = !_isAboutExpanding;
+              });
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: scheme.surfaceContainer,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Stack(
                 children: [
-                  AnimatedSize(
-                    duration: const Duration(milliseconds: 300),
-                    child: Text(
-                      displayText,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: scheme.onSurface.withOpacity(0.8),
-                        height: 1.7,
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      AnimatedSize(
+                        duration: const Duration(milliseconds: 300),
+                        child: Text(
+                          displayText,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: scheme.onSurface.withOpacity(0.8),
+                            height: 1.7,
+                          ),
+                        ),
                       ),
-                    ),
+                      if (shouldTruncate) ...[
+                        const SizedBox(height: 12),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _isAboutExpanding = !_isAboutExpanding;
+                              });
+                            },
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text(
+                                  _isAboutExpanding ? 'READ LESS' : 'READ MORE',
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                    color: scheme.primary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                AnimatedRotation(
+                                  turns: _isAboutExpanding ? 0.5 : 0,
+                                  duration: const Duration(milliseconds: 300),
+                                  child: Icon(
+                                    Icons.keyboard_arrow_down,
+                                    color: scheme.primary,
+                                    size: 18,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  if (shouldTruncate) ...[
-                    const SizedBox(height: 12),
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _isAboutExpanding = !_isAboutExpanding;
-                        });
-                      },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          Text(
-                            _isAboutExpanding ? 'READ LESS' : 'READ MORE',
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: scheme.primary,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          AnimatedRotation(
-                            turns: _isAboutExpanding ? 0.5 : 0,
-                            duration: const Duration(milliseconds: 300),
-                            child: Icon(
-                              Icons.keyboard_arrow_down,
-                              color: scheme.primary,
-                              size: 18,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ],
