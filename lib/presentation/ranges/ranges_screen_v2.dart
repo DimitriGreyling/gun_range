@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gun_range_app/core/constants/general_constants.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/range_detail.dart';
+import 'package:gun_range_app/presentation/tag_pill_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/footer_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
 import 'package:gun_range_app/presentation/widgets/v2/search_field_widget.dart';
@@ -971,8 +972,8 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
                       right: 16,
                       bottom: 16,
                       child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                        spacing: 0,
+                        runSpacing: 5,
                         children: [
                           if (widget.facility.facilities != null)
                             ...widget.facility.facilities!.map((facility) {
@@ -1174,51 +1175,6 @@ class _FacilityCardState extends ConsumerState<_FacilityCardWidget> {
               )),
         );
       },
-    );
-  }
-}
-
-class TagPill extends StatelessWidget {
-  const TagPill({
-    required this.label,
-    required this.background,
-    required this.foreground,
-    this.isLoading = false,
-  });
-
-  final String label;
-  final Color background;
-  final Color foreground;
-  final bool? isLoading;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: isLoading == true
-          ? const SizedBox(
-              width: 20,
-              height: 20,
-              child: Center(
-                child: CircularProgressIndicator(
-                  strokeWidth: 1,
-                ),
-              ),
-            )
-          : Text(
-              label,
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: foreground,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 1.0,
-              ),
-            ),
     );
   }
 }

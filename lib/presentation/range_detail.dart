@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/presentation/ranges/ranges_screen_v2.dart';
+import 'package:gun_range_app/presentation/tag_pill_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/footer_widget.dart';
 import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
 import 'package:gun_range_app/presentation/widgets/v2/top_bar_widget.dart';
@@ -317,7 +318,7 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'PREMIUM AMENITIES',
+          'AMENITIES',
           style: theme.textTheme.labelMedium?.copyWith(
             fontWeight: FontWeight.w900,
             letterSpacing: 2.0,
@@ -327,8 +328,9 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
         const SizedBox(
           height: 10,
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
+        Wrap(
+          spacing: 0,
+          runSpacing: 5,
           children: [
             if (range?.facilities != null)
               ...range!.facilities!.map((facility) {
