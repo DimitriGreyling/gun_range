@@ -260,44 +260,44 @@ class _RangeDetailState extends ConsumerState<RangeDetail> {
                           ),
                         ),
                       ),
-                      if (shouldTruncate) ...[
-                        const SizedBox(height: 12),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _isAboutExpanding = !_isAboutExpanding;
-                              });
-                            },
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text(
-                                  _isAboutExpanding ? 'READ LESS' : 'READ MORE',
-                                  style: theme.textTheme.labelMedium?.copyWith(
-                                    color: scheme.primary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                AnimatedRotation(
-                                  turns: _isAboutExpanding ? 0.5 : 0,
-                                  duration: const Duration(milliseconds: 300),
-                                  child: Icon(
-                                    Icons.keyboard_arrow_down,
-                                    color: scheme.primary,
-                                    size: 18,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
                     ],
                   ),
+                  if (shouldTruncate) ...[
+                    const SizedBox(height: 12),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _isAboutExpanding = !_isAboutExpanding;
+                          });
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              _isAboutExpanding ? 'READ LESS' : 'READ MORE',
+                              style: theme.textTheme.labelMedium?.copyWith(
+                                color: scheme.primary,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            AnimatedRotation(
+                              turns: _isAboutExpanding ? 0.5 : 0,
+                              duration: const Duration(milliseconds: 300),
+                              child: Icon(
+                                Icons.keyboard_arrow_down,
+                                color: scheme.primary,
+                                size: 18,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
