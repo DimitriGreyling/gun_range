@@ -4,4 +4,7 @@ class GeneralConstants {
 
   static const String dateFormat = 'yyyy-MM-dd';
   static const double metersToKilometers = 1000;
+
+  static const String appName = 'Range Connect';
+
 }

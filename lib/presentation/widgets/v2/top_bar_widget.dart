@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/core/constants/general_constants.dart';
 import 'package:gun_range_app/data/models/v2/top_bar_item.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
@@ -111,11 +112,12 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                     runSpacing: 12,
                     children: [
                       Text(
-                        'SENTINEL TACTICAL',
+                        GeneralConstants.appName.toUpperCase(),
                         style: theme.textTheme.titleLarge?.copyWith(
                           color: scheme.primary,
                           fontWeight: FontWeight.w900,
-                          letterSpacing: -0.6,
+                          letterSpacing: 1.5,
+                          fontSize: 18,
                         ),
                       ),
                       Wrap(
