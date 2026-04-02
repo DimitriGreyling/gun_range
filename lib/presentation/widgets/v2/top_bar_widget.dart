@@ -191,14 +191,14 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                           },
                           tone: GradientButtonTone.tertiary,
                         ),
-                      if (isAuthed)
-                        GradientButton(
-                          label: 'LOG OUT',
-                          onPressed: () {
-                            authViewModel.signOut();
-                          },
-                          tone: GradientButtonTone.secondary,
-                        ),
+                      // if (isAuthed)
+                      //   GradientButton(
+                      //     label: 'LOG OUT',
+                      //     onPressed: () {
+                      //       authViewModel.signOut();
+                      //     },
+                      //     tone: GradientButtonTone.secondary,
+                      //   ),
                       if (isAuthed)
                         GradientButton(
                           label: 'BOOK NOW',
