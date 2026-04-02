@@ -176,6 +176,13 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                     spacing: 12,
                     runSpacing: 12,
                     children: [
+                      if (isAuthed)
+                        CircleAvatar(
+                          child: IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.person),
+                          ),
+                        ),
                       if (!isAuthed)
                         GradientButton(
                           label: 'LOGIN',
