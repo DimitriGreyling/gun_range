@@ -180,7 +180,10 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                         CircleAvatar(
                           child: IconButton(
                             onPressed: () {},
-                            icon: const Icon(Icons.person),
+                            icon: Icon(
+                              Icons.person,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
                           ),
                         ),
                       if (!isAuthed)
@@ -201,7 +204,7 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                       //   ),
                       if (isAuthed)
                         GradientButton(
-                          label: 'BOOK NOW',
+                          label: 'QUICK BOOK',
                           onPressed: () {},
                         ),
                     ],
