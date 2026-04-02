@@ -31,12 +31,12 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
       routeName: 'ranges',
       path: '/ranges',
     ),
-    const TopBarItem(
-      destination: TopBarDestination.ranges,
-      label: 'PROFILE',
-      routeName: 'profile',
-      path: '/profile',
-    ),
+    // const TopBarItem(
+    //   destination: TopBarDestination.ranges,
+    //   label: 'PROFILE',
+    //   routeName: 'profile',
+    //   path: '/profile',
+    // ),
   ];
 
   TopBarDestination _destinationFromLocation(String location) {
@@ -159,15 +159,15 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                                 activeDestination == TopBarDestination.events,
                             callBack: () => context.goNamed('events'),
                           ),
-                          if (isAuthed)
-                            _navItem(
-                              theme,
-                              'PROFILE',
-                              active: activeDestination ==
-                                  TopBarDestination.profile,
-                              callBack: () => context.goNamed('profile'),
-                              disabled: !isAuthed,
-                            ),
+                          // if (isAuthed)
+                          //   _navItem(
+                          //     theme,
+                          //     'PROFILE',
+                          //     active: activeDestination ==
+                          //         TopBarDestination.profile,
+                          //     callBack: () => context.goNamed('profile'),
+                          //     disabled: !isAuthed,
+                          //   ),
                         ],
                       ),
                     ],
@@ -179,7 +179,9 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                       if (isAuthed)
                         CircleAvatar(
                           child: IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              context.goNamed('profile');
+                            },
                             icon: Icon(
                               Icons.person,
                               color: Theme.of(context).colorScheme.onPrimary,
