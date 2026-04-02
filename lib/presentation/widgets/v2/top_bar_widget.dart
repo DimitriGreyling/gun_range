@@ -208,6 +208,7 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                         GradientButton(
                           label: 'QUICK BOOK',
                           onPressed: () {},
+                          tone: GradientButtonTone.secondary,
                         ),
                     ],
                   ),
