@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:gun_range_app/data/models/range.dart';
 import 'package:gun_range_app/providers/favorite_provider.dart';
 import 'package:gun_range_app/providers/photo_provider.dart';
 import 'package:gun_range_app/providers/review_provider.dart';
@@ -75,4 +76,29 @@ final rangeViewModelProvider =
   final rangeRepository = ref.watch(rangeRepositoryProvider);
 
   return RangesVm(rangeRepository: rangeRepository);
+});
+
+// Provider for cached distance calculations
+final distanceProvider =
+    FutureProvider.family<String, Range>((ref, range) async {
+  final notifier = ref.read(rangeViewModelProvider.notifier);
+  await notifier.getDistanceBetweenLocations(range);
+  return range.nspDistanceInKilometers != null
+      ? 'DIST: ${range.nspDistanceInKilometers} KM'
+      : 'DIST: N/A';
+});
+
+// Provider for range detail with proper caching
+final rangeDetailProvider =
+    FutureProvider.family<Range?, String>((ref, rangeId) async {
+  final notifier = ref.read(rangeDetailViewModelProvider.notifier);
+  await notifier.fetchRangeDetail(rangeId);
+  return ref.read(rangeDetailViewModelProvider).range;
+});
+
+// Provider for cached lookup values
+final lookupValueProvider =
+    FutureProvider.family<String, String>((ref, id) async {
+  final notifier = ref.read(lookupViewModelProvider.notifier);
+  return await notifier.loadLookupValueById(id: id) ?? '';
 });
