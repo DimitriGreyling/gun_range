@@ -111,6 +111,10 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                     spacing: 24,
                     runSpacing: 12,
                     children: [
+                      Image.asset(
+                        'assets/logo/logo_no_buffer.png',
+                        height: 50,
+                      ),
                       Text(
                         GeneralConstants.appName.toUpperCase(),
                         style: theme.textTheme.titleLarge?.copyWith(
