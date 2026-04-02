@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -113,6 +115,15 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                     children: [
                       Image.asset(
                         'assets/logo/logo_no_buffer.png',
+                        errorBuilder: (context, error, stackTrace) {
+                          return const SizedBox.shrink();
+                        },
+                        frameBuilder:
+                            (context, child, frame, wasSynchronouslyLoaded) {
+                          return const CircularProgressIndicator(
+                            strokeWidth: 1,
+                          );
+                        },
                         height: 50,
                       ),
                       Text(
