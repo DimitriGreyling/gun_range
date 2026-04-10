@@ -223,7 +223,7 @@ final themeModeTogglerProvider = Provider<AppTheme>((ref) => AppTheme());
 
 class AppTheme {
   static ThemeData get darkTheme {
-    final colorScheme = const ColorScheme(
+    const colorScheme = ColorScheme(
       brightness: Brightness.dark,
       primary: AppColors.primary,
       onPrimary: AppColors.onPrimary,
@@ -246,7 +246,7 @@ class AppTheme {
       surfaceContainerHighest: AppColors.surfaceContainerHighest,
       surfaceBright: AppColors.surfaceBright,
       surfaceDim: AppColors.surfaceContainerLow,
-      surfaceVariant: AppColors.surfaceVariant,
+      // surfaceVariant: AppColors.surfaceVariant,
       onSurfaceVariant: AppColors.onSurfaceMuted,
       outline: Colors.transparent,
       outlineVariant: AppColors.outlineVariant,

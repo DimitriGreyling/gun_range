@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gun_range_app/core/constants/general_constants.dart';
 import 'package:gun_range_app/data/models/v2/top_bar_item.dart';
 import 'package:gun_range_app/domain/services/global_popup_service.dart';
 import 'package:gun_range_app/presentation/widgets/v2/gradient_button.dart';
@@ -28,12 +31,12 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
       routeName: 'ranges',
       path: '/ranges',
     ),
-    const TopBarItem(
-      destination: TopBarDestination.ranges,
-      label: 'PROFILE',
-      routeName: 'profile',
-      path: '/profile',
-    ),
+    // const TopBarItem(
+    //   destination: TopBarDestination.ranges,
+    //   label: 'PROFILE',
+    //   routeName: 'profile',
+    //   path: '/profile',
+    // ),
   ];
 
   TopBarDestination _destinationFromLocation(String location) {
@@ -110,12 +113,26 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                     spacing: 24,
                     runSpacing: 12,
                     children: [
+                      Image.asset(
+                        'assets/logo/logo_no_buffer.png',
+                        errorBuilder: (context, error, stackTrace) {
+                          return const SizedBox.shrink();
+                        },
+                        frameBuilder:
+                            (context, child, frame, wasSynchronouslyLoaded) {
+                          return const CircularProgressIndicator(
+                            strokeWidth: 1,
+                          );
+                        },
+                        height: 50,
+                      ),
                       Text(
-                        'SENTINEL TACTICAL',
+                        GeneralConstants.appName.toUpperCase(),
                         style: theme.textTheme.titleLarge?.copyWith(
                           color: scheme.primary,
                           fontWeight: FontWeight.w900,
-                          letterSpacing: -0.6,
+                          letterSpacing: 1.5,
+                          fontSize: 18,
                         ),
                       ),
                       Wrap(
@@ -142,15 +159,15 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                                 activeDestination == TopBarDestination.events,
                             callBack: () => context.goNamed('events'),
                           ),
-                          if (isAuthed)
-                            _navItem(
-                              theme,
-                              'PROFILE',
-                              active: activeDestination ==
-                                  TopBarDestination.profile,
-                              callBack: () => context.goNamed('profile'),
-                              disabled: !isAuthed,
-                            ),
+                          // if (isAuthed)
+                          //   _navItem(
+                          //     theme,
+                          //     'PROFILE',
+                          //     active: activeDestination ==
+                          //         TopBarDestination.profile,
+                          //     callBack: () => context.goNamed('profile'),
+                          //     disabled: !isAuthed,
+                          //   ),
                         ],
                       ),
                     ],
@@ -159,6 +176,18 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                     spacing: 12,
                     runSpacing: 12,
                     children: [
+                      if (isAuthed)
+                        CircleAvatar(
+                          child: IconButton(
+                            onPressed: () {
+                              context.goNamed('profile');
+                            },
+                            icon: Icon(
+                              Icons.person,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                          ),
+                        ),
                       if (!isAuthed)
                         GradientButton(
                           label: 'LOGIN',
@@ -167,18 +196,19 @@ class _TopBarWidgetState extends ConsumerState<TopBarWidget> {
                           },
                           tone: GradientButtonTone.tertiary,
                         ),
+                      // if (isAuthed)
+                      //   GradientButton(
+                      //     label: 'LOG OUT',
+                      //     onPressed: () {
+                      //       authViewModel.signOut();
+                      //     },
+                      //     tone: GradientButtonTone.secondary,
+                      //   ),
                       if (isAuthed)
                         GradientButton(
-                          label: 'LOG OUT',
-                          onPressed: () {
-                            authViewModel.signOut();
-                          },
-                          tone: GradientButtonTone.secondary,
-                        ),
-                      if (isAuthed)
-                        GradientButton(
-                          label: 'BOOK NOW',
+                          label: 'QUICK BOOK',
                           onPressed: () {},
+                          tone: GradientButtonTone.secondary,
                         ),
                     ],
                   ),
